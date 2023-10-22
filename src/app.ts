@@ -1,12 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import router from './routes/index.route';
+import { handleError } from './middleware/error-handler.middleware';
 
 // express app
 const app = express();
-
-// json response formatting
-app.set('json spaces', 2);
 
 // cors
 app.use(cors());
@@ -19,5 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // routes
 app.use(router);
+
+app.use(handleError);
 
 export default app;
