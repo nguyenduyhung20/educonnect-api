@@ -1,8 +1,8 @@
 import express from 'express';
-import apiRouter from './api/index.route';
+import { testRouter } from './test.route';
 
 const router = express.Router();
 
-router.use('/api', apiRouter);
+router.use('/test', testRouter);
 
 export default router;
