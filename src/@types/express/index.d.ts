@@ -1,7 +1,6 @@
-import { UserRepository } from '../../models/user.model';
+import { RequestUser } from '../../interfaces/user';
 
 export {};
-type RequestUser = Exclude<Awaited<ReturnType<typeof UserRepository.getByUuid>>, undefined>;
 
 declare global {
   namespace Express {

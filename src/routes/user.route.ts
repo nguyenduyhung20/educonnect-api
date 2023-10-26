@@ -1,8 +1,15 @@
 import express from 'express';
-import { handleDeleteUser, handleGetUserByUuid, handleUpdateUser } from '../controllers/user.controller';
+import {
+  handleDeleteUser,
+  handleGetUserByUuid,
+  handleGetUsers,
+  handleUpdateUser
+} from '../controllers/user.controller';
+import { verifyUser } from '../middleware/user.middleware';
 
 export const userRouter = express.Router();
 
-userRouter.get('/uuid/:userUuid', [handleGetUserByUuid]);
-userRouter.patch('/uuid/:userUuid', [handleUpdateUser]);
-userRouter.delete('/uuid/:userUuid', [handleDeleteUser]);
+userRouter.get('/all', [handleGetUsers]);
+userRouter.get('/uuid/:userUuid', [verifyUser, handleGetUserByUuid]);
+userRouter.patch('/uuid/:userUuid', [verifyUser, handleUpdateUser]);
+userRouter.delete('/uuid/:userUuid', [verifyUser, handleDeleteUser]);

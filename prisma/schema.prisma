@@ -1,0 +1,259 @@
+generator kysely {
+  provider     = "prisma-kysely"
+  output       = "../src/interfaces"
+  fileName     = "types.ts"
+  enumFileName = "enums.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id        Int      @id
+  username  String?  @unique @db.VarChar
+  pass      String?  @db.VarChar
+  avatar    String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  user      user     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model admin {
+  id        Int      @id
+  school_id Int?
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model classroom {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  school_id Int?
+}
+
+model document {
+  id            Int      @id @default(autoincrement())
+  title         String?  @db.VarChar
+  url           String?  @db.VarChar
+  create_at     DateTime @default(now()) @db.Timestamp(6)
+  update_at     DateTime @default(now()) @db.Timestamp(6)
+  deleted       Boolean  @default(false)
+  subject_id    Int?
+  teacher_id    Int?
+  document_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+}
+
+model follow {
+  following                   Int
+  followed                    Int
+  create_at                   DateTime @default(now()) @db.Timestamp(6)
+  update_at                   DateTime @default(now()) @db.Timestamp(6)
+  deleted                     Boolean  @default(false)
+  user_follow_followedTouser  user     @relation("follow_followedTouser", fields: [followed], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_follow_followingTouser user     @relation("follow_followingTouser", fields: [following], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([following, followed])
+}
+
+model group {
+  id         Int      @id @default(autoincrement())
+  title      String?  @db.VarChar
+  meta_title String?  @db.VarChar
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+  group_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+}
+
+model group_post {
+  id       Int  @id
+  group_id Int?
+}
+
+model interact {
+  type      interact_type?
+  create_at DateTime       @default(now()) @db.Timestamp(6)
+  update_at DateTime       @default(now()) @db.Timestamp(6)
+  deleted   Boolean        @default(false)
+  user_id   Int
+  post_id   Int
+
+  @@id([user_id, post_id])
+}
+
+model learn {
+  class_id   Int
+  subject_id Int
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+
+  @@id([class_id, subject_id])
+}
+
+model member {
+  user_id   Int
+  group_id  Int
+  role      member_role?
+  status    member_status?
+  create_at DateTime       @default(now()) @db.Timestamp(6)
+  update_at DateTime       @default(now()) @db.Timestamp(6)
+  deleted   Boolean        @default(false)
+
+  @@id([user_id, group_id])
+}
+
+model notification {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  message   String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  user      user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model of {
+  student_id Int
+  class_id   Int
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+
+  @@id([student_id, class_id])
+}
+
+model parent {
+  id        Int      @id
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model post {
+  id             Int      @id @default(autoincrement())
+  content        String?  @db.VarChar
+  create_at      DateTime @default(now()) @db.Timestamp(6)
+  update_at      DateTime @default(now()) @db.Timestamp(6)
+  deleted        Boolean  @default(false)
+  post_uuid      String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id        Int
+  parent_post_id Int?
+  user           user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model school {
+  id        Int      @id @default(autoincrement())
+  address   String?  @db.VarChar
+  name      String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model student {
+  id        Int      @id
+  parent_id Int?
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model subject {
+  id        Int      @id @default(autoincrement())
+  name      String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model teacher {
+  id        Int      @id
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+}
+
+model teaching {
+  subject_id Int
+  teacher_id Int
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+
+  @@id([subject_id, teacher_id])
+}
+
+model transcript {
+  id                    Int      @id @default(autoincrement())
+  fifteen_minutes_score Float?
+  midterm_score         Float?
+  final_score           Float?
+  create_at             DateTime @default(now()) @db.Timestamp(6)
+  update_at             DateTime @default(now()) @db.Timestamp(6)
+  deleted               Boolean  @default(false)
+  student_id            Int?
+  subject_id            Int?
+}
+
+model user {
+  id                            Int            @id @default(autoincrement())
+  address                       String?        @db.VarChar
+  name                          String?        @db.VarChar
+  phone                         String?        @db.VarChar
+  birth                         DateTime?      @db.Timestamp(6)
+  email                         String?        @db.VarChar
+  SSN                           String?        @unique @db.VarChar
+  sex                           user_sex?
+  create_at                     DateTime       @default(now()) @db.Timestamp(6)
+  update_at                     DateTime       @default(now()) @db.Timestamp(6)
+  deleted                       Boolean        @default(false)
+  user_uuid                     String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  role                          user_role
+  account                       account?
+  follow_follow_followedTouser  follow[]       @relation("follow_followedTouser")
+  follow_follow_followingTouser follow[]       @relation("follow_followingTouser")
+  notification                  notification[]
+  post                          post[]
+}
+
+enum interact_type {
+  like
+  love
+  haha
+  wow
+  sad
+  angry
+}
+
+enum member_role {
+  admin
+  user
+}
+
+enum member_status {
+  block
+  active
+  pending
+}
+
+enum user_role {
+  admin
+  teacher
+  student
+  parent
+  user
+}
+
+enum user_sex {
+  man
+  woman
+  other
+}
