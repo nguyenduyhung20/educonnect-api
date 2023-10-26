@@ -1,9 +1,7 @@
 import { UserRepository } from '../../models/user.model';
 
-const userPromise = UserRepository.getById();
-type RequestUser = Exclude<Awaited<typeof userPromise>, undefined>;
-
 export {};
+type RequestUser = Exclude<Awaited<ReturnType<typeof UserRepository.getByUuid>>, undefined>;
 
 declare global {
   namespace Express {
