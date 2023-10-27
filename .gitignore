@@ -2,3 +2,7 @@ node_modules
 dist
 coverage
 .env
+pg-data
+mg-data
+elk-data
+redis-data
