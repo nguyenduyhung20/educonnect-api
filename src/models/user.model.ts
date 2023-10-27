@@ -1,91 +1,54 @@
 import { Prisma } from '@prisma/client';
-import { db } from '../databases/kysely';
 import prisma from '../config/client';
 
 export class UserRepository {
-  static async getAll(limit?: number) {
-    return db
-      .selectFrom('user')
-      .select([
-        'id',
-        'address',
-        'name',
-        'phone',
-        'birth',
-        'email',
-        'SSN',
-        'sex',
-        'user_uuid',
-        'role',
-        'deleted',
-        'create_at',
-        'update_at'
-      ])
-      .limit(limit ?? 20)
-      .execute();
+  static async getAll(limit = 20) {
+    return prisma.user.findMany({
+      take: limit,
+      where: {
+        deleted: false
+      },
+      orderBy: {
+        create_at: 'desc'
+      }
+    });
   }
 
   static async getById(id: number) {
-    return db
-      .selectFrom('user')
-      .select([
-        'id',
-        'address',
-        'name',
-        'phone',
-        'birth',
-        'email',
-        'SSN',
-        'sex',
-        'user_uuid',
-        'role',
-        'deleted',
-        'create_at',
-        'update_at'
-      ])
-      .where(({ eb, and }) => and([eb('id', '=', id), eb('deleted', '=', false)]))
-      .executeTakeFirst();
+    return prisma.user.findFirst({
+      where: {
+        id: id,
+        deleted: false
+      }
+    });
   }
 
   static async getByUuid(uuid: string) {
-    return db
-      .selectFrom('user')
-      .select([
-        'id',
-        'address',
-        'name',
-        'phone',
-        'birth',
-        'email',
-        'SSN',
-        'sex',
-        'user_uuid',
-        'role',
-        'deleted',
-        'create_at',
-        'update_at'
-      ])
-      .where(({ eb, and }) => and([eb('user_uuid', '=', uuid), eb('deleted', '=', false)]))
-      .executeTakeFirst();
-  }
-
-  static async prismaGet(uuid: string) {
     return prisma.user.findFirst({
       where: {
-        user_uuid: uuid
+        user_uuid: uuid,
+        deleted: false
       }
     });
   }
 
   static async create(data: Prisma.userCreateInput) {
-    return db.insertInto('user').values(data).executeTakeFirst();
+    return prisma.user.create({
+      data
+    });
   }
 
-  static async update(uuid: string, data: Prisma.userCreateInput) {
-    return db.updateTable('user').set(data).where('user_uuid', '=', uuid).executeTakeFirst();
+  static async update(id: number, data: Prisma.userUpdateInput) {
+    return prisma.user.update({
+      where: { id: id },
+      data
+    });
   }
 
-  static async delete(uuid: string) {
-    return db.updateTable('user').set({ deleted: true }).where('user_uuid', '=', uuid).executeTakeFirst();
+  static async delete(id: number) {
+    return prisma.user.update({
+      where: { id: id },
+      data: { deleted: true }
+    });
   }
 }

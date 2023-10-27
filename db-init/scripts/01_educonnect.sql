@@ -8,7 +8,7 @@ CREATE TYPE "user_role" AS ENUM (
     'user'
 );
 
-CREATE TYPE "user_sex" AS ENUM ('man', 'woman', 'other');
+CREATE TYPE "user_sex" AS ENUM ('male', 'female', 'other');
 
 CREATE TYPE "interact_type" AS ENUM (
     'like',
@@ -28,9 +28,9 @@ CREATE TABLE "user" (
     "address" varchar,
     "name" varchar,
     "phone" varchar,
-    "birth" TIMESTAMP,
+    "birthday" TIMESTAMP,
     "email" varchar,
-    "SSN" varchar UNIQUE,
+    "ssn" varchar UNIQUE,
     "sex" "user_sex",
     "create_at" TIMESTAMP DEFAULT (now()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now()) NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE "user" (
 CREATE TABLE "account" (
     "id" int PRIMARY KEY,
     "username" varchar UNIQUE,
-    "pass" varchar,
+    "password" varchar,
     "avatar" varchar,
     "create_at" TIMESTAMP DEFAULT (now()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now()) NOT NULL,
@@ -249,7 +249,7 @@ ADD
 ALTER TABLE
     "post"
 ADD
-    FOREIGN KEY ("parrent_post_id") REFERENCES "post" ("id");
+    FOREIGN KEY ("parent_post_id") REFERENCES "post" ("id");
 
 ALTER TABLE
     "group_post"
@@ -312,14 +312,14 @@ ADD
     FOREIGN KEY ("id") REFERENCES "user" ("id");
 
 ALTER TABLE
-    "class"
+    "classroom"
 ADD
     FOREIGN KEY ("school_id") REFERENCES "school" ("id");
 
 ALTER TABLE
     "learn"
 ADD
-    FOREIGN KEY ("class_id") REFERENCES "class" ("id");
+    FOREIGN KEY ("class_id") REFERENCES "classroom" ("id");
 
 ALTER TABLE
     "learn"
@@ -364,4 +364,4 @@ ADD
 ALTER TABLE
     "of"
 ADD
-    FOREIGN KEY ("class_id") REFERENCES "class" ("id");
+    FOREIGN KEY ("class_id") REFERENCES "classroom" ("id");

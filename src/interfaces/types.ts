@@ -9,7 +9,7 @@ import type { interact_type, member_role, member_status, user_role, user_sex } f
 export type account = {
   id: number;
   username: string | null;
-  pass: string | null;
+  password: string | null;
   avatar: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
@@ -167,9 +167,9 @@ export type user = {
   address: string | null;
   name: string | null;
   phone: string | null;
-  birth: Timestamp | null;
+  birthday: Timestamp | null;
   email: string | null;
-  SSN: string | null;
+  ssn: string | null;
   sex: user_sex | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;

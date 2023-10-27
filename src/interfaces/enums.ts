@@ -27,8 +27,8 @@ export const user_role = {
 } as const;
 export type user_role = (typeof user_role)[keyof typeof user_role];
 export const user_sex = {
-  man: 'man',
-  woman: 'woman',
+  male: 'male',
+  female: 'female',
   other: 'other'
 } as const;
 export type user_sex = (typeof user_sex)[keyof typeof user_sex];
