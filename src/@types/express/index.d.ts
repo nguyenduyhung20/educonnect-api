@@ -1,11 +1,12 @@
-import { RequestUser } from '../../interfaces/user';
+import { PostRequest, UserRequest } from '../../interfaces/middleware';
 
 export {};
 
 declare global {
   namespace Express {
     export interface Request {
-      requestUser: RequestUser;
+      requestUser: UserRequest;
+      requestPost: PostRequest;
     }
   }
 }
