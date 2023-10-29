@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { faker } from '@faker-js/faker';
 
-function generateSql(numRecords: number) {
+function generateUserSql(numRecords: number) {
   let userSexes = ['male', 'female', 'other'];
   let userRoles = ['admin', 'teacher', 'student', 'parent', 'user'];
 
@@ -57,4 +57,4 @@ ${postQueries};
   fs.writeFileSync('./scripts/init.sql', sqlFileContent);
 }
 
-generateSql(20); // Replace 100 with the number of records you want to generate
+generateUserSql(20); // Replace 100 with the number of records you want to generate
