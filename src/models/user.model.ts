@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import prisma from '../config/client';
+import prisma from '../databases/client';
 
-export class UserRepository {
+export class UserModel {
   static async getAll(limit = 20) {
     return prisma.user.findMany({
       take: limit,

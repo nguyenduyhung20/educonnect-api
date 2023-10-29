@@ -1,0 +1,6 @@
+import express from 'express';
+import { handleGetUserPost } from '../controllers/post.controller';
+
+export const postRouter = express.Router();
+
+postRouter.get('/', [handleGetUserPost]);

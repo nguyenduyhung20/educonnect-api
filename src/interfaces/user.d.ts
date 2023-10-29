@@ -1,3 +1,3 @@
-import { UserRepository } from '../models/user.model';
+import { UserModel } from '../models/user.model';
 
-export type RequestUser = Exclude<Awaited<ReturnType<typeof UserRepository.getByUuid>>, null>;
+export type RequestUser = Exclude<Awaited<ReturnType<typeof UserModel.getByUuid>>, null>;
