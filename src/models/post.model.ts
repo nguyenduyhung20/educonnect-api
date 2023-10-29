@@ -1,6 +1,7 @@
 import { Prisma, post } from '@prisma/client';
 import prisma from '../databases/client';
 import { db } from '../databases/kysely';
+import { sql } from 'kysely';
 
 export class PostModel {
   static async getAll(limit = 20) {
@@ -32,18 +33,61 @@ export class PostModel {
         post_uuid: uuid,
         parent_post_id: null,
         deleted: false
+      },
+      include: {
+        other_post: {
+          where: {
+            deleted: false
+          }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
       }
     });
   }
 
   static async getUserPost(id: number) {
-    const comment = await db
-      .selectFrom('post')
-      .select(['id', 'content', 'create_at', 'update_at', 'deleted', 'post_uuid', 'parent_post_id'])
-      .where('parent_post_id', '=', 1)
-      .execute();
-    console.log('comment', comment);
+    const result = prisma.user.findMany({
+      where: {
+        id: id
+      },
+      include: {
+        post: {
+          where: {
+            parent_post_id: null,
+            deleted: false
+          },
+          include: {
+            other_post: {
+              where: {
+                deleted: false
+              }
+            },
+            _count: {
+              select: {
+                interact: {
+                  where: {
+                    deleted: false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
 
+    return result;
+  }
+
+  static async getUserPostRaw(id: number) {
     const postWithCommentsRecord = await db
       .selectFrom('post')
       .leftJoinLateral(
@@ -57,11 +101,21 @@ export class PostModel {
             .as('comment'),
         (join) => join.onRef('comment.parent_post_id', '=', 'post.id')
       )
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('interact')
+            .select((eb) => ['post_id', eb.fn.countAll().as('interaction_count')])
+            .where((eb) => eb.and([eb('post_id', '=', eb.ref('post.id')), eb('deleted', '=', false)]))
+            .groupBy('post_id')
+            .as('interactions'),
+        (join) => join.onRef('interactions.post_id', '=', 'post.id')
+      )
       .where(({ eb }) =>
         eb.and([eb('post.user_id', '=', id), eb('post.parent_post_id', 'is', null), eb('post.deleted', '=', false)])
       )
       .orderBy('post.create_at desc')
-      .select([
+      .select((eb) => [
         'post.id as post_id',
         'post.content as post_content',
         'post.create_at as post_create_at',
@@ -77,13 +131,16 @@ export class PostModel {
         'comment.deleted as comment_deleted',
         'comment.post_uuid as comment_post_uuid',
         'comment.user_id as comment_user_id',
-        'comment.parent_post_id as comment_parent_post_id'
+        'comment.parent_post_id as comment_parent_post_id',
+        eb.fn.coalesce('interaction_count', sql<number>`0`).as('interaction_count')
       ])
       .execute();
 
     if (!postWithCommentsRecord.length) {
       return null;
     }
+
+    console.log(postWithCommentsRecord);
 
     const result = postWithCommentsRecord.map((record) => {
       const {
