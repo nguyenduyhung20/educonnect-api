@@ -21,9 +21,9 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
 };
 
 export const handleCreatePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { body: postFields } = req;
+  const { requestUser, body: postFields } = req;
   try {
-    const users = await PostModel.create(postFields);
+    const users = await PostModel.create(requestUser.id, postFields);
     res.status(200).json({ users });
   } catch (error) {
     next(error);
@@ -31,9 +31,9 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
 };
 
 export const handleUpdatePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser, body: postFields } = req;
+  const { requestPost, body: postFields } = req;
   try {
-    const users = await PostModel.update(requestUser.id, postFields);
+    const users = await PostModel.update(requestPost.id, postFields);
     res.status(200).json({ users });
   } catch (error) {
     next(error);
@@ -41,9 +41,9 @@ export const handleUpdatePost = async (req: Request, res: Response, next: NextFu
 };
 
 export const handleDeletePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser } = req;
+  const { requestUser, requestPost } = req;
   try {
-    const users = await PostModel.delete(requestUser.id);
+    const users = await PostModel.delete(requestUser.id, requestPost.id);
     res.status(200).json({ users });
   } catch (error) {
     next(error);

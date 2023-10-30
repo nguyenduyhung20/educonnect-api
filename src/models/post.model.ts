@@ -3,6 +3,18 @@ import prisma from '../databases/client';
 import { db } from '../databases/kysely';
 import { sql } from 'kysely';
 
+const InteractCountInclude = {
+  _count: {
+    select: {
+      interact: {
+        where: {
+          deleted: false
+        }
+      }
+    }
+  }
+};
+
 export class PostModel {
   static async getAll(limit = 20) {
     return prisma.post.findMany({
@@ -17,17 +29,32 @@ export class PostModel {
     });
   }
 
-  static async getById(id: number) {
+  static async getById(id: number, commentLimit = 10) {
     return prisma.post.findFirst({
       where: {
         id: id,
         parent_post_id: null,
         deleted: false
+      },
+      include: {
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          include: {
+            ...InteractCountInclude
+          },
+          orderBy: {
+            create_at: 'asc'
+          }
+        },
+        ...InteractCountInclude
       }
     });
   }
 
-  static async getByUuid(uuid: string) {
+  static async getByUuid(uuid: string, commentLimit = 10) {
     return prisma.post.findFirst({
       where: {
         post_uuid: uuid,
@@ -36,19 +63,18 @@ export class PostModel {
       },
       include: {
         other_post: {
+          take: commentLimit,
           where: {
             deleted: false
+          },
+          include: {
+            ...InteractCountInclude
+          },
+          orderBy: {
+            create_at: 'asc'
           }
         },
-        _count: {
-          select: {
-            interact: {
-              where: {
-                deleted: false
-              }
-            }
-          }
-        }
+        ...InteractCountInclude
       }
     });
   }
@@ -70,15 +96,7 @@ export class PostModel {
                 deleted: false
               }
             },
-            _count: {
-              select: {
-                interact: {
-                  where: {
-                    deleted: false
-                  }
-                }
-              }
-            }
+            ...InteractCountInclude
           }
         }
       }
@@ -182,9 +200,12 @@ export class PostModel {
     return result;
   }
 
-  static async create(data: Prisma.postCreateInput) {
+  static async create(userId: number, input: Prisma.postCreateInput) {
     return prisma.post.create({
-      data
+      data: {
+        content: input.content,
+        user_id: userId
+      }
     });
   }
 
@@ -195,9 +216,9 @@ export class PostModel {
     });
   }
 
-  static async delete(id: number) {
+  static async delete(userId: number, postId: number) {
     return prisma.post.update({
-      where: { id: id, parent_post_id: null },
+      where: { id: postId, user_id: userId, parent_post_id: null },
       data: { deleted: true }
     });
   }
