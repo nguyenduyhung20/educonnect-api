@@ -12,9 +12,9 @@ export const handleGetPostInteract = async (req: Request, res: Response, next: N
 };
 
 export const handleCreatePostInteract = async (req: Request, res: Response, next: NextFunction) => {
-  const { body: postFields } = req;
+  const { requestUser, requestPost, body: postFields } = req;
   try {
-    const users = await InteractModel.create(postFields);
+    const users = await InteractModel.create(postFields, requestUser.id, requestPost.id);
     res.status(200).json({ users });
   } catch (error) {
     next(error);

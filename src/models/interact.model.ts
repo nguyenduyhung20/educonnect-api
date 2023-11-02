@@ -23,10 +23,52 @@ export class InteractModel {
     });
   }
 
-  static async create(data: Prisma.interactCreateInput) {
-    return prisma.interact.create({
-      data
+  static async create(input: Pick<Prisma.interactCreateInput, 'type'>, userId: number, postId: number) {
+    const interact = await prisma.interact.findUnique({
+      where: {
+        user_id_post_id: {
+          user_id: userId,
+          post_id: postId
+        }
+      }
     });
+
+    if (!interact) {
+      return await prisma.interact.create({
+        data: {
+          type: input.type,
+          user_id: userId,
+          post_id: postId
+        }
+      });
+    }
+
+    if (interact?.deleted === true) {
+      return await prisma.interact.update({
+        where: {
+          user_id_post_id: {
+            user_id: userId,
+            post_id: postId
+          }
+        },
+        data: {
+          deleted: false,
+          type: input.type
+        }
+      });
+    } else {
+      return await prisma.interact.update({
+        where: {
+          user_id_post_id: {
+            user_id: userId,
+            post_id: postId
+          }
+        },
+        data: {
+          type: input.type
+        }
+      });
+    }
   }
 
   static async update(uid: number, pid: number, data: Prisma.interactUpdateInput) {
