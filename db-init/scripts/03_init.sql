@@ -1,3 +1,4 @@
+-- Active: 1698073287420@@127.0.0.1@5435@educonnect
 
 WITH new_user AS (
   INSERT INTO "user" (address, name, phone, birthday, email, ssn, sex, role)

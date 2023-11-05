@@ -1,3 +1,4 @@
+-- Active: 1698073287420@@127.0.0.1@5435@educonnect
 INSERT INTO
     "user" (address, name, phone, birthday, email, ssn, sex, role)
 VALUES
@@ -82,4 +83,4 @@ VALUES
 INSERT INTO
     interact ("type", user_id, post_id)
 VALUES
-    (CAST('love' as "interact_type"), 2, 1);
+    (CAST('love' as "interact_type"), 1, 2);

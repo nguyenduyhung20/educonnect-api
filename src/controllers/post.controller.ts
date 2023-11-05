@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { PostModel } from '../models/post.model';
+import { producer } from '../services/kafka-client';
 
 export const handleGetUserPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -24,6 +25,18 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
   const { requestUser, body: postFields } = req;
   try {
     const users = await PostModel.create(requestUser.id, postFields);
+    const messages = [
+      {
+        key: 'post',
+        value: JSON.stringify({
+          content: postFields.content,
+          user_id: requestUser.id,
+          post_uuid: users.post_uuid,
+          id: users.id,
+        })
+      }
+    ];
+    producer('post-topic', messages, 'kafka-producer-post');
     res.status(200).json({ users });
   } catch (error) {
     next(error);
