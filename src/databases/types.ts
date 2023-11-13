@@ -42,8 +42,9 @@ export type document = {
   document_uuid: Generated<string>;
 };
 export type follow = {
-  following: number;
-  followed: number;
+  follower_id: number;
+  followed_id: number;
+  follow_times: Generated<number>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;

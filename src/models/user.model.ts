@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
+import { AppError } from '../config/AppError';
 
 export class UserModel {
   static async getAll(limit = 20) {
@@ -49,6 +50,147 @@ export class UserModel {
     return prisma.user.update({
       where: { id: id },
       data: { deleted: true }
+    });
+  }
+
+  static async getFollowInfo(userId: number, limit = 20) {
+    const queryResult = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        _count: {
+          select: {
+            follow_follow_followed_idTouser: {
+              where: {
+                deleted: false
+              }
+            },
+            follow_follow_follower_idTouser: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        },
+        follow_follow_followed_idTouser: {
+          take: limit,
+          where: {
+            deleted: false
+          },
+          include: {
+            user_follow_follower_idTouser: {
+              select: {
+                name: true,
+                user_uuid: true,
+                account: {
+                  select: {
+                    avatar: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        follow_follow_follower_idTouser: {
+          take: limit,
+          where: {
+            deleted: false
+          },
+          include: {
+            user_follow_followed_idTouser: {
+              select: {
+                name: true,
+                user_uuid: true,
+                account: {
+                  select: {
+                    avatar: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (queryResult === null) {
+      return null;
+    }
+
+    const result = {
+      userFollowers: {
+        user: queryResult.follow_follow_followed_idTouser.map((follower) => ({
+          uuid: follower.user_follow_follower_idTouser.user_uuid,
+          name: follower.user_follow_follower_idTouser.name,
+          avatar: follower.user_follow_follower_idTouser.account?.avatar
+        })),
+        count: queryResult._count.follow_follow_followed_idTouser
+      },
+      userFolloweds: {
+        user: queryResult.follow_follow_follower_idTouser.map((following) => ({
+          uuid: following.user_follow_followed_idTouser.user_uuid,
+          name: following.user_follow_followed_idTouser.name,
+          avatar: following.user_follow_followed_idTouser.account?.avatar
+        })),
+        count: queryResult._count.follow_follow_follower_idTouser
+      }
+    };
+
+    return result;
+  }
+
+  static async followOther(userId: number, followedId: number) {
+    const followRecord = await prisma.follow.findFirst({
+      where: {
+        follower_id: userId,
+        followed_id: followedId
+      },
+      orderBy: {
+        follow_times: 'desc'
+      }
+    });
+
+    if (followRecord && followRecord.deleted === false) {
+      throw new AppError(400, 'BAD_REQUEST');
+    }
+
+    const followTimes = followRecord ? followRecord.follow_times + 1 : 1;
+
+    return prisma.follow.create({
+      data: {
+        follower_id: userId,
+        followed_id: followedId,
+        follow_times: followTimes
+      }
+    });
+  }
+
+  static async unfollowOther(userId: number, followedId: number) {
+    const followRecord = await prisma.follow.findFirst({
+      where: {
+        follower_id: userId,
+        followed_id: followedId
+      },
+      orderBy: {
+        follow_times: 'desc'
+      }
+    });
+    if (followRecord === null || followRecord.deleted === true) {
+      throw new AppError(404, 'BAD_REQUEST');
+    }
+
+    return prisma.follow.update({
+      where: {
+        followed_id_follower_id_follow_times: {
+          follower_id: userId,
+          followed_id: followedId,
+          follow_times: followRecord.follow_times
+        }
+      },
+      data: {
+        deleted: true
+      }
     });
   }
 }

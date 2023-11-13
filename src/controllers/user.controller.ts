@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
+import { SUCCESS_RESPONSE } from '../constants/success';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -34,6 +35,43 @@ export const handleDeleteUser = async (req: Request, res: Response, next: NextFu
   try {
     const user = await UserModel.delete(requestUser.id);
     res.status(200).json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET user/uuid/:userUuid/follow/info
+export const handleGetUserFollowInfo = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+
+  try {
+    const result = await UserModel.getFollowInfo(requestUser.id);
+    res.status(200).json({ result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST user/uuid/:userUuid/follow/following/uuid/:followedUuid
+export const handleFollowOtherUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser, requestFollowed } = req;
+
+  try {
+    await UserModel.followOther(requestUser.id, requestFollowed.id);
+    res.status(200).json(SUCCESS_RESPONSE);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// DELETE user/uuid/:userUuid/follow/following/uuid/:followedUuid
+export const handleUnfollowOtherUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser, requestFollowed } = req;
+
+  try {
+    await UserModel.unfollowOther(requestUser.id, requestFollowed.id);
+
+    res.status(200).json(SUCCESS_RESPONSE);
   } catch (error) {
     next(error);
   }

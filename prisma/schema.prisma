@@ -62,15 +62,16 @@ model document {
 }
 
 model follow {
-  following                   Int
-  followed                    Int
-  create_at                   DateTime @default(now()) @db.Timestamp(6)
-  update_at                   DateTime @default(now()) @db.Timestamp(6)
-  deleted                     Boolean  @default(false)
-  user_follow_followedTouser  user     @relation("follow_followedTouser", fields: [followed], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user_follow_followingTouser user     @relation("follow_followingTouser", fields: [following], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  follower_id                   Int
+  followed_id                   Int
+  follow_times                  Int      @default(1)
+  create_at                     DateTime @default(now()) @db.Timestamp(6)
+  update_at                     DateTime @default(now()) @db.Timestamp(6)
+  deleted                       Boolean  @default(false)
+  user_follow_followed_idTouser user     @relation("follow_followed_idTouser", fields: [followed_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_follow_follower_idTouser user     @relation("follow_follower_idTouser", fields: [follower_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([following, followed])
+  @@id([followed_id, follower_id, follow_times])
 }
 
 model group {
@@ -250,30 +251,30 @@ model transcript {
 }
 
 model user {
-  id                            Int            @id @default(autoincrement())
-  address                       String?        @db.VarChar
-  name                          String?        @db.VarChar
-  phone                         String?        @db.VarChar
-  birthday                      DateTime?      @db.Timestamp(6)
-  email                         String?        @db.VarChar
-  ssn                           String?        @unique @db.VarChar
-  sex                           user_sex?
-  create_at                     DateTime       @default(now()) @db.Timestamp(6)
-  update_at                     DateTime       @default(now()) @db.Timestamp(6)
-  deleted                       Boolean        @default(false)
-  user_uuid                     String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  role                          user_role
-  account                       account?
-  admin                         admin?
-  follow_follow_followedTouser  follow[]       @relation("follow_followedTouser")
-  follow_follow_followingTouser follow[]       @relation("follow_followingTouser")
-  interact                      interact[]
-  member                        member[]
-  notification                  notification[]
-  parent                        parent?
-  post                          post[]
-  student                       student?
-  teacher                       teacher?
+  id                              Int            @id @default(autoincrement())
+  address                         String?        @db.VarChar
+  name                            String?        @db.VarChar
+  phone                           String?        @db.VarChar
+  birthday                        DateTime?      @db.Timestamp(6)
+  email                           String?        @db.VarChar
+  ssn                             String?        @unique @db.VarChar
+  sex                             user_sex?
+  create_at                       DateTime       @default(now()) @db.Timestamp(6)
+  update_at                       DateTime       @default(now()) @db.Timestamp(6)
+  deleted                         Boolean        @default(false)
+  user_uuid                       String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  role                            user_role
+  account                         account?
+  admin                           admin?
+  follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
+  follow_follow_follower_idTouser follow[]       @relation("follow_follower_idTouser")
+  interact                        interact[]
+  member                          member[]
+  notification                    notification[]
+  parent                          parent?
+  post                            post[]
+  student                         student?
+  teacher                         teacher?
 }
 
 enum interact_type {
