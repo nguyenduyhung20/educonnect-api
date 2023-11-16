@@ -63,12 +63,12 @@ export type group_post = {
   group_id: number | null;
 };
 export type interact = {
+  user_id: number;
+  post_id: number;
   type: interact_type | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  user_id: number;
-  post_id: number;
 };
 export type learn = {
   class_id: number;
@@ -90,6 +90,7 @@ export type notification = {
   id: Generated<number>;
   user_id: number;
   message: string | null;
+  is_read: Generated<boolean>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;

@@ -5,8 +5,8 @@ generator client {
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  enumFileName = "enums.ts"
   fileName     = "types.ts"
+  enumFileName = "enums.ts"
 }
 
 datasource db {
@@ -94,12 +94,12 @@ model group_post {
 }
 
 model interact {
+  user_id   Int
+  post_id   Int
   type      interact_type?
   create_at DateTime       @default(now()) @db.Timestamp(6)
   update_at DateTime       @default(now()) @db.Timestamp(6)
   deleted   Boolean        @default(false)
-  user_id   Int
-  post_id   Int
   post      post           @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user      user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -136,6 +136,7 @@ model notification {
   id        Int      @id @default(autoincrement())
   user_id   Int
   message   String?  @db.VarChar
+  is_read   Boolean  @default(false)
   create_at DateTime @default(now()) @db.Timestamp(6)
   update_at DateTime @default(now()) @db.Timestamp(6)
   deleted   Boolean  @default(false)

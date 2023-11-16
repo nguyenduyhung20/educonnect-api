@@ -43,6 +43,11 @@ INSERT INTO
 VALUES
     (5, 1);
 
+INSERT INTO
+    public.notification (id, user_id, message)
+VALUES
+    (1, 1, 'Oh');
+
 WITH
     new_post AS (
         INSERT INTO

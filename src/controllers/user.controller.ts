@@ -76,3 +76,15 @@ export const handleUnfollowOtherUser = async (req: Request, res: Response, next:
     next(error);
   }
 };
+
+export const handleGetUserNotification = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+
+  try {
+    const notifications = await UserModel.getNotifications(requestUser.id);
+
+    res.status(200).json({ notifications });
+  } catch (error) {
+    next(error);
+  }
+};

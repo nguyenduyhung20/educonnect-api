@@ -193,4 +193,20 @@ export class UserModel {
       }
     });
   }
+
+  static async getNotifications(userId: number, limit = 10) {
+    return prisma.notification.findMany({
+      take: limit,
+      where: {
+        user_id: userId
+      },
+      orderBy: {
+        create_at: 'desc'
+      },
+      select: {
+        message: true,
+        create_at: true
+      }
+    });
+  }
 }
