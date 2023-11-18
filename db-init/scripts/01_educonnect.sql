@@ -69,12 +69,10 @@ CREATE TABLE
         "deleted" boolean DEFAULT False NOT NULL,
         "post_uuid" uuid DEFAULT uuid_generate_v4 () NOT NULL,
         "user_id" int NOT NULL,
-        "parent_post_id" int
+        "parent_post_id" int,
+        "group_id" int
     );
-
-CREATE TABLE
-    "group_post" ("id" int PRIMARY KEY, "group_id" int);
-
+    
 CREATE TABLE
     "interact" (
         "user_id" int,
@@ -240,9 +238,7 @@ ALTER TABLE "post" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE "post" ADD FOREIGN KEY ("parent_post_id") REFERENCES "post" ("id");
 
-ALTER TABLE "group_post" ADD FOREIGN KEY ("id") REFERENCES "post" ("id");
-
-ALTER TABLE "group_post" ADD FOREIGN KEY ("group_id") REFERENCES "group" ("id");
+ALTER TABLE "post" ADD FOREIGN KEY ("group_id") REFERENCES "group" ("id");
 
 ALTER TABLE "interact" ADD FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
