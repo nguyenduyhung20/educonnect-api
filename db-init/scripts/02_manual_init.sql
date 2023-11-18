@@ -44,9 +44,19 @@ VALUES
     (5, 1);
 
 INSERT INTO
-    public.notification (id, user_id, message)
+    "notification" (id, user_id, message)
 VALUES
     (1, 1, 'Oh');
+
+INSERT INTO
+    "group" (title)
+VALUES
+    ('Example group');
+
+INSERT INTO
+    "post" (content, user_id, parent_post_id, group_id)
+VALUES
+    ('Example group post', 2, null, 1);
 
 WITH
     new_post AS (

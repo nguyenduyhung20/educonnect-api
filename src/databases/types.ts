@@ -58,10 +58,6 @@ export type group = {
   deleted: Generated<boolean>;
   group_uuid: Generated<string>;
 };
-export type group_post = {
-  id: number;
-  group_id: number | null;
-};
 export type interact = {
   user_id: number;
   post_id: number;
@@ -117,6 +113,7 @@ export type post = {
   post_uuid: Generated<string>;
   user_id: number;
   parent_post_id: number | null;
+  group_id: number | null;
 };
 export type school = {
   id: Generated<number>;
@@ -186,7 +183,6 @@ export type DB = {
   document: document;
   follow: follow;
   group: group;
-  group_post: group_post;
   interact: interact;
   learn: learn;
   member: member;

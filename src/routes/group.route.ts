@@ -12,6 +12,7 @@ import {
   handleGetGroupMember,
   handleUpdateGroup
 } from '../controllers/group.controller';
+import { handleGetGroupPosts } from '../controllers/post.controller';
 
 export const groupRouter = express.Router();
 
@@ -19,6 +20,9 @@ groupRouter.post('/', [handleCreateGroup]);
 groupRouter.get('/:groupUuid', [verifyGroup, handleGetGroup]);
 groupRouter.patch('/:groupUuid', [verifyGroup, handleUpdateGroup]);
 groupRouter.delete('/:groupUuid', [verifyGroup, handleDeleteGroup]);
+
+// Post
+groupRouter.get('/:groupUuid/posts', [verifyGroup, handleGetGroupPosts]);
 
 // Member
 groupRouter.get('/:groupUuid/members', [verifyGroup, handleGetGroupMember]);

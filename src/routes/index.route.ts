@@ -9,6 +9,6 @@ const router = express.Router();
 router.use('/test', testRouter);
 router.use('/user', userRouter);
 router.use('/group', groupRouter);
-router.get('/post', postRouter);
+router.use('/post', postRouter);
 
 export default router;
