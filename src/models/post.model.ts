@@ -59,7 +59,7 @@ export const mapComment = (post: RawComment) => {
 export const mapPost = (post: RawPost) => {
   return {
     ...mapComment(post),
-    comment: post.other_post.map((comment: any) => mapComment(comment))
+    comments: post.other_post.map((comment: any) => mapComment(comment))
   };
 };
 
