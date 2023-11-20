@@ -1,3 +1,4 @@
 export const SUCCESS_RESPONSE = {
-  message: 'SUCCESS'
+  code: 'SUCCESS',
+  message: 'Your operation was successful'
 };

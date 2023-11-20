@@ -8,6 +8,7 @@ declare global {
       requestUser: UserRequest;
       requestPost: PostRequest;
       requestGroup: GroupRequest;
+      requestFollowed: UserRequest;
     }
   }
 }

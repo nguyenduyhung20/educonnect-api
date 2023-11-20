@@ -33,11 +33,7 @@ services:
             MONGO_INITDB_DATABASE: educonnect
 volumes:
     pgdata:
-        driver: local
-        driver_opts:
-            o: bind
-            type: none
-            device: ./pg-data
+
     mgdata:
         driver: local
         driver_opts:
