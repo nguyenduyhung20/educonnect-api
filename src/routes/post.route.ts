@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  handleCreateComment,
   handleCreatePost,
   handleDeletePost,
   handleGetPost,
@@ -16,6 +17,10 @@ userPostRouter.get('/', [handleGetUserPost]);
 userPostRouter.post('/', [handleCreatePost]);
 userPostRouter.patch('/:postUuid', [verifyPost, handleUpdatePost]);
 userPostRouter.delete('/:postUuid', [verifyPost, handleDeletePost]);
+
+// User have userUuid post comment to a post which have postUuid
+userPostRouter.post('/:postUuid/comment', [verifyPost, handleCreateComment]);
+
 userPostRouter.use('/:postUuid/interact', [verifyPost, interactRouter]);
 
 // Public post

@@ -225,4 +225,14 @@ export class PostModel {
       data: { deleted: true }
     });
   }
+
+  static async createComment(userId: number, parentPostId: number, input: Prisma.postCreateInput) {
+    return prisma.post.create({
+      data: {
+        content: input.content,
+        user_id: userId,
+        parent_post_id: parentPostId
+      }
+    });
+  }
 }

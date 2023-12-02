@@ -76,3 +76,13 @@ export const handleDeletePost = async (req: Request, res: Response, next: NextFu
     next(error);
   }
 };
+
+export const handleCreateComment = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser, requestPost, body: postFields } = req;
+  try {
+    const post = await PostModel.createComment(requestUser.id, requestPost.id, postFields);
+    res.status(200).json({ post });
+  } catch (error) {
+    next(error);
+  }
+};
