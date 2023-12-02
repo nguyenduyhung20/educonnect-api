@@ -1,4 +1,4 @@
-import { PostRequest, UserRequest } from '../../interfaces/middleware';
+import { PostRequest, UserRequest, GroupRequest } from '../../interfaces/middleware';
 
 export {};
 
@@ -7,6 +7,8 @@ declare global {
     export interface Request {
       requestUser: UserRequest;
       requestPost: PostRequest;
+      requestGroup: GroupRequest;
+      requestFollowed: UserRequest;
     }
   }
 }

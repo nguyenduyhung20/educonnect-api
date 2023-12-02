@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from '../config/AppError';
+import { AppError, CustomError } from '../config/AppError';
+import { errorTemplate } from '../utils/error.util';
+import { ErrorName } from '../constants/error';
 
 type ErrorResponse = {
-  code: number;
+  code: string;
   message: string;
   stack?: any;
 };
@@ -16,11 +18,14 @@ export const handleError = (err: any, req: Request, res: Response, next: NextFun
   if (err instanceof AppError) {
     // If the error is an instance of AppError, use its status and message
     res.status(err.statusCode);
-    errorResponse = { code: err.statusCode, message: err.message };
+    errorResponse = errorTemplate(err.message as ErrorName);
+  } else if (err instanceof CustomError) {
+    res.status(err.statusCode);
+    errorResponse = { code: CustomError.name, message: err.message };
   } else {
     // For other types of errors, default to 500 Internal Server Error
     res.status(500);
-    errorResponse = { code: err.statusCode, message: 'An unexpected error occurred' };
+    errorResponse = errorTemplate('INTERNAL_SERVER_ERROR');
   }
 
   // If we're in development mode, include the stack trace in the error response

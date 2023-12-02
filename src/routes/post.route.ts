@@ -9,11 +9,16 @@ import {
 import { verifyPost } from '../middleware/post.middleware';
 import { interactRouter } from './interact.route';
 
+// All the action user can do with their post
+export const userPostRouter = express.Router();
+
+userPostRouter.get('/', [handleGetUserPost]);
+userPostRouter.post('/', [handleCreatePost]);
+userPostRouter.patch('/:postUuid', [verifyPost, handleUpdatePost]);
+userPostRouter.delete('/:postUuid', [verifyPost, handleDeletePost]);
+userPostRouter.use('/:postUuid/interact', [verifyPost, interactRouter]);
+
+// Public post
 export const postRouter = express.Router();
 
-postRouter.get('/', [handleGetUserPost]);
-postRouter.get('/uuid/:postUuid', [verifyPost, handleGetPost]);
-postRouter.post('/', [handleCreatePost]);
-postRouter.patch('/uuid/:postUuid', [verifyPost, handleUpdatePost]);
-postRouter.delete('/uuid/:postUuid', [verifyPost, handleDeletePost]);
-postRouter.use('/uuid/:postUuid/interact', [verifyPost, interactRouter]);
+postRouter.get('/:postUuid', [verifyPost, handleGetPost]);
