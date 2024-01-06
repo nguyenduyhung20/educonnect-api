@@ -1,27 +1,27 @@
 INSERT INTO
-    "user" (address, name, phone, birthday, email, ssn, sex, role)
+    "user" (address, name, phone, birthday, email, ssn, sex)
 VALUES
-    ('hcm', 'hao', '0912967100', '2023-10-19 00:00:00', 'hao@gmail.com', '0123123123', 'male', 'admin');
+    ('hcm', 'hao', '0912967100', '2023-10-19 00:00:00', 'hao@gmail.com', '0123123123', 'male');
 
 INSERT INTO
-    "user" (address, name, phone, birthday, email, ssn, sex, role)
+    "user" (address, name, phone, birthday, email, ssn, sex)
 VALUES
-    ('hcm', 'hung', '0852222222', '2023-10-19 00:00:00', 'hung@gmail.com', '095202095746', 'male', 'user');
+    ('hcm', 'hung', '0852222222', '2023-10-19 00:00:00', 'hung@gmail.com', '095202095746', 'male');
 
 INSERT INTO
-    "user" (address, name, phone, birthday, email, ssn, sex, role)
+    "user" (address, name, phone, birthday, email, ssn, sex)
 VALUES
-    ('hcm', 'abczzz', '0852222222', '2023-10-19 00:00:00', 'abc@gmail.com', '0952254246', 'male', 'user');
+    ('hcm', 'abczzz', '0852222222', '2023-10-19 00:00:00', 'abc@gmail.com', '0952254246', 'male');
 
 INSERT INTO
-    "user" (address, name, phone, birthday, email, ssn, sex, role)
+    "user" (address, name, phone, birthday, email, ssn, sex)
 VALUES
-    ('hcm', 'test2', '0852222222', '2023-10-19 00:00:00', 'test2@gmail.com', '0562126746', 'male', 'user');
+    ('hcm', 'test2', '0852222222', '2023-10-19 00:00:00', 'test2@gmail.com', '0562126746', 'male');
 
 INSERT INTO
-    "user" (address, name, phone, birthday, email, ssn, sex, role)
+    "user" (address, name, phone, birthday, email, ssn, sex)
 VALUES
-    ('hcm', 'test3', '0852222222', '2023-10-19 00:00:00', 'test3@gmail.com', '05668495746', 'male', 'user');
+    ('hcm', 'test3', '0852222222', '2023-10-19 00:00:00', 'test3@gmail.com', '05668495746', 'male');
 
 INSERT INTO
     "follow" (follower_id, followed_id)

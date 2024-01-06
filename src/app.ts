@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 // custom middleware should go here
 
 // routes
-app.use(router);
+app.use('/api', router);
 
 app.use(handleError);
 

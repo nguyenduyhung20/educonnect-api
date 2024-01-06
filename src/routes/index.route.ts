@@ -6,9 +6,9 @@ import { postRouter } from './post.route';
 
 const router = express.Router();
 
-router.use('/test', testRouter);
-router.use('/user', userRouter);
-router.use('/group', groupRouter);
-router.use('/post', postRouter);
+router.use('/v1/test', testRouter);
+router.use('/v1/user', userRouter);
+router.use('/v1/group', groupRouter);
+router.use('/v1/post', postRouter);
 
 export default router;
