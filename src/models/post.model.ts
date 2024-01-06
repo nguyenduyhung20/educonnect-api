@@ -66,8 +66,7 @@ const mapComment = (post: RawComment) => {
     title: post.title,
     content: post.content,
     createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? undefined,
+    parentPostId: post.post?.id ?? undefined,
     interactCount: post._count.interact,
     commentCount: post._count.other_post
   };
@@ -140,7 +139,7 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedPost = mapPost(result);
+    const mappedPost = mapPostWithComment(result);
     return mappedPost;
   }
 
