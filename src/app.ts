@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from "cookie-parser";
 import router from './routes/index.route';
 import { handleError } from './middleware/error.middleware';
 
@@ -12,6 +13,9 @@ app.use(cors());
 // body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// cookie parser
+app.use(cookieParser());
 
 // custom middleware should go here
 
