@@ -83,11 +83,7 @@ export class UserModel {
               select: {
                 name: true,
                 user_uuid: true,
-                account: {
-                  select: {
-                    avatar: true
-                  }
-                }
+                avatar: true
               }
             }
           }
@@ -102,11 +98,7 @@ export class UserModel {
               select: {
                 name: true,
                 user_uuid: true,
-                account: {
-                  select: {
-                    avatar: true
-                  }
-                }
+                avatar: true
               }
             }
           }
@@ -123,7 +115,7 @@ export class UserModel {
         user: queryResult.follow_follow_followed_idTouser.map((follower) => ({
           uuid: follower.user_follow_follower_idTouser.user_uuid,
           name: follower.user_follow_follower_idTouser.name,
-          avatar: follower.user_follow_follower_idTouser.account?.avatar ?? null
+          avatar: follower.user_follow_follower_idTouser.avatar ?? null
         })),
         count: queryResult._count.follow_follow_followed_idTouser
       },
@@ -131,7 +123,7 @@ export class UserModel {
         user: queryResult.follow_follow_follower_idTouser.map((following) => ({
           uuid: following.user_follow_followed_idTouser.user_uuid,
           name: following.user_follow_followed_idTouser.name,
-          avatar: following.user_follow_followed_idTouser.account?.avatar ?? null
+          avatar: following.user_follow_followed_idTouser.avatar ?? null
         })),
         count: queryResult._count.follow_follow_follower_idTouser
       }
