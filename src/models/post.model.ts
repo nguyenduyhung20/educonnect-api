@@ -14,14 +14,17 @@ const InteractCountInclude = {
   }
 };
 
-const COMMENT_SELECT = {
+const COMMENT_SELECT: Prisma.postSelect = {
   id: true,
+  title: true,
   content: true,
   create_at: true,
   post_uuid: true,
   user: {
     select: {
-      id: true
+      id: true,
+      name: true,
+      avatar: true
     }
   },
   post: {
@@ -54,11 +57,12 @@ type RawPostWithComment = Prisma.postGetPayload<{
 const mapComment = (post: RawComment) => {
   const result = {
     id: post.id,
-    userId: post.user.id,
+    user: post.user,
+    title: post.title,
     content: post.content,
     createdAt: post.create_at,
     postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
+    parentPostUuid: post.post?.post_uuid ?? undefined,
     interactCount: post._count.interact
   };
   return result;
@@ -66,26 +70,14 @@ const mapComment = (post: RawComment) => {
 
 const mapPost = (post: RawPost) => {
   const result = {
-    id: post.id,
-    userId: post.user.id,
-    content: post.content,
-    createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact
+    ...mapComment(post)
   };
   return result;
 };
 
 const mapPostWithComment = (post: RawPostWithComment) => {
   const result = {
-    id: post.id,
-    userId: post.user.id,
-    content: post.content,
-    createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact,
+    ...mapComment(post),
     comment: post.other_post.map((comment: any) => mapComment(comment))
   };
   return result;
