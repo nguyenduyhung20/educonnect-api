@@ -11,7 +11,7 @@ export const handleGetUsers = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const handleGetUserByUuid = async (req: Request, res: Response, next: NextFunction) => {
+export const handleGetUserById = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser: user } = req;
   try {
     res.status(200).json({ user });
@@ -40,7 +40,7 @@ export const handleDeleteUser = async (req: Request, res: Response, next: NextFu
   }
 };
 
-// GET user/uuid/:userUuid/follow/info
+// GET user/:userId/follow/info
 export const handleGetUserFollowInfo = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
 
@@ -52,7 +52,7 @@ export const handleGetUserFollowInfo = async (req: Request, res: Response, next:
   }
 };
 
-// POST user/uuid/:userUuid/follow/following/uuid/:followedUuid
+// POST user/:userId/follow/following/:followedUuid
 export const handleFollowOtherUser = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser, requestFollowed } = req;
 
@@ -64,7 +64,7 @@ export const handleFollowOtherUser = async (req: Request, res: Response, next: N
   }
 };
 
-// DELETE user/uuid/:userUuid/follow/following/uuid/:followedUuid
+// DELETE user/:userId/follow/following/:followedUuid
 export const handleUnfollowOtherUser = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser, requestFollowed } = req;
 

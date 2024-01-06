@@ -20,7 +20,7 @@ app.use(cookieParser());
 // custom middleware should go here
 
 // routes
-app.use(router);
+app.use('/api', router);
 
 app.use(handleError);
 

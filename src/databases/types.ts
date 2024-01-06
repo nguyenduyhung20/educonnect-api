@@ -11,6 +11,7 @@ export type account = {
   username: string | null;
   password: string | null;
   avatar: string | null;
+  role: user_role;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -106,6 +107,7 @@ export type parent = {
 };
 export type post = {
   id: Generated<number>;
+  title: Generated<string>;
   content: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
@@ -174,7 +176,6 @@ export type user = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
   user_uuid: Generated<string>;
-  role: user_role;
 };
 export type DB = {
   account: account;
