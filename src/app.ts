@@ -18,6 +18,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // custom middleware should go here
+app.get('/',async (req, res) => {
+    res.send('BKU with love <3');    
+})
 
 // routes
 app.use('/api', router);

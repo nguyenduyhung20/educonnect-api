@@ -20,22 +20,30 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
     }
 
     // Create JWT token
-    const token = jwt.sign({ user_id: account.id, role: account.role }, process.env.KEY as string, { expiresIn: '1d' });
+    const token = jwt.sign(
+      {
+        user_id: account.id,
+        role: account.user.role
+      },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: '1d' }
+    );
 
     const data = {
-      user_id: account.id,
-      role: account.role,
-      token: token
+      id: account.id,
+      name: account.user.name,
+      role: account.user.role,
+      avatar: account.user.avatar
     };
 
     res
-      .cookie('token', token, {
+      .cookie('token', `Bearer ${token}`, {
         httpOnly: true,
         maxAge: 86400000 // 24 hour
         // secure: process.env.NODE_ENV === 'production',
       })
       .status(200)
-      .json({ data });
+      .json({ data, token });
   } catch (error) {
     next(error);
   }
@@ -43,7 +51,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
 
 // POST account/uuid/:userUuid/follow/following/uuid/:followedUuid
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
-  const { body } = req.body;
+  const { body } = req;
   try {
     await AuthModel.create(body);
     res.status(200).json(SUCCESS_RESPONSE);
@@ -53,8 +61,5 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
 };
 
 export const handleLogout = async (req: Request, res: Response, next: NextFunction) => {
-  res
-    .clearCookie("token")
-    .status(200)
-    .json({ data: 'Successfully logged out' });
+  res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
 };

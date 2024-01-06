@@ -8,30 +8,30 @@ export class AuthModel {
         username,
         deleted: false
       },
+      include: {
+        user: true
+      }
     });
   }
 
   static async create(data: RegisterType) {
     return await prisma.user.create({
       data: {
-        address: data.address, 
+        address: data.address,
         name: data.name,
-        phone: data.phone, 
-        birthday: data.birthday, 
-        email: data.email, 
+        phone: data.phone,
+        birthday: data.birthday,
+        email: data.email,
         ssn: data.ssn,
         sex: data.sex,
+        avatar: data.avatar,
+        role: 'user',
         account: {
-          create: [{ 
+          create: {
             username: data.username,
-            password: data.password,
-            avatar: data.avatar,
-            role: data.role
-          }]
+            password: data.password
+          }
         }
-      },
-      include: {
-        account: true // Include accounts in the response
       }
     });
   }

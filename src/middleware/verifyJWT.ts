@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
+  const cookie = req.cookies.token;
   const auth: string | string[] | undefined = 
     req.headers.authorization || req.headers.Authorization || req.cookies.token;
 

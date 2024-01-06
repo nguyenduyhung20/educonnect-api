@@ -9,7 +9,7 @@ import verifyJWT from '../middleware/verifyJWT';
 const router = express.Router();
 
 router.use('/v1/test', testRouter);
-router.use('/auth', authRouter);
+router.use('/v1/auth', authRouter);
 router.use(verifyJWT);
 router.use('/v1/user', userRouter);
 router.use('/v1/group', groupRouter);
