@@ -23,6 +23,15 @@ export class GroupModel {
     });
   }
 
+  static async getById(groupId: number) {
+    return prisma.group.findFirst({
+      where: {
+        id: groupId,
+        deleted: false
+      }
+    });
+  }
+
   static async create(input: Prisma.groupCreateInput) {
     return prisma.group.create({
       data: {
