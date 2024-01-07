@@ -89,7 +89,7 @@ export const handleGetUserNotification = async (req: Request, res: Response, nex
   }
 };
 
-export const handleGetNewfeed = async (req: Request, res: Response, next: NextFunction) => {
+export const handleGetNewsfeed = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
 
   try {

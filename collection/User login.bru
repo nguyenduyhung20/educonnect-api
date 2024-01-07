@@ -1,18 +1,18 @@
 meta {
-  name: User register Copy
+  name: User login
   type: http
   seq: 25
 }
 
 post {
-  url: {{server_url}}/auth/register
+  url: {{server_url}}/auth/login
   body: json
   auth: none
 }
 
 body:json {
   {
-      "username": "hungnd",
+      "username": "duyhung",
       "password": "duyhung"
   }
 }
