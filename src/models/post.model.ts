@@ -2,10 +2,15 @@ import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
 
-const InteractCountInclude = {
+const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
     select: {
       interact: {
+        where: {
+          deleted: false
+        }
+      },
+      other_post: {
         where: {
           deleted: false
         }
@@ -14,14 +19,17 @@ const InteractCountInclude = {
   }
 };
 
-const COMMENT_SELECT = {
+const COMMENT_SELECT: Prisma.postSelect = {
   id: true,
+  title: true,
   content: true,
   create_at: true,
   post_uuid: true,
   user: {
     select: {
-      id: true
+      id: true,
+      name: true,
+      avatar: true
     }
   },
   post: {
@@ -54,38 +62,27 @@ type RawPostWithComment = Prisma.postGetPayload<{
 const mapComment = (post: RawComment) => {
   const result = {
     id: post.id,
-    userId: post.user.id,
+    user: post.user,
+    title: post.title,
     content: post.content,
     createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact
+    parentPostId: post.post?.id ?? undefined,
+    interactCount: post._count.interact,
+    commentCount: post._count.other_post
   };
   return result;
 };
 
 const mapPost = (post: RawPost) => {
   const result = {
-    id: post.id,
-    userId: post.user.id,
-    content: post.content,
-    createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact
+    ...mapComment(post)
   };
   return result;
 };
 
 const mapPostWithComment = (post: RawPostWithComment) => {
   const result = {
-    id: post.id,
-    userId: post.user.id,
-    content: post.content,
-    createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact,
+    ...mapComment(post),
     comment: post.other_post.map((comment: any) => mapComment(comment))
   };
   return result;
@@ -119,7 +116,7 @@ export class PostModel {
   }
 
   static async getById(id: number, commentLimit = 10) {
-    return prisma.post.findFirst({
+    const result = await prisma.post.findFirst({
       where: {
         id: id,
         parent_post_id: null,
@@ -139,6 +136,11 @@ export class PostModel {
         }
       }
     });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedPost = mapPostWithComment(result);
+    return mappedPost;
   }
 
   static async getByUuid(uuid: string, commentLimit = 10) {

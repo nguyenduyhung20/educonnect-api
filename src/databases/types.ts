@@ -10,8 +10,6 @@ export type account = {
   id: number;
   username: string | null;
   password: string | null;
-  avatar: string | null;
-  role: user_role;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -167,15 +165,17 @@ export type user = {
   id: Generated<number>;
   address: string | null;
   name: string | null;
+  avatar: string | null;
+  role: user_role;
   phone: string | null;
   birthday: Timestamp | null;
   email: string | null;
   ssn: string | null;
   sex: user_sex | null;
+  user_uuid: Generated<string>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  user_uuid: Generated<string>;
 };
 export type DB = {
   account: account;
