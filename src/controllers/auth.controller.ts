@@ -14,17 +14,17 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
     const account = await AuthModel.login(username);
 
     if (!account) {
-      return res.status(401).json({ data: 'Username does not exists' });
+      return res.status(401).json({ message: 'Username does not exists' });
     }
 
     if (account.password !== password) {
-      return res.status(401).json({ data: 'Invalid username or password' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     // Create JWT token
     const token = jwt.sign(
       {
-        user_id: account.id,
+        userId: account.id,
         role: account.user.role
       },
       process.env.ACCESS_TOKEN_SECRET as string,
