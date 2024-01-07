@@ -1,0 +1,17 @@
+meta {
+  name: Update group
+  type: http
+  seq: 12
+}
+
+patch {
+  url: http://localhost:4001/group/811b6ce4-bc6c-48d7-a5d9-0633fbea72fb
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "title": "group updated"
+  }
+}

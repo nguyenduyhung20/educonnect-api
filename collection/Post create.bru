@@ -1,0 +1,17 @@
+meta {
+  name: Post create
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{server_url}}/user/1/post
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "content": "some text"
+  }
+}

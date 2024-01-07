@@ -1,0 +1,17 @@
+meta {
+  name: Delete group members
+  type: http
+  seq: 17
+}
+
+delete {
+  url: http://localhost:4001/group/a016dfb6-82dc-4b19-a05c-bfddea9a95f5/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userId": 1
+  }
+}

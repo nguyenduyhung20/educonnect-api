@@ -1,0 +1,17 @@
+meta {
+  name: Post interact to a post
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{server_url}}/user/1/post/1/interact
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "type": "like"
+  }
+}
