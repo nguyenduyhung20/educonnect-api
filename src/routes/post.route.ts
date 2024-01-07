@@ -15,15 +15,15 @@ export const userPostRouter = express.Router();
 
 userPostRouter.get('/', [handleGetUserPost]);
 userPostRouter.post('/', [handleCreatePost]);
-userPostRouter.patch('/:postUuid', [verifyPost, handleUpdatePost]);
-userPostRouter.delete('/:postUuid', [verifyPost, handleDeletePost]);
+userPostRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
+userPostRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 
-// User have userUuid post comment to a post which have postUuid
-userPostRouter.post('/:postUuid/comment', [verifyPost, handleCreateComment]);
+// User have userUuid post comment to a post which have postId
+userPostRouter.post('/:postId/comment', [verifyPost, handleCreateComment]);
 
-userPostRouter.use('/:postUuid/interact', [verifyPost, interactRouter]);
+userPostRouter.use('/:postId/interact', [verifyPost, interactRouter]);
 
 // Public post
 export const postRouter = express.Router();
 
-postRouter.get('/:postUuid', [verifyPost, handleGetPost]);
+postRouter.get('/:postId', [verifyPost, handleGetPost]);

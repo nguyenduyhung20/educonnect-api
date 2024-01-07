@@ -2,10 +2,15 @@ import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
 
-const InteractCountInclude = {
+const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
     select: {
       interact: {
+        where: {
+          deleted: false
+        }
+      },
+      other_post: {
         where: {
           deleted: false
         }
@@ -61,9 +66,9 @@ const mapComment = (post: RawComment) => {
     title: post.title,
     content: post.content,
     createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? undefined,
-    interactCount: post._count.interact
+    parentPostId: post.post?.id ?? undefined,
+    interactCount: post._count.interact,
+    commentCount: post._count.other_post
   };
   return result;
 };
@@ -111,7 +116,7 @@ export class PostModel {
   }
 
   static async getById(id: number, commentLimit = 10) {
-    return prisma.post.findFirst({
+    const result = await prisma.post.findFirst({
       where: {
         id: id,
         parent_post_id: null,
@@ -131,6 +136,11 @@ export class PostModel {
         }
       }
     });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedPost = mapPostWithComment(result);
+    return mappedPost;
   }
 
   static async getByUuid(uuid: string, commentLimit = 10) {

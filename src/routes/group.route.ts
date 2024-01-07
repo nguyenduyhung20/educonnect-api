@@ -17,15 +17,15 @@ import { handleGetGroupPosts } from '../controllers/post.controller';
 export const groupRouter = express.Router();
 
 groupRouter.post('/', [handleCreateGroup]);
-groupRouter.get('/:groupUuid', [verifyGroup, handleGetGroup]);
-groupRouter.patch('/:groupUuid', [verifyGroup, handleUpdateGroup]);
-groupRouter.delete('/:groupUuid', [verifyGroup, handleDeleteGroup]);
+groupRouter.get('/:groupId', [verifyGroup, handleGetGroup]);
+groupRouter.patch('/:groupId', [verifyGroup, handleUpdateGroup]);
+groupRouter.delete('/:groupId', [verifyGroup, handleDeleteGroup]);
 
 // Post
-groupRouter.get('/:groupUuid/posts', [verifyGroup, handleGetGroupPosts]);
+groupRouter.get('/:groupId/posts', [verifyGroup, handleGetGroupPosts]);
 
 // Member
-groupRouter.get('/:groupUuid/members', [verifyGroup, handleGetGroupMember]);
-groupRouter.post('/:groupUuid/members', [verifyGroup, handleAddGroupMember]);
-groupRouter.patch('/:groupUuid/members', [verifyGroup, handleUpdateGroupMember]);
-groupRouter.delete('/:groupUuid/members', [verifyGroup, handleDeleteGroupMember]);
+groupRouter.get('/:groupId/members', [verifyGroup, handleGetGroupMember]);
+groupRouter.post('/:groupId/members', [verifyGroup, handleAddGroupMember]);
+groupRouter.patch('/:groupId/members', [verifyGroup, handleUpdateGroupMember]);
+groupRouter.delete('/:groupId/members', [verifyGroup, handleDeleteGroupMember]);
