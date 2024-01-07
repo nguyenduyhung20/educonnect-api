@@ -5,7 +5,7 @@ import { SUCCESS_RESPONSE } from '../constants/success';
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await UserModel.getAll();
-    res.status(200).json({ users });
+    res.status(200).json({ data: users });
   } catch (error) {
     next(error);
   }
@@ -14,7 +14,7 @@ export const handleGetUsers = async (req: Request, res: Response, next: NextFunc
 export const handleGetUserById = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser: user } = req;
   try {
-    res.status(200).json({ user });
+    res.status(200).json({ data: user });
   } catch (error) {
     next(error);
   }
@@ -24,7 +24,7 @@ export const handleUpdateUser = async (req: Request, res: Response, next: NextFu
   const { requestUser, body: updateFields } = req;
   try {
     const user = await UserModel.update(requestUser.id, updateFields);
-    res.status(200).json({ user });
+    res.status(200).json({ data: user });
   } catch (error) {
     next(error);
   }
@@ -34,7 +34,7 @@ export const handleDeleteUser = async (req: Request, res: Response, next: NextFu
   const { requestUser } = req;
   try {
     const user = await UserModel.delete(requestUser.id);
-    res.status(200).json({ user });
+    res.status(200).json({ data: user });
   } catch (error) {
     next(error);
   }
@@ -46,7 +46,7 @@ export const handleGetUserFollowInfo = async (req: Request, res: Response, next:
 
   try {
     const result = await UserModel.getFollowInfo(requestUser.id);
-    res.status(200).json({ result });
+    res.status(200).json({ data: result });
   } catch (error) {
     next(error);
   }
@@ -83,7 +83,19 @@ export const handleGetUserNotification = async (req: Request, res: Response, nex
   try {
     const notifications = await UserModel.getNotifications(requestUser.id);
 
-    res.status(200).json({ notifications });
+    res.status(200).json({ data: notifications });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetNewsfeed = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+
+  try {
+    const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+
+    res.status(200).json({ data: posts });
   } catch (error) {
     next(error);
   }

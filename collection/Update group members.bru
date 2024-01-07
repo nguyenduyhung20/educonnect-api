@@ -1,0 +1,18 @@
+meta {
+  name: Update group members
+  type: http
+  seq: 16
+}
+
+patch {
+  url: {{server_url}}/group/1/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userId": 1,
+      "role": "admin"
+  }
+}

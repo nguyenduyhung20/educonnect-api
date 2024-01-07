@@ -47,6 +47,11 @@ VALUES
     );
 
 INSERT INTO
+    "account" (id, username, password)
+VALUES
+    (2, 'duyhung', 'duyhung');
+
+INSERT INTO
     "user" (
         address,
         name,
@@ -136,6 +141,11 @@ VALUES
     (5, 1);
 
 INSERT INTO
+    "follow" (follower_id, followed_id)
+VALUES
+    (2, 1);
+
+INSERT INTO
     "notification" (id, user_id, message)
 VALUES
     (1, 1, 'Oh');
@@ -152,9 +162,13 @@ VALUES
 
 WITH new_post AS (
     INSERT INTO
-        "post" (content, user_id)
+        "post" (content, user_id, create_at)
     VALUES
-        ('This is an example post.', 1) RETURNING id
+        (
+            'This is an example post.',
+            1,
+            '2023-01-01 00:00:01'
+        ) RETURNING id
 ) -- Generate comments related to the new post
 INSERT INTO
     "post" (content, user_id, parent_post_id)

@@ -10,9 +10,8 @@ const router = express.Router();
 
 router.use('/v1/test', testRouter);
 router.use('/v1/auth', authRouter);
-router.use(verifyJWT);
-router.use('/v1/user', userRouter);
-router.use('/v1/group', groupRouter);
-router.use('/v1/post', postRouter);
+router.use('/v1/user', [verifyJWT, userRouter]);
+router.use('/v1/group', [verifyJWT, groupRouter]);
+router.use('/v1/post', [verifyJWT, postRouter]);
 
 export default router;
