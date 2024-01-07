@@ -4,12 +4,12 @@ const verifyRole = (roles: string[], req: Request, res: Response, next: NextFunc
   const role: string = req.body.role || '';
   if (role)
     res.status(401).json({
-      result: 'unauthorization'
+      message: 'unauthorization'
     });
   else {
     if (!roles.includes(role))
       res.status(401).json({
-        result: 'unauthorization'
+        message: 'unauthorization'
       });
     else next();
   }

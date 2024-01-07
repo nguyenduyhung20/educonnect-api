@@ -14,6 +14,7 @@ import { followRouter } from './follow.route';
 export const userRouter = express.Router();
 
 userRouter.get('/all', [handleGetUsers]);
+userRouter.get('/info', [verifyUser, handleGetUserById]);
 userRouter.get('/:userId', [verifyUser, handleGetUserById]);
 userRouter.patch('/:userId', [verifyUser, handleUpdateUser]);
 userRouter.delete('/:userId', [verifyUser, handleDeleteUser]);

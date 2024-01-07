@@ -3,7 +3,7 @@ import { UserModel } from '../models/user.model';
 import { AppError } from '../config/AppError';
 
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { userId } = req.params;
+  const { userId } = req.body;
   const userIdNum = parseInt(userId, 10);
   try {
     const user = await UserModel.getById(userIdNum);
