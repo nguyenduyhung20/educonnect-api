@@ -14,6 +14,25 @@ export class GroupModel {
     });
   }
 
+  static async getMostMembers(take = 20) {
+    const groups = await prisma.group.findMany({
+      include: {
+        _count: {
+          select: {
+            member: true
+          }
+        }
+      },
+      orderBy: {
+        member: {
+          _count: 'desc'
+        }
+      },
+      take: take
+    });
+    return groups;
+  }
+
   static async getByUuid(groupUuid: string) {
     return prisma.group.findFirst({
       where: {

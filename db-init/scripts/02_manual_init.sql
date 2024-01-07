@@ -1,3 +1,4 @@
+-- Active: 1704521267223@@127.0.0.1@5435@educonnect
 INSERT INTO
     "user" (
         address,
@@ -154,6 +155,51 @@ INSERT INTO
     "group" (title)
 VALUES
     ('Example group');
+
+INSERT INTO
+    "group" (title)
+VALUES
+    ('Most famous group');
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (1, 2);
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (1, 1);
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (3, 1);
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (4, 1);
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (5, 1);
+
+INSERT INTO
+    "group" (title)
+VALUES
+    ('Second famous group');
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (4, 3);
+
+INSERT INTO
+    "member" (user_id, group_id)
+VALUES
+    (5, 3);
 
 INSERT INTO
     "post" (content, user_id, parent_post_id, group_id)

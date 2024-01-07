@@ -1,6 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import { GroupModel } from '../models/group.model';
 
+export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const post = await GroupModel.getMostMembers();
+    res.status(200).json({ data: post });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleCreateGroup = async (req: Request, res: Response, next: NextFunction) => {
   const createRequest = req.body;
   try {
