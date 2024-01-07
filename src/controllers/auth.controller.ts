@@ -60,7 +60,7 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
       if (Array.isArray(uploadedFiles)) {
         for (let file of uploadedFiles) {
           body.avatar = await uploadFile(file);
-        };
+        }
       } else {
         body.avatar = await uploadFile(uploadedFiles);
       }
