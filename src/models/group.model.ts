@@ -30,7 +30,17 @@ export class GroupModel {
       },
       take: take
     });
-    return groups;
+
+    const mappedGroups = groups.map((group) => {
+      return {
+        id: group.id,
+        title: group.title,
+        metaTitle: group.meta_title,
+        createAt: group.create_at,
+        memberCount: group._count.member
+      };
+    });
+    return mappedGroups;
   }
 
   static async getByUuid(groupUuid: string) {
