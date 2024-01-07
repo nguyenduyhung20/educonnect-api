@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
+import { PostModel } from './post.model';
 
 export class UserModel {
   static async getAll(limit = 20) {
@@ -132,6 +133,57 @@ export class UserModel {
     return result;
   }
 
+  static async getUserFolloweds(userId: number, limit = 10) {
+    const queryResult = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        _count: {
+          select: {
+            follow_follow_followed_idTouser: {
+              where: {
+                deleted: false
+              }
+            },
+            follow_follow_follower_idTouser: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        },
+
+        follow_follow_follower_idTouser: {
+          take: limit,
+          where: {
+            deleted: false
+          },
+          include: {
+            user_follow_followed_idTouser: {
+              select: {
+                id: true,
+                name: true,
+                user_uuid: true,
+                avatar: true
+              }
+            }
+          }
+        }
+      }
+    });
+    if (queryResult === null) {
+      return null;
+    }
+    const result = queryResult.follow_follow_follower_idTouser.map((following) => ({
+      id: following.user_follow_followed_idTouser.id,
+      name: following.user_follow_followed_idTouser.name,
+      avatar: following.user_follow_followed_idTouser.avatar ?? null
+    }));
+
+    return result;
+  }
+
   static async followOther(userId: number, followedId: number) {
     const followRecord = await prisma.follow.findFirst({
       where: {
@@ -200,5 +252,28 @@ export class UserModel {
         create_at: true
       }
     });
+  }
+
+  static async getFiendsLatestPosts(userId: number, take = 20) {
+    const userFolloweds = await UserModel.getUserFolloweds(userId);
+    if (!userFolloweds) {
+      return null;
+    }
+    const promises = userFolloweds.map((followed) => {
+      return PostModel.getUserPost(followed.id);
+    });
+
+    const result = await Promise.allSettled(promises);
+
+    const fulfilledPost = result
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => (result.status === 'fulfilled' ? result.value : []));
+
+    const posts = fulfilledPost
+      .flat()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, take);
+
+    return posts;
   }
 }

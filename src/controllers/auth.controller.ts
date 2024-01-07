@@ -51,7 +51,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-// POST account/uuid/:userUuid/follow/following/uuid/:followedUuid
+// POST account/
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
   let { body } = req;
@@ -66,12 +66,16 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
       }
     }
     await AuthModel.create(body);
-    res.status(200).json(SUCCESS_RESPONSE);
+    return res.status(200).json(SUCCESS_RESPONSE);
   } catch (error) {
     next(error);
   }
 };
 
 export const handleLogout = async (req: Request, res: Response, next: NextFunction) => {
-  res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
+  try {
+    return res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
+  } catch (error) {
+    next(error);
+  }
 };
