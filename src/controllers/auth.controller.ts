@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+import fileUpload, { UploadedFile } from 'express-fileupload';
 import { AuthModel } from '../models/auth.model';
+import { uploadFile } from '../utils/uploadFile';
 import { SUCCESS_RESPONSE } from '../constants/success';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -51,8 +53,18 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
 
 // POST account/uuid/:userUuid/follow/following/uuid/:followedUuid
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
-  const { body } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  let { body } = req;
   try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (let file of uploadedFiles) {
+          body.avatar = await uploadFile(file);
+        };
+      } else {
+        body.avatar = await uploadFile(uploadedFiles);
+      }
+    }
     await AuthModel.create(body);
     res.status(200).json(SUCCESS_RESPONSE);
   } catch (error) {
