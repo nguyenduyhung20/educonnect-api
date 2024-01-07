@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   handleDeleteUser,
+  handleGetNewfeed,
   handleGetUserById,
   handleGetUserNotification,
   handleGetUsers,
@@ -22,3 +23,5 @@ userRouter.get('/:userId/notifications', [verifyUser, handleGetUserNotification]
 userRouter.use('/:userId/post', [verifyUser, userPostRouter]);
 
 userRouter.use('/:userId/follow', [verifyUser, followRouter]);
+
+userRouter.get('/:userId/newfeed', [verifyUser, handleGetNewfeed]);

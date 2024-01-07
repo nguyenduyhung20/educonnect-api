@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import cookieParser from "cookie-parser";
+import cookieParser from 'cookie-parser';
 import router from './routes/index.route';
 import { handleError } from './middleware/error.middleware';
 
@@ -18,9 +18,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // custom middleware should go here
-app.get('/',async (req, res) => {
-    res.send('BKU with love <3');    
-})
+app.get('/', async (req, res) => {
+  res.send('BKU with love <3');
+});
 
 // routes
 app.use('/api', router);

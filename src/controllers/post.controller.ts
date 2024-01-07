@@ -8,7 +8,6 @@ export const handleGetUserPost = async (req: Request, res: Response, next: NextF
   try {
     if (detail === 'true') {
       const result = await PostModel.getUserPostWithComment(requestUser.id);
-
       return res.status(200).json({ data: result });
     } else {
       const result = await PostModel.getUserPost(requestUser.id);
