@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import fileUpload, { UploadedFile } from 'express-fileupload';
+import { UploadedFile } from 'express-fileupload';
 import { AuthModel } from '../models/auth.model';
 import { uploadFile } from '../utils/uploadFile';
 import { SUCCESS_RESPONSE } from '../constants/success';
@@ -11,20 +11,20 @@ dotenv.config();
 export const handleLogin = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   try {
-    const account = await AuthModel.login(username, password);
+    const account = await AuthModel.login(username);
 
     if (!account) {
-      return res.status(401).json({ data: 'Username does not exists' });
+      return res.status(401).json({ message: 'Username does not exists' });
     }
 
     if (account.password !== password) {
-      return res.status(401).json({ data: 'Invalid username or password' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     // Create JWT token
     const token = jwt.sign(
       {
-        user_id: account.id,
+        userId: account.id,
         role: account.user.role
       },
       process.env.ACCESS_TOKEN_SECRET as string,
@@ -54,11 +54,11 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
 // POST account/
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
-  let { body } = req;
+  const { body } = req;
   try {
     if (uploadedFiles) {
       if (Array.isArray(uploadedFiles)) {
-        for (let file of uploadedFiles) {
+        for (const file of uploadedFiles) {
           body.avatar = await uploadFile(file);
         }
       } else {
@@ -73,9 +73,5 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
 };
 
 export const handleLogout = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    return res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
-  } catch (error) {
-    next(error);
-  }
+  res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
 };

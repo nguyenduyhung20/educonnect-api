@@ -2,7 +2,7 @@ import prisma from '../databases/client';
 import { RegisterType } from '../interfaces/type';
 
 export class AuthModel {
-  static async login(username: string, password: string) {
+  static async login(username: string) {
     return prisma.account.findUnique({
       where: {
         username,
