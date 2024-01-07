@@ -12,7 +12,6 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
   const { username, password } = req.body;
   try {
     const account = await AuthModel.login(username, password);
-    const a = 1;
     if (!account) {
       return res.status(401).json({ data: 'Username does not exists' });
     }
