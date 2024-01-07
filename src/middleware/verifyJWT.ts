@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
-  const cookie = req.cookies.token;
+  // const cookie = req.cookies.token;
   const auth: string | string[] | undefined =
     req.headers.authorization || req.headers.Authorization || req.cookies.token;
 
@@ -20,7 +20,7 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
       if (err) {
         const error: string = err.toString();
         if (error.includes('expired')) {
-          res.status(402).json({
+          res.status(401).json({
             result: 'token expire'
           });
         } else {
