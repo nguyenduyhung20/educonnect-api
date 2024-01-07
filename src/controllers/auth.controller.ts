@@ -12,7 +12,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
   const { username, password } = req.body;
   try {
     const account = await AuthModel.login(username, password);
-
+    const a = 1;
     if (!account) {
       return res.status(401).json({ data: 'Username does not exists' });
     }
@@ -54,11 +54,11 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
 // POST account/
 export const handleRegister = async (req: Request, res: Response, next: NextFunction) => {
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
-  let { body } = req;
+  const { body } = req;
   try {
     if (uploadedFiles) {
       if (Array.isArray(uploadedFiles)) {
-        for (let file of uploadedFiles) {
+        for (const file of uploadedFiles) {
           body.avatar = await uploadFile(file);
         }
       } else {
