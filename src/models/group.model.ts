@@ -14,10 +14,48 @@ export class GroupModel {
     });
   }
 
+  static async getMostMembers(take = 20) {
+    const groups = await prisma.group.findMany({
+      include: {
+        _count: {
+          select: {
+            member: true
+          }
+        }
+      },
+      orderBy: {
+        member: {
+          _count: 'desc'
+        }
+      },
+      take: take
+    });
+
+    const mappedGroups = groups.map((group) => {
+      return {
+        id: group.id,
+        title: group.title,
+        metaTitle: group.meta_title,
+        createAt: group.create_at,
+        memberCount: group._count.member
+      };
+    });
+    return mappedGroups;
+  }
+
   static async getByUuid(groupUuid: string) {
     return prisma.group.findFirst({
       where: {
         group_uuid: groupUuid,
+        deleted: false
+      }
+    });
+  }
+
+  static async getById(groupId: number) {
+    return prisma.group.findFirst({
+      where: {
+        id: groupId,
         deleted: false
       }
     });

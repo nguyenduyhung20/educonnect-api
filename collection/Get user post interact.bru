@@ -1,0 +1,17 @@
+meta {
+  name: Get user post interact
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api_url}}/user/1/post/1/interact
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "type" : "like"
+  }
+}

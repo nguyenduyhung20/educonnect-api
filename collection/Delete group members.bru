@@ -1,0 +1,17 @@
+meta {
+  name: Delete group members
+  type: http
+  seq: 17
+}
+
+delete {
+  url: {{api_url}}/group/1/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userId": 1
+  }
+}

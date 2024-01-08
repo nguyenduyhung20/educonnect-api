@@ -1,0 +1,17 @@
+meta {
+  name: Create group
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{api_url}}/group
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+     "title": "group 1"
+  }
+}

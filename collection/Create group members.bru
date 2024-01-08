@@ -1,0 +1,18 @@
+meta {
+  name: Create group members
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{api_url}}/group/1/members
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userId": 1,
+      "role": "user"
+  }
+}

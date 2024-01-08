@@ -1,10 +1,16 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
+import { AppError } from '../config/AppError';
 
-const InteractCountInclude = {
+const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
     select: {
       interact: {
+        where: {
+          deleted: false
+        }
+      },
+      other_post: {
         where: {
           deleted: false
         }
@@ -13,14 +19,17 @@ const InteractCountInclude = {
   }
 };
 
-const COMMENT_SELECT = {
+const COMMENT_SELECT: Prisma.postSelect = {
   id: true,
+  title: true,
   content: true,
   create_at: true,
   post_uuid: true,
   user: {
     select: {
-      user_uuid: true
+      id: true,
+      name: true,
+      avatar: true
     }
   },
   post: {
@@ -43,24 +52,40 @@ type RawComment = Prisma.postGetPayload<{
 }>;
 
 type RawPost = Prisma.postGetPayload<{
+  select: typeof COMMENT_SELECT;
+}>;
+
+type RawPostWithComment = Prisma.postGetPayload<{
   select: typeof POST_WITH_COMMENT_SELECT;
 }>;
 
-export const mapComment = (post: RawComment) => {
-  return {
+const mapComment = (post: RawComment) => {
+  const result = {
+    id: post.id,
+    user: post.user,
+    title: post.title,
     content: post.content,
     createdAt: post.create_at,
-    postUuid: post.post_uuid,
-    parentPostUuid: post.post?.post_uuid ?? null,
-    interactCount: post._count.interact
+    parentPostId: post.post?.id ?? undefined,
+    interactCount: post._count.interact,
+    commentCount: post._count.other_post
   };
+  return result;
 };
 
-export const mapPost = (post: RawPost) => {
-  return {
-    ...mapComment(post),
-    comments: post.other_post.map((comment: any) => mapComment(comment))
+const mapPost = (post: RawPost) => {
+  const result = {
+    ...mapComment(post)
   };
+  return result;
+};
+
+const mapPostWithComment = (post: RawPostWithComment) => {
+  const result = {
+    ...mapComment(post),
+    comment: post.other_post.map((comment: any) => mapComment(comment))
+  };
+  return result;
 };
 
 export class PostModel {
@@ -91,7 +116,7 @@ export class PostModel {
   }
 
   static async getById(id: number, commentLimit = 10) {
-    return prisma.post.findFirst({
+    const result = await prisma.post.findFirst({
       where: {
         id: id,
         parent_post_id: null,
@@ -111,10 +136,15 @@ export class PostModel {
         }
       }
     });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedPost = mapPostWithComment(result);
+    return mappedPost;
   }
 
   static async getByUuid(uuid: string, commentLimit = 10) {
-    return prisma.post.findFirst({
+    const result = await prisma.post.findFirst({
       where: {
         post_uuid: uuid,
         parent_post_id: null,
@@ -134,9 +164,41 @@ export class PostModel {
         }
       }
     });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedPost = mapPost(result);
+    return mappedPost;
   }
 
-  static async getUserPost(userId: number, postLimit = 10, commentLimit = 10) {
+  static async getUserPost(userId: number, postLimit = 10) {
+    const result = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        post: {
+          take: postLimit,
+          where: {
+            parent_post_id: null,
+            group_id: null,
+            deleted: false
+          },
+          select: {
+            ...COMMENT_SELECT
+          }
+        }
+      }
+    });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedResult = result.post.map((post) => mapPost(post));
+
+    return mappedResult;
+  }
+
+  static async getUserPostWithComment(userId: number, postLimit = 10, commentLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -165,7 +227,11 @@ export class PostModel {
         }
       }
     });
-    return result;
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const mappedResult = result.post.map((post) => mapPostWithComment(post));
+    return mappedResult;
   }
 
   static async getGroupPosts(groupId: number, postLimit = 5, commentLimit = 5) {
@@ -200,12 +266,19 @@ export class PostModel {
         }
       }
     });
-    return queryResult;
+    if (!queryResult) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const mappedResult = queryResult.post.map((post) => mapPost(post));
+
+    return mappedResult;
   }
 
   static async create(userId: number, input: Prisma.postCreateInput) {
     return prisma.post.create({
       data: {
+        title: input.title,
         content: input.content,
         user_id: userId
       }
@@ -223,6 +296,16 @@ export class PostModel {
     return prisma.post.update({
       where: { id: postId, user_id: userId, parent_post_id: null },
       data: { deleted: true }
+    });
+  }
+
+  static async createComment(userId: number, parentPostId: number, input: Prisma.postCreateInput) {
+    return prisma.post.create({
+      data: {
+        content: input.content,
+        user_id: userId,
+        parent_post_id: parentPostId
+      }
     });
   }
 }

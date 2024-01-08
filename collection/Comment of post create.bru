@@ -1,0 +1,17 @@
+meta {
+  name: Comment of post create
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api_url}}/user/1/post/1/comment
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "content": "some text"
+  }
+}

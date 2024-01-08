@@ -1,0 +1,17 @@
+meta {
+  name: Update group
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{api_url}}/group/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "title": "group updated"
+  }
+}

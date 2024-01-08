@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
+import { PostModel } from './post.model';
 
 export class UserModel {
   static async getAll(limit = 20) {
@@ -83,11 +84,7 @@ export class UserModel {
               select: {
                 name: true,
                 user_uuid: true,
-                account: {
-                  select: {
-                    avatar: true
-                  }
-                }
+                avatar: true
               }
             }
           }
@@ -102,11 +99,7 @@ export class UserModel {
               select: {
                 name: true,
                 user_uuid: true,
-                account: {
-                  select: {
-                    avatar: true
-                  }
-                }
+                avatar: true
               }
             }
           }
@@ -123,7 +116,7 @@ export class UserModel {
         user: queryResult.follow_follow_followed_idTouser.map((follower) => ({
           uuid: follower.user_follow_follower_idTouser.user_uuid,
           name: follower.user_follow_follower_idTouser.name,
-          avatar: follower.user_follow_follower_idTouser.account?.avatar ?? null
+          avatar: follower.user_follow_follower_idTouser.avatar ?? null
         })),
         count: queryResult._count.follow_follow_followed_idTouser
       },
@@ -131,11 +124,62 @@ export class UserModel {
         user: queryResult.follow_follow_follower_idTouser.map((following) => ({
           uuid: following.user_follow_followed_idTouser.user_uuid,
           name: following.user_follow_followed_idTouser.name,
-          avatar: following.user_follow_followed_idTouser.account?.avatar ?? null
+          avatar: following.user_follow_followed_idTouser.avatar ?? null
         })),
         count: queryResult._count.follow_follow_follower_idTouser
       }
     };
+
+    return result;
+  }
+
+  static async getUserFolloweds(userId: number, limit = 10) {
+    const queryResult = await prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        _count: {
+          select: {
+            follow_follow_followed_idTouser: {
+              where: {
+                deleted: false
+              }
+            },
+            follow_follow_follower_idTouser: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        },
+
+        follow_follow_follower_idTouser: {
+          take: limit,
+          where: {
+            deleted: false
+          },
+          include: {
+            user_follow_followed_idTouser: {
+              select: {
+                id: true,
+                name: true,
+                user_uuid: true,
+                avatar: true
+              }
+            }
+          }
+        }
+      }
+    });
+    if (queryResult === null) {
+      return null;
+    }
+    const result = queryResult.follow_follow_follower_idTouser.map((following) => ({
+      id: following.user_follow_followed_idTouser.id,
+      name: following.user_follow_followed_idTouser.name,
+      avatar: following.user_follow_followed_idTouser.avatar ?? null
+    }));
 
     return result;
   }
@@ -208,5 +252,28 @@ export class UserModel {
         create_at: true
       }
     });
+  }
+
+  static async getFiendsLatestPosts(userId: number, take = 20) {
+    const userFolloweds = await UserModel.getUserFolloweds(userId);
+    if (!userFolloweds) {
+      return null;
+    }
+    const promises = userFolloweds.map((followed) => {
+      return PostModel.getUserPost(followed.id);
+    });
+
+    const result = await Promise.allSettled(promises);
+
+    const fulfilledPost = result
+      .filter((result) => result.status === 'fulfilled')
+      .map((result) => (result.status === 'fulfilled' ? result.value : []));
+
+    const posts = fulfilledPost
+      .flat()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, take);
+
+    return posts;
   }
 }

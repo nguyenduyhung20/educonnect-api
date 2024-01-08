@@ -1,7 +1,8 @@
 import express from 'express';
 import {
   handleDeleteUser,
-  handleGetUserByUuid,
+  handleGetNewsfeed,
+  handleGetUserById,
   handleGetUserNotification,
   handleGetUsers,
   handleUpdateUser
@@ -13,12 +14,15 @@ import { followRouter } from './follow.route';
 export const userRouter = express.Router();
 
 userRouter.get('/all', [handleGetUsers]);
-userRouter.get('/:userUuid', [verifyUser, handleGetUserByUuid]);
-userRouter.patch('/:userUuid', [verifyUser, handleUpdateUser]);
-userRouter.delete('/:userUuid', [verifyUser, handleDeleteUser]);
+userRouter.get('/info', [verifyUser, handleGetUserById]);
+userRouter.get('/:userId', [verifyUser, handleGetUserById]);
+userRouter.patch('/:userId', [verifyUser, handleUpdateUser]);
+userRouter.delete('/:userId', [verifyUser, handleDeleteUser]);
 
-userRouter.get('/:userUuid/notifications', [verifyUser, handleGetUserNotification]);
+userRouter.get('/:userId/notifications', [verifyUser, handleGetUserNotification]);
 
-userRouter.use('/:userUuid/post', [verifyUser, userPostRouter]);
+userRouter.use('/:userId/post', [verifyUser, userPostRouter]);
 
-userRouter.use('/:userUuid/follow', [verifyUser, followRouter]);
+userRouter.use('/:userId/follow', [verifyUser, followRouter]);
+
+userRouter.get('/:userId/newsfeed', [verifyUser, handleGetNewsfeed]);
