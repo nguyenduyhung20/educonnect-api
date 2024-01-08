@@ -275,6 +275,39 @@ export class PostModel {
     return mappedResult;
   }
 
+  static async getHotPosts(postLimit = 20, commentLimit = 5) {
+    const queryResult = await prisma.post.findMany({
+      take: postLimit,
+      orderBy: {
+        create_at: 'desc'
+      },
+      where: {
+        parent_post_id: null,
+        deleted: false
+      },
+      select: {
+        ...COMMENT_SELECT,
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          select: COMMENT_SELECT,
+          orderBy: {
+            create_at: 'desc'
+          }
+        }
+      }
+    });
+    if (!queryResult) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const mappedResult = queryResult.map((post) => mapPost(post));
+
+    return mappedResult;
+  }
+
   static async create(userId: number, input: Prisma.postCreateInput) {
     return prisma.post.create({
       data: {

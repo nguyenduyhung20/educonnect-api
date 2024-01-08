@@ -29,6 +29,16 @@ export const handleGetGroupPosts = async (req: Request, res: Response, next: Nex
   }
 };
 
+export const handleGetHotPost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await PostModel.getHotPosts();
+
+    return res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleGetPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestPost: post } = req;
   try {

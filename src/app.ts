@@ -26,6 +26,8 @@ app.get('/', async (req, res) => {
   res.send('BKU with love <3');
 });
 
+app.use('/public', express.static('public'));
+
 // routes
 app.use('/api', router);
 
