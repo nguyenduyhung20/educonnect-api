@@ -24,6 +24,11 @@ VALUES
     );
 
 INSERT INTO
+    "account" (id, username, password)
+VALUES
+    (1, 'hoanhao', 'hoanhao');
+
+INSERT INTO
     "user" (
         address,
         name,

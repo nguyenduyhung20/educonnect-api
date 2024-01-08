@@ -8,6 +8,6 @@ import { verifyFollowed } from '../middleware/follow.middleware';
 
 export const followRouter = express.Router();
 
-followRouter.get('/info', handleGetUserFollowInfo);
-followRouter.post('/following/:followedId', [verifyFollowed, handleFollowOtherUser]);
-followRouter.delete('/following/:followedId', [verifyFollowed, handleUnfollowOtherUser]);
+followRouter.get('/', handleGetUserFollowInfo);
+followRouter.post('/:followedId', [verifyFollowed, handleFollowOtherUser]);
+followRouter.delete('/:followedId', [verifyFollowed, handleUnfollowOtherUser]);

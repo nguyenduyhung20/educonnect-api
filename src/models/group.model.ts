@@ -73,7 +73,10 @@ export class GroupModel {
   static async update(id: number, data: Prisma.groupUpdateInput) {
     return prisma.group.update({
       where: { id: id },
-      data
+      data: {
+        title: data.title,
+        meta_title: data.meta_title
+      }
     });
   }
 
@@ -111,14 +114,15 @@ export class GroupModel {
   }
 
   static async addMember(groupId: number, userId: number, role: string) {
-    return prisma.member.create({
+    const member = await prisma.member.create({
       data: {
         user_id: userId,
         group_id: groupId,
-        role: role as member_role,
+        role: (role as member_role) ?? 'user',
         status: 'active'
       }
     });
+    return member;
   }
 
   static async updateMember(groupId: number, userId: number, data: Prisma.memberUpdateInput) {
