@@ -97,3 +97,13 @@ export const handleDeleteGroupMember = async (req: Request, res: Response, next:
     next(error);
   }
 };
+
+export const handleSearchGroup = async (req: Request, res: Response, next: NextFunction) => {
+  const { text } = req.query;
+  try {
+    const members = await GroupModel.searchGroup(text as string);
+    res.status(200).json({ data: members });
+  } catch (error) {
+    next(error);
+  }
+};

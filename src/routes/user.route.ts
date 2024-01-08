@@ -21,8 +21,8 @@ userRouter.delete('/:userId', [verifyUser, handleDeleteUser]);
 
 userRouter.get('/:userId/notifications', [verifyUser, handleGetUserNotification]);
 
+userRouter.get('/:userId/newsfeed', [verifyUser, handleGetNewsfeed]);
+
 userRouter.use('/:userId/post', [verifyUser, userPostRouter]);
 
 userRouter.use('/:userId/follow', [verifyUser, followRouter]);
-
-userRouter.get('/:userId/newsfeed', [verifyUser, handleGetNewsfeed]);

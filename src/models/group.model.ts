@@ -146,4 +146,34 @@ export class GroupModel {
       }
     });
   }
+
+  static async searchGroup(text: string, take = 10) {
+    const groups = await prisma.group.findMany({
+      where: {
+        title: {
+          search: text
+        },
+        deleted: false
+      },
+      orderBy: {
+        _relevance: {
+          fields: ['title'],
+          search: text,
+          sort: 'asc'
+        }
+      },
+      take: take
+    });
+
+    const mapGroups = groups.map((group) => {
+      return {
+        id: group.id,
+        title: group.title,
+        metaTitle: group.meta_title,
+        createAt: group.create_at
+      };
+    });
+
+    return mapGroups;
+  }
 }

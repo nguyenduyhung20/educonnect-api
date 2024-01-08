@@ -308,4 +308,32 @@ export class PostModel {
       }
     });
   }
+
+  static async searchPost(text: string, take = 10) {
+    const posts = await prisma.post.findMany({
+      where: {
+        title: {
+          search: text
+        },
+        content: {
+          search: text
+        },
+        parent_post_id: null,
+        deleted: false
+      },
+      select: COMMENT_SELECT,
+      orderBy: {
+        _relevance: {
+          fields: ['title', 'content'],
+          search: text,
+          sort: 'asc'
+        }
+      },
+      take: take
+    });
+
+    const mapPosts = posts.map((post) => mapPost(post));
+
+    return mapPosts;
+  }
 }
