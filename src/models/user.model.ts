@@ -276,4 +276,37 @@ export class UserModel {
 
     return posts;
   }
+
+  static async searchUser(name: string, take = 10) {
+    const users = await prisma.user.findMany({
+      where: {
+        deleted: false,
+        name: {
+          search: name
+        }
+      },
+      orderBy: {
+        _relevance: {
+          fields: ['name'],
+          search: name,
+          sort: 'asc'
+        }
+      },
+      take: take
+    });
+
+    const mapUsers = users.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+        email: user.email,
+        birthday: user.birthday,
+        sex: user.sex,
+        createAt: user.create_at
+      };
+    });
+
+    return mapUsers;
+  }
 }

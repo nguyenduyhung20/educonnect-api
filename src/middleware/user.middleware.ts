@@ -4,9 +4,8 @@ import { AppError } from '../config/AppError';
 
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.body;
-  const userIdNum = parseInt(userId, 10);
   try {
-    const user = await UserModel.getById(userIdNum);
+    const user = await UserModel.getById(parseInt(userId, 10));
     if (!user) {
       throw new AppError(404, 'NOT_FOUND');
     }
