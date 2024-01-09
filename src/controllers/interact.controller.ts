@@ -18,15 +18,15 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
     const users = await InteractModel.create(postFields, requestUser.id, requestPost.id);
     const messages = [
       {
-        key: 'interact',
+        key: 'notification',
         value: JSON.stringify({
           type: postFields.type,
-          user_id: requestUser.id,
-          post_id: users.post_id,
+          userId: requestUser.id,
+          receiver: postFields.receiver
         })
       }
     ];
-    producer('interact-topic', messages, 'kafka-producer-interact');
+    producer('notification-topic', messages, 'kafka-producer-notification');
     res.status(200).json({ data: users });
   } catch (error) {
     next(error);
