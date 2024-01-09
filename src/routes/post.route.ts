@@ -12,8 +12,10 @@ import { interactRouter } from './interact.route';
 
 export const postRouter = express.Router();
 
-postRouter.get('/', [handleGetUserPost]);
+postRouter.get('/user', [handleGetUserPost]);
+
 postRouter.post('/', [handleCreatePost]);
+postRouter.get('/:postId', [verifyPost, handleGetPost]);
 postRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
 postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 
@@ -21,5 +23,3 @@ postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 postRouter.post('/:postId/comment', [verifyPost, handleCreateComment]);
 
 postRouter.use('/:postId/interact', [verifyPost, interactRouter]);
-
-postRouter.get('/:postId', [verifyPost, handleGetPost]);
