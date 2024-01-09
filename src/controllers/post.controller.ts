@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PostModel } from '../models/post.model';
 import { AppError } from '../config/AppError';
+import prisma from '../databases/client';
 
 export const handleGetUserPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -40,9 +41,19 @@ export const handleGetHotPost = async (req: Request, res: Response, next: NextFu
 };
 
 export const handleGetPost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestPost: post } = req;
+  const { requestPost, requestUser } = req;
   try {
-    return res.status(200).json({ data: post });
+    const interact = await prisma.interact.findFirst({
+      where: {
+        user_id: requestUser.id,
+        post_id: requestPost.id
+      }
+    });
+    const data = {
+      ...requestPost,
+      interact: interact?.type ?? null
+    };
+    return res.status(200).json({ data: data });
   } catch (error) {
     next(error);
   }
