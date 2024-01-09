@@ -19,7 +19,7 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
       if (err) {
         const error: string = err.toString();
         if (error.includes('expired')) {
-          res.status(402).json({
+          res.status(401).json({
             message: 'token expire'
           });
         } else {

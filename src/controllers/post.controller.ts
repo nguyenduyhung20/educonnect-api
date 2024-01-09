@@ -93,3 +93,13 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+export const handleSearchPost = async (req: Request, res: Response, next: NextFunction) => {
+  const { text } = req.query;
+  try {
+    const posts = await PostModel.searchPost(text as string);
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};

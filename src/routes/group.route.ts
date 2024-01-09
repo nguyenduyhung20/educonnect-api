@@ -3,6 +3,7 @@ import { verifyGroup } from '../middleware/group.middleware';
 import {
   handleAddGroupMember,
   handleDeleteGroupMember,
+  handleGetGroupList,
   handleUpdateGroupMember
 } from '../controllers/group.controller';
 import {
@@ -16,6 +17,7 @@ import { handleGetGroupPosts } from '../controllers/post.controller';
 
 export const groupRouter = express.Router();
 
+groupRouter.get('/', [handleGetGroupList]);
 groupRouter.post('/', [handleCreateGroup]);
 groupRouter.get('/:groupId', [verifyGroup, handleGetGroup]);
 groupRouter.patch('/:groupId', [verifyGroup, handleUpdateGroup]);

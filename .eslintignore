@@ -2,3 +2,6 @@ dist
 coverage
 scripts
 db-init
+node_modules
+public
+build

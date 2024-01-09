@@ -1,3 +1,6 @@
 dist
 coverage
 tsconfig.json
+node_modules
+public
+build

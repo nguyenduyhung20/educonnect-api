@@ -100,3 +100,17 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+
+export const handleSearchUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { name } = req.query;
+
+  console.log('uhh');
+
+  try {
+    const users = await UserModel.searchUser(name as string);
+
+    res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};

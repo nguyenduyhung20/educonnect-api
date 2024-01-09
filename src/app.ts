@@ -4,6 +4,8 @@ import fileUpload from 'express-fileupload';
 import cookieParser from 'cookie-parser';
 import router from './routes/index.route';
 import { handleError } from './middleware/error.middleware';
+import { AppError } from './config/AppError';
+import { morganMiddleware } from './middleware/morgan.middleware';
 
 // express app
 const app = express();
@@ -21,9 +23,18 @@ app.use(express.urlencoded({ extended: false }));
 // cookie parser
 app.use(cookieParser());
 
+app.use(morganMiddleware);
+
 // custom middleware should go here
 app.get('/', async (req, res) => {
   res.send('BKU with love <3');
+});
+app.get('/error', async (req, res, next) => {
+  try {
+    throw new AppError(400, 'BAD_REQUEST');
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.use('/public', express.static('public'));
