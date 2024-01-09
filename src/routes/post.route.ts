@@ -12,7 +12,7 @@ import { interactRouter } from './interact.route';
 
 export const postRouter = express.Router();
 
-postRouter.get('/user', [handleGetUserPost]);
+postRouter.get('/', [handleGetUserPost]);
 
 postRouter.post('/', [handleCreatePost]);
 postRouter.get('/:postId', [verifyPost, handleGetPost]);
