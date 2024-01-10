@@ -35,6 +35,9 @@ const COMMENT_SELECT = {
   post: {
     where: {
       deleted: false
+    },
+    select: {
+      id: true
     }
   },
   ...InteractCountInclude
@@ -129,7 +132,28 @@ export class PostModel {
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: {
+            id: true,
+            title: true,
+            content: true,
+            create_at: true,
+            post_uuid: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            },
+            other_post: {
+              take: commentLimit,
+              where: {
+                deleted: false
+              },
+              select: COMMENT_SELECT
+            },
+            ...InteractCountInclude
+          },
           orderBy: {
             create_at: 'desc'
           }
@@ -139,7 +163,36 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedPost = mapPostWithComment(result);
+    const mappedPost = {
+      id: result.id,
+      user: result.user,
+      title: result.title,
+      content: result.content,
+      parentPostId: result.post?.id ?? undefined,
+      commentCount: result._count.other_post,
+      interactCount: result._count.interact,
+      createdAt: result.create_at,
+      comment: result.other_post.map((comment: any) => ({
+        id: comment.id,
+        user: comment.user,
+        title: comment.title,
+        content: comment.content,
+        parentPostId: comment.post?.id ?? undefined,
+        commentCount: comment._count.other_post,
+        interactCount: comment._count.interact,
+        createdAt: comment.create_at,
+        comment: comment.other_post.map((subComment: any) => ({
+          id: subComment.id,
+          user: subComment.user,
+          title: subComment.title,
+          content: subComment.content,
+          parentPostId: subComment.post?.id ?? undefined,
+          commentCount: subComment._count.other_post,
+          interactCount: subComment._count.interact,
+          createdAt: subComment.create_at
+        }))
+      }))
+    };
     return mappedPost;
   }
 
