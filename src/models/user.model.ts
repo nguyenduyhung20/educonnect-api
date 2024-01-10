@@ -260,7 +260,7 @@ export class UserModel {
       return null;
     }
     const promises = userFolloweds.map((followed) => {
-      return PostModel.getUserPost(followed.id);
+      return PostModel.getUserPost(followed.id, userId);
     });
 
     const result = await Promise.allSettled(promises);

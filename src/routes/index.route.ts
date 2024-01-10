@@ -16,7 +16,7 @@ router.use('/v1/auth', authRouter);
 router.use('/v1/search', searchRouter);
 router.use('/v1/public', publicRouter);
 router.use('/v1/user', [verifyJWT, userRouter]);
-router.use('/v1/group', [verifyJWT, groupRouter]);
+router.use('/v1/group', [verifyJWT, verifyUser, groupRouter]);
 router.use('/v1/post', [verifyJWT, verifyUser, postRouter]);
 
 export default router;

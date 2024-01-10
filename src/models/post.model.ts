@@ -19,7 +19,7 @@ const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   }
 };
 
-const COMMENT_SELECT: Prisma.postSelect = {
+const COMMENT_SELECT = {
   id: true,
   title: true,
   content: true,
@@ -65,10 +65,10 @@ const mapComment = (post: RawComment) => {
     user: post.user,
     title: post.title,
     content: post.content,
-    createdAt: post.create_at,
     parentPostId: post.post?.id ?? undefined,
+    commentCount: post._count.other_post,
     interactCount: post._count.interact,
-    commentCount: post._count.other_post
+    createdAt: post.create_at
   };
   return result;
 };
@@ -171,7 +171,7 @@ export class PostModel {
     return mappedPost;
   }
 
-  static async getUserPost(userId: number, postLimit = 10) {
+  static async getUserPost(userId: number, userIdRequesting: number, postLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -185,7 +185,16 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT
+            ...COMMENT_SELECT,
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
           }
         }
       }
@@ -193,12 +202,26 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedResult = result.post.map((post) => mapPost(post));
+
+    const mappedResult = result.post.map((post) => {
+      const result = {
+        id: post.id,
+        user: post.user,
+        title: post.title,
+        content: post.content,
+        parentPostId: post.post?.id ?? undefined,
+        commentCount: post._count.other_post,
+        interactCount: post._count.interact,
+        createdAt: post.create_at,
+        userInteract: post.interact[0]?.type ?? null
+      };
+      return result;
+    });
 
     return mappedResult;
   }
 
-  static async getUserPostWithComment(userId: number, postLimit = 10, commentLimit = 10) {
+  static async getUserPostWithComment(userId: number, userIdRequesting: number, postLimit = 10, commentLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -222,6 +245,15 @@ export class PostModel {
               orderBy: {
                 create_at: 'desc'
               }
+            },
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
             }
           }
         }
@@ -230,11 +262,17 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedResult = result.post.map((post) => mapPostWithComment(post));
+    const mappedResult = result.post.map((post) => {
+      const result = {
+        ...mapPostWithComment(post),
+        userInteract: post.interact[0]?.type ?? null
+      };
+      return result;
+    });
     return mappedResult;
   }
 
-  static async getGroupPosts(groupId: number, postLimit = 5, commentLimit = 5) {
+  static async getGroupPosts(groupId: number, userIdRequesting: number, postLimit = 5, commentLimit = 5) {
     const queryResult = await prisma.group.findUnique({
       where: {
         id: groupId
@@ -261,6 +299,15 @@ export class PostModel {
               orderBy: {
                 create_at: 'desc'
               }
+            },
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
             }
           }
         }
@@ -270,7 +317,10 @@ export class PostModel {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = queryResult.post.map((post) => mapPost(post));
+    const mappedResult = queryResult.post.map((post) => {
+      const result = { ...mapPost(post), userInteract: post.interact[0]?.type ?? null };
+      return result;
+    });
 
     return mappedResult;
   }

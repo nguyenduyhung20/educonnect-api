@@ -8,10 +8,10 @@ export const handleGetUserPost = async (req: Request, res: Response, next: NextF
   const { detail } = req.query;
   try {
     if (detail === 'true') {
-      const result = await PostModel.getUserPostWithComment(requestUser.id);
+      const result = await PostModel.getUserPostWithComment(requestUser.id, requestUser.id);
       return res.status(200).json({ data: result });
     } else {
-      const result = await PostModel.getUserPost(requestUser.id);
+      const result = await PostModel.getUserPost(requestUser.id, requestUser.id);
       return res.status(200).json({ data: result });
     }
   } catch (error) {
@@ -20,9 +20,9 @@ export const handleGetUserPost = async (req: Request, res: Response, next: NextF
 };
 
 export const handleGetGroupPosts = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestGroup } = req;
+  const { requestUser, requestGroup } = req;
   try {
-    const result = await PostModel.getGroupPosts(requestGroup.id);
+    const result = await PostModel.getGroupPosts(requestGroup.id, requestUser.id);
 
     return res.status(200).json({ data: result });
   } catch (error) {
@@ -51,7 +51,7 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
     });
     const data = {
       ...requestPost,
-      interact: interact?.type ?? null
+      userInteract: interact?.type ?? null
     };
     return res.status(200).json({ data: data });
   } catch (error) {
