@@ -43,7 +43,7 @@ export class InteractModel {
       });
     }
 
-    if (interact?.deleted === true) {
+    if (interact.type == input.type) {
       return await prisma.interact.update({
         where: {
           user_id_post_id: {
@@ -52,8 +52,7 @@ export class InteractModel {
           }
         },
         data: {
-          deleted: false,
-          type: input.type
+          deleted: !interact.deleted
         }
       });
     } else {
