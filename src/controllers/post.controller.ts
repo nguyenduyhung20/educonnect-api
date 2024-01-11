@@ -3,6 +3,16 @@ import { PostModel } from '../models/post.model';
 import { AppError } from '../config/AppError';
 import prisma from '../databases/client';
 
+export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  try {
+    const result = await PostModel.getHotPostByUserID(requestUser.id);
+    return res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleGetUserPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
   const { detail } = req.query;
@@ -51,7 +61,7 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
     });
     const data = {
       ...requestPost,
-      userInteract: interact?.type ?? null
+      userInteract: !interact?.deleted ? interact?.type : null
     };
     return res.status(200).json({ data: data });
   } catch (error) {

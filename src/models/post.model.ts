@@ -419,4 +419,46 @@ export class PostModel {
 
     return mapPosts;
   }
+
+  static async getHotPostByUserID(userId: number, postLimit: number = 20, commentLimit: number = 5) {
+    const queryResult = await prisma.post.findMany({
+      take: postLimit,
+      orderBy: { create_at: 'desc' },
+      where: {
+        parent_post_id: null,
+        deleted: false
+      },
+      select: {
+        ...COMMENT_SELECT,
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          select: COMMENT_SELECT,
+          orderBy: {
+            create_at: 'desc'
+          }
+        },
+        interact: {
+          where: {
+            user_id: userId,
+            deleted: false
+          },
+          select: {
+            type: true
+          }
+        }
+      }
+    });
+    if (!queryResult) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const mappedResult = queryResult.map((post) => {
+      return { ...mapPost(post), userInteract: post.interact[0]?.type ?? null };
+    });
+
+    return mappedResult;
+  }
 }
