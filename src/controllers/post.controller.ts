@@ -2,16 +2,25 @@ import { NextFunction, Request, Response } from 'express';
 import { PostModel } from '../models/post.model';
 import { AppError } from '../config/AppError';
 import prisma from '../databases/client';
+import { PostService } from '../services/post.service';
 
 export const handleGetUserPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
   const { detail } = req.query;
   try {
     if (detail === 'true') {
-      const result = await PostModel.getUserPostWithComment(requestUser.id, requestUser.id);
+      const result = await PostService.getUserPosts({
+        userId: requestUser.id,
+        userIdRequesting: requestUser.id,
+        detail: true
+      });
       return res.status(200).json({ data: result });
     } else {
-      const result = await PostModel.getUserPost(requestUser.id, requestUser.id);
+      const result = await PostService.getUserPosts({
+        userId: requestUser.id,
+        userIdRequesting: requestUser.id,
+        detail: false
+      });
       return res.status(200).json({ data: result });
     }
   } catch (error) {
@@ -22,7 +31,7 @@ export const handleGetUserPost = async (req: Request, res: Response, next: NextF
 export const handleGetGroupPosts = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser, requestGroup } = req;
   try {
-    const result = await PostModel.getGroupPosts(requestGroup.id, requestUser.id);
+    const result = await PostService.getGroupPosts({ groupId: requestGroup.id, userIdRequesting: requestUser.id });
 
     return res.status(200).json({ data: result });
   } catch (error) {
