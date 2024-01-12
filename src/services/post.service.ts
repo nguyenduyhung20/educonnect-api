@@ -13,6 +13,7 @@ export class PostService {
       interactCount: post._count.interact,
       userInteract: post.interact[0]?.type ?? null,
       createdAt: post.create_at,
+      fileContent: post.file_content,
       comment: post.other_post.map((comment) => ({
         id: comment.id,
         user: comment.user,
@@ -61,7 +62,8 @@ export class PostService {
           commentCount: post._count.other_post,
           interactCount: post._count.interact,
           userInteract: post.interact[0]?.type ?? null,
-          createdAt: post.create_at
+          createdAt: post.create_at,
+          fileContent: post.file_content
         };
         return mappedPost;
       });
@@ -80,6 +82,7 @@ export class PostService {
           interactCount: post._count.interact,
           userInteract: post.interact[0]?.type ?? null,
           createdAt: post.create_at,
+          fileContent: post.file_content,
           comment: post.other_post.map((comment) => ({
             id: comment.id,
             user: comment.user,
@@ -122,6 +125,7 @@ export class PostService {
         interactCount: post._count.interact,
         userInteract: post.interact[0]?.type ?? null,
         createdAt: post.create_at,
+        fileContent: post.file_content,
         comment: post.other_post.map((comment) => ({
           id: comment.id,
           user: comment.user,
