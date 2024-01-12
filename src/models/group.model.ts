@@ -14,9 +14,26 @@ export class GroupModel {
     });
   }
 
-  static async getMostMembers(take = 20) {
+  static async getMostMembers(take = 10) {
     const groups = await prisma.group.findMany({
       include: {
+        member: {
+          take: 4,
+          select: {
+            role: true,
+            status: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true
+              }
+            }
+          },
+          where: {
+            deleted: false
+          }
+        },
         _count: {
           select: {
             member: true
@@ -35,9 +52,11 @@ export class GroupModel {
       return {
         id: group.id,
         title: group.title,
+        avatar: group.avatar,
         metaTitle: group.meta_title,
         createAt: group.create_at,
-        memberCount: group._count.member
+        memberCount: group._count.member,
+        members: group.member
       };
     });
     return mappedGroups;
