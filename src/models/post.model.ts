@@ -35,15 +35,24 @@ const COMMENT_SELECT = {
   post: {
     where: {
       deleted: false
+    },
+    select: {
+      id: true
     }
   },
-  ...InteractCountInclude
-};
-
-const POST_WITH_COMMENT_SELECT = {
-  ...COMMENT_SELECT,
-  other_post: {
-    select: COMMENT_SELECT
+  _count: {
+    select: {
+      interact: {
+        where: {
+          deleted: false
+        }
+      },
+      other_post: {
+        where: {
+          deleted: false
+        }
+      }
+    }
   }
 };
 
@@ -53,10 +62,6 @@ type RawComment = Prisma.postGetPayload<{
 
 type RawPost = Prisma.postGetPayload<{
   select: typeof COMMENT_SELECT;
-}>;
-
-type RawPostWithComment = Prisma.postGetPayload<{
-  select: typeof POST_WITH_COMMENT_SELECT;
 }>;
 
 const mapComment = (post: RawComment) => {
@@ -76,14 +81,6 @@ const mapComment = (post: RawComment) => {
 const mapPost = (post: RawPost) => {
   const result = {
     ...mapComment(post)
-  };
-  return result;
-};
-
-const mapPostWithComment = (post: RawPostWithComment) => {
-  const result = {
-    ...mapComment(post),
-    comment: post.other_post.map((comment: any) => mapComment(comment))
   };
   return result;
 };
@@ -115,7 +112,7 @@ export class PostModel {
     });
   }
 
-  static async getById(id: number, commentLimit = 10) {
+  static async getById(id: number, userIdRequesting: number, commentLimit = 10) {
     const result = await prisma.post.findFirst({
       where: {
         id: id,
@@ -129,37 +126,47 @@ export class PostModel {
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: {
+            ...COMMENT_SELECT,
+            other_post: {
+              take: commentLimit,
+              where: {
+                deleted: false
+              },
+              select: {
+                ...COMMENT_SELECT,
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          },
           orderBy: {
             create_at: 'desc'
           }
-        }
-      }
-    });
-    if (!result) {
-      throw new AppError(404, 'NOT_FOUND');
-    }
-    const mappedPost = mapPostWithComment(result);
-    return mappedPost;
-  }
-
-  static async getByUuid(uuid: string, commentLimit = 10) {
-    const result = await prisma.post.findFirst({
-      where: {
-        post_uuid: uuid,
-        parent_post_id: null,
-        deleted: false
-      },
-      select: {
-        ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
+        },
+        interact: {
           where: {
+            user_id: userIdRequesting,
             deleted: false
           },
-          select: COMMENT_SELECT,
-          orderBy: {
-            create_at: 'desc'
+          select: {
+            type: true
           }
         }
       }
@@ -167,11 +174,11 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedPost = mapPost(result);
-    return mappedPost;
+
+    return result;
   }
 
-  static async getUserPost(userId: number, userIdRequesting: number, postLimit = 10) {
+  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -203,25 +210,10 @@ export class PostModel {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = result.post.map((post) => {
-      const result = {
-        id: post.id,
-        user: post.user,
-        title: post.title,
-        content: post.content,
-        parentPostId: post.post?.id ?? undefined,
-        commentCount: post._count.other_post,
-        interactCount: post._count.interact,
-        createdAt: post.create_at,
-        userInteract: post.interact[0]?.type ?? null
-      };
-      return result;
-    });
-
-    return mappedResult;
+    return result;
   }
 
-  static async getUserPostWithComment(userId: number, userIdRequesting: number, postLimit = 10, commentLimit = 10) {
+  static async getPostWithCommentByUserId(userId: number, userIdRequesting: number, postLimit = 10, commentLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -241,7 +233,38 @@ export class PostModel {
               where: {
                 deleted: false
               },
-              select: COMMENT_SELECT,
+              select: {
+                ...COMMENT_SELECT,
+                other_post: {
+                  take: commentLimit,
+                  where: {
+                    deleted: false
+                  },
+                  select: {
+                    ...COMMENT_SELECT,
+                    interact: {
+                      where: {
+                        user_id: userIdRequesting,
+                        deleted: false
+                      },
+                      select: {
+                        type: true
+                      }
+                    },
+                    ...InteractCountInclude
+                  }
+                },
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                },
+                ...InteractCountInclude
+              },
               orderBy: {
                 create_at: 'desc'
               }
@@ -254,7 +277,8 @@ export class PostModel {
               select: {
                 type: true
               }
-            }
+            },
+            ...InteractCountInclude
           }
         }
       }
@@ -262,17 +286,11 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-    const mappedResult = result.post.map((post) => {
-      const result = {
-        ...mapPostWithComment(post),
-        userInteract: post.interact[0]?.type ?? null
-      };
-      return result;
-    });
-    return mappedResult;
+
+    return result;
   }
 
-  static async getGroupPosts(groupId: number, userIdRequesting: number, postLimit = 5, commentLimit = 5) {
+  static async getPostsByGroupId(groupId: number, userIdRequesting: number, postLimit = 5, commentLimit = 5) {
     const queryResult = await prisma.group.findUnique({
       where: {
         id: groupId
@@ -295,7 +313,38 @@ export class PostModel {
               where: {
                 deleted: false
               },
-              select: COMMENT_SELECT,
+              select: {
+                ...COMMENT_SELECT,
+                other_post: {
+                  take: commentLimit,
+                  where: {
+                    deleted: false
+                  },
+                  select: {
+                    ...COMMENT_SELECT,
+                    interact: {
+                      where: {
+                        user_id: userIdRequesting,
+                        deleted: false
+                      },
+                      select: {
+                        type: true
+                      }
+                    },
+                    ...InteractCountInclude
+                  }
+                },
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                },
+                ...InteractCountInclude
+              },
               orderBy: {
                 create_at: 'desc'
               }
@@ -308,7 +357,8 @@ export class PostModel {
               select: {
                 type: true
               }
-            }
+            },
+            ...InteractCountInclude
           }
         }
       }
@@ -317,12 +367,7 @@ export class PostModel {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = queryResult.post.map((post) => {
-      const result = { ...mapPost(post), userInteract: post.interact[0]?.type ?? null };
-      return result;
-    });
-
-    return mappedResult;
+    return queryResult;
   }
 
   static async getHotPosts(postLimit = 20, commentLimit = 5) {

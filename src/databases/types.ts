@@ -50,6 +50,8 @@ export type follow = {
 };
 export type group = {
   id: Generated<number>;
+  avatar: string | null;
+  background: string | null;
   title: string | null;
   meta_title: string | null;
   create_at: Generated<Timestamp>;
@@ -107,6 +109,7 @@ export type post = {
   id: Generated<number>;
   title: Generated<string>;
   content: string | null;
+  file_content: string[];
   post_uuid: Generated<string>;
   user_id: number;
   parent_post_id: number | null;
@@ -166,6 +169,7 @@ export type user = {
   address: string | null;
   name: string | null;
   avatar: string | null;
+  background: string | null;
   role: user_role;
   phone: string | null;
   birthday: Timestamp | null;

@@ -6,8 +6,8 @@ generator client {
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  fileName     = "types.ts"
   enumFileName = "enums.ts"
+  fileName     = "types.ts"
 }
 
 datasource db {
@@ -76,6 +76,8 @@ model follow {
 
 model group {
   id         Int      @id @default(autoincrement())
+  avatar     String?  @db.VarChar
+  background String?  @db.VarChar
   title      String?  @db.VarChar
   meta_title String?  @db.VarChar
   create_at  DateTime @default(now()) @db.Timestamp(6)
@@ -161,6 +163,7 @@ model post {
   id             Int        @id @default(autoincrement())
   title          String     @default("") @db.VarChar
   content        String?    @db.VarChar
+  file_content   String[]
   post_uuid      String     @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   user_id        Int
   parent_post_id Int?
@@ -251,6 +254,7 @@ model user {
   address                         String?        @db.VarChar
   name                            String?        @db.VarChar
   avatar                          String?        @db.VarChar
+  background                      String?        @db.VarChar
   role                            user_role
   phone                           String?        @db.VarChar
   birthday                        DateTime?      @db.Timestamp(6)

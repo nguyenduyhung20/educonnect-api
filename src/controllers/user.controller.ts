@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
-import { PostModel } from '../models/post.model';
 import { AppError } from '../config/AppError';
+import { PostService } from '../services/post.service';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -124,7 +124,11 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const newsfeed = await PostModel.getUserPost(user.id, requestUser.id);
+    const newsfeed = await PostService.getUserPosts({
+      userId: user.id,
+      userIdRequesting: requestUser.id,
+      detail: true
+    });
 
     const data = {
       data: {
