@@ -25,6 +25,7 @@ const COMMENT_SELECT = {
   content: true,
   create_at: true,
   post_uuid: true,
+  file_content: true,
   user: {
     select: {
       id: true,
@@ -73,7 +74,8 @@ const mapComment = (post: RawComment) => {
     parentPostId: post.post?.id ?? undefined,
     commentCount: post._count.other_post,
     interactCount: post._count.interact,
-    createdAt: post.create_at
+    createdAt: post.create_at,
+    fileContent: post.file_content
   };
   return result;
 };
@@ -398,17 +400,25 @@ export class PostModel {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = queryResult.map((post) => mapPost(post));
+    const mappedResult = queryResult.map((post) => {
+      return {
+        ...mapPost(post),
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        })
+      };
+    });
 
     return mappedResult;
   }
 
-  static async create(userId: number, input: Prisma.postCreateInput) {
+  static async create(userId: number, input: Prisma.postCreateInput, uploadedFiles: string[]) {
     return prisma.post.create({
       data: {
         title: input.title,
         content: input.content,
-        user_id: userId
+        user_id: userId,
+        file_content: uploadedFiles
       }
     });
   }
@@ -501,7 +511,13 @@ export class PostModel {
     }
 
     const mappedResult = queryResult.map((post) => {
-      return { ...mapPost(post), userInteract: post.interact[0]?.type ?? null };
+      return {
+        ...mapPost(post),
+        userInteract: post.interact[0]?.type ?? null,
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        })
+      };
     });
 
     return mappedResult;

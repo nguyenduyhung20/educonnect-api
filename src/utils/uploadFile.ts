@@ -10,7 +10,7 @@ export const uploadFile = (uploadedFile: UploadedFile): Promise<string> => {
       if (err) {
         reject(err);
       } else {
-        resolve(destination + fileName);
+        resolve(`/${destination}${fileName}`);
       }
     });
   });
