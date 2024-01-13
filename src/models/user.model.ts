@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
-import { PostModel } from './post.model';
+import { PostService } from '../services/post.service';
 
 export class UserModel {
   static async getAll(limit = 20) {
@@ -260,7 +260,7 @@ export class UserModel {
       return null;
     }
     const promises = userFolloweds.map((followed) => {
-      return PostModel.getUserPost(followed.id);
+      return PostService.getPost({ postId: followed.id, userIdRequesting: userId });
     });
 
     const result = await Promise.allSettled(promises);

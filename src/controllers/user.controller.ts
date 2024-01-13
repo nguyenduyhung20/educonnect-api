@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
+import { AppError } from '../config/AppError';
+import { PostService } from '../services/post.service';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -103,13 +105,39 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
 
 export const handleSearchUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name } = req.query;
-
-  console.log('uhh');
-
   try {
     const users = await UserModel.searchUser(name as string);
 
     res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetUserProfilePage = async (req: Request, res: Response, next: NextFunction) => {
+  const { userId } = req.params;
+  const { requestUser } = req;
+  try {
+    const user = await UserModel.getById(parseInt(userId as string, 10));
+
+    if (!user) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const newsfeed = await PostService.getUserPosts({
+      userId: user.id,
+      userIdRequesting: requestUser.id,
+      detail: true
+    });
+
+    const data = {
+      data: {
+        user: user,
+        newsfeed: newsfeed
+      }
+    };
+
+    return res.status(200).json(data);
   } catch (error) {
     next(error);
   }

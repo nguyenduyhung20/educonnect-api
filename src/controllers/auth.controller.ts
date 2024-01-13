@@ -72,6 +72,6 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const handleLogout = async (req: Request, res: Response, next: NextFunction) => {
+export const handleLogout = async (req: Request, res: Response) => {
   res.clearCookie('token').status(200).json({ data: 'Successfully logged out' });
 };
