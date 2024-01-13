@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node .",
-    "dev:nodemon": "nodemon --exec npx ts-node --files src/index.ts",
-    "dev": "tsx watch src/index.ts",
+    "dev": "nodemon --exec npx ts-node --files src/index.ts",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
     "lint": "eslint src/ --ext .ts --fix",
     "format": "prettier src/ --write",
