@@ -3,6 +3,8 @@ import { PostModel } from '../models/post.model';
 import { AppError } from '../config/AppError';
 import prisma from '../databases/client';
 import { PostService } from '../services/post.service';
+import { UploadedFile } from 'express-fileupload';
+import { uploadFile } from '../utils/uploadFile';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -80,8 +82,22 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
 
 export const handleCreatePost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser, body: postFields } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
   try {
-    const post = await PostModel.create(requestUser.id, postFields);
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+
+    const post = await PostModel.create(requestUser.id, postFields, listFile);
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);
