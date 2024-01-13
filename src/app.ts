@@ -37,6 +37,8 @@ app.get('/error', async (req, res, next) => {
   }
 });
 
+app.use('/public', express.static('public'));
+
 // routes
 app.use('/api', router);
 

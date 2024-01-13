@@ -4,25 +4,29 @@ import {
   handleGetNewsfeed,
   handleGetUserById,
   handleGetUserNotification,
+  handleGetUserProfilePage,
   handleGetUsers,
   handleUpdateUser
 } from '../controllers/user.controller';
 import { verifyUser } from '../middleware/user.middleware';
-import { userPostRouter } from './post.route';
 import { followRouter } from './follow.route';
+import { handleGetHotPostByUserID } from '../controllers/post.controller';
 
 export const userRouter = express.Router();
 
 userRouter.get('/all', [handleGetUsers]);
+
 userRouter.get('/info', [verifyUser, handleGetUserById]);
-userRouter.get('/:userId', [verifyUser, handleGetUserById]);
-userRouter.patch('/:userId', [verifyUser, handleUpdateUser]);
-userRouter.delete('/:userId', [verifyUser, handleDeleteUser]);
+userRouter.get('/', [verifyUser, handleGetUserById]);
+userRouter.patch('/', [verifyUser, handleUpdateUser]);
+userRouter.delete('/', [verifyUser, handleDeleteUser]);
 
-userRouter.get('/:userId/notifications', [verifyUser, handleGetUserNotification]);
+userRouter.get('/notifications', [verifyUser, handleGetUserNotification]);
 
-userRouter.use('/:userId/post', [verifyUser, userPostRouter]);
+userRouter.get('/newsfeed', [verifyUser, handleGetNewsfeed]);
 
-userRouter.use('/:userId/follow', [verifyUser, followRouter]);
+userRouter.get('/hot-post', [verifyUser, handleGetHotPostByUserID]);
 
-userRouter.get('/:userId/newsfeed', [verifyUser, handleGetNewsfeed]);
+userRouter.use('/follow', [verifyUser, followRouter]);
+
+userRouter.get('/:userId', [verifyUser, handleGetUserProfilePage]);

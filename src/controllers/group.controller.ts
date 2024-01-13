@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { GroupModel } from '../models/group.model';
+import { UserModel } from '../models/user.model';
+import { AppError } from '../config/AppError';
 
 export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -30,11 +32,11 @@ export const handleGetGroup = async (req: Request, res: Response, next: NextFunc
 };
 
 export const handleUpdateGroup = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestGroup: group } = req;
+  const { requestGroup } = req;
   const data = req.body;
   try {
-    const post = await GroupModel.update(group.id, data);
-    res.status(200).json({ data: post });
+    const group = await GroupModel.update(requestGroup.id, data);
+    res.status(200).json({ data: group });
   } catch (error) {
     next(error);
   }
@@ -61,15 +63,19 @@ export const handleGetGroupMember = async (req: Request, res: Response, next: Ne
 };
 
 type IAddMember = {
-  userId: number;
+  memberId: number;
   role: 'admin' | 'user';
 };
 
 export const handleAddGroupMember = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestGroup: group } = req;
+  const { requestGroup } = req;
   const body: IAddMember = req.body;
   try {
-    const members = await GroupModel.addMember(group.id, body.userId, body.role);
+    const member = await UserModel.getById(body.memberId);
+    if (!member) {
+      throw new AppError(400, 'BAD_REQUEST');
+    }
+    const members = await GroupModel.addMember(requestGroup.id, member.id, member.role);
     res.status(200).json({ data: members });
   } catch (error) {
     next(error);
@@ -92,6 +98,16 @@ export const handleDeleteGroupMember = async (req: Request, res: Response, next:
   const { userId } = req.body;
   try {
     const members = await GroupModel.deleteMember(group.id, userId);
+    res.status(200).json({ data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleSearchGroup = async (req: Request, res: Response, next: NextFunction) => {
+  const { text } = req.query;
+  try {
+    const members = await GroupModel.searchGroup(text as string);
     res.status(200).json({ data: members });
   } catch (error) {
     next(error);

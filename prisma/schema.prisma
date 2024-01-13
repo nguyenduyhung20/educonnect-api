@@ -1,12 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  fileName     = "types.ts"
   enumFileName = "enums.ts"
+  fileName     = "types.ts"
 }
 
 datasource db {
@@ -50,12 +51,12 @@ model document {
   id            Int      @id @default(autoincrement())
   title         String?  @db.VarChar
   url           String?  @db.VarChar
-  subject_id    Int?
-  teacher_id    Int?
-  document_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   create_at     DateTime @default(now()) @db.Timestamp(6)
   update_at     DateTime @default(now()) @db.Timestamp(6)
   deleted       Boolean  @default(false)
+  subject_id    Int?
+  teacher_id    Int?
+  document_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   subject       subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher       teacher? @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -81,6 +82,8 @@ model group {
   update_at  DateTime @default(now()) @db.Timestamp(6)
   deleted    Boolean  @default(false)
   group_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  background String?  @db.VarChar
+  avatar     String?  @db.VarChar
   member     member[]
   post       post[]
 }
@@ -160,13 +163,14 @@ model post {
   id             Int        @id @default(autoincrement())
   title          String     @default("") @db.VarChar
   content        String?    @db.VarChar
+  create_at      DateTime   @default(now()) @db.Timestamp(6)
+  update_at      DateTime   @default(now()) @db.Timestamp(6)
+  deleted        Boolean    @default(false)
   post_uuid      String     @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   user_id        Int
   parent_post_id Int?
   group_id       Int?
-  create_at      DateTime   @default(now()) @db.Timestamp(6)
-  update_at      DateTime   @default(now()) @db.Timestamp(6)
-  deleted        Boolean    @default(false)
+  file_content   String[]
   interact       interact[]
   group          group?     @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   post           post?      @relation("postTopost", fields: [parent_post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -236,11 +240,11 @@ model transcript {
   fifteen_minutes_score Float?
   midterm_score         Float?
   final_score           Float?
-  student_id            Int?
-  subject_id            Int?
   create_at             DateTime @default(now()) @db.Timestamp(6)
   update_at             DateTime @default(now()) @db.Timestamp(6)
   deleted               Boolean  @default(false)
+  student_id            Int?
+  subject_id            Int?
   student               student? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subject               subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -260,6 +264,7 @@ model user {
   create_at                       DateTime       @default(now()) @db.Timestamp(6)
   update_at                       DateTime       @default(now()) @db.Timestamp(6)
   deleted                         Boolean        @default(false)
+  background                      String?        @db.VarChar
   account                         account?
   admin                           admin?
   follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")

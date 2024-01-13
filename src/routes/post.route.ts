@@ -10,20 +10,16 @@ import {
 import { verifyPost } from '../middleware/post.middleware';
 import { interactRouter } from './interact.route';
 
-// All the action user can do with their post
-export const userPostRouter = express.Router();
-
-userPostRouter.get('/', [handleGetUserPost]);
-userPostRouter.post('/', [handleCreatePost]);
-userPostRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
-userPostRouter.delete('/:postId', [verifyPost, handleDeletePost]);
-
-// User have userUuid post comment to a post which have postId
-userPostRouter.post('/:postId/comment', [verifyPost, handleCreateComment]);
-
-userPostRouter.use('/:postId/interact', [verifyPost, interactRouter]);
-
-// Public post
 export const postRouter = express.Router();
 
+postRouter.get('/', [handleGetUserPost]);
+
+postRouter.post('/', [handleCreatePost]);
 postRouter.get('/:postId', [verifyPost, handleGetPost]);
+postRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
+postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
+
+// User have userUuid post comment to a post which have postId
+postRouter.post('/:postId/comment', [verifyPost, handleCreateComment]);
+
+postRouter.use('/:postId/interact', [verifyPost, interactRouter]);

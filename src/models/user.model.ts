@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
-import { PostModel } from './post.model';
+import { PostService } from '../services/post.service';
 
 export class UserModel {
   static async getAll(limit = 20) {
@@ -260,7 +260,7 @@ export class UserModel {
       return null;
     }
     const promises = userFolloweds.map((followed) => {
-      return PostModel.getUserPost(followed.id);
+      return PostService.getPost({ postId: followed.id, userIdRequesting: userId });
     });
 
     const result = await Promise.allSettled(promises);
@@ -275,5 +275,38 @@ export class UserModel {
       .slice(0, take);
 
     return posts;
+  }
+
+  static async searchUser(name: string, take = 10) {
+    const users = await prisma.user.findMany({
+      where: {
+        deleted: false,
+        name: {
+          search: name
+        }
+      },
+      orderBy: {
+        _relevance: {
+          fields: ['name'],
+          search: name,
+          sort: 'asc'
+        }
+      },
+      take: take
+    });
+
+    const mapUsers = users.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+        email: user.email,
+        birthday: user.birthday,
+        sex: user.sex,
+        createAt: user.create_at
+      };
+    });
+
+    return mapUsers;
   }
 }
