@@ -82,6 +82,7 @@ export class UserModel {
           include: {
             user_follow_follower_idTouser: {
               select: {
+                id: true,
                 name: true,
                 user_uuid: true,
                 avatar: true
@@ -97,6 +98,7 @@ export class UserModel {
           include: {
             user_follow_followed_idTouser: {
               select: {
+                id: true,
                 name: true,
                 user_uuid: true,
                 avatar: true
@@ -114,6 +116,7 @@ export class UserModel {
     const result = {
       userFollowers: {
         user: queryResult.follow_follow_followed_idTouser.map((follower) => ({
+          id: follower.user_follow_follower_idTouser.id,
           uuid: follower.user_follow_follower_idTouser.user_uuid,
           name: follower.user_follow_follower_idTouser.name,
           avatar: follower.user_follow_follower_idTouser.avatar ?? null
@@ -122,6 +125,7 @@ export class UserModel {
       },
       userFolloweds: {
         user: queryResult.follow_follow_follower_idTouser.map((following) => ({
+          id: following.user_follow_followed_idTouser.id,
           uuid: following.user_follow_followed_idTouser.user_uuid,
           name: following.user_follow_followed_idTouser.name,
           avatar: following.user_follow_followed_idTouser.avatar ?? null

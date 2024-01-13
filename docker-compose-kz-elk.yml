@@ -7,7 +7,7 @@
 # create topic
 # docker exec -it kafka bash /bin/kafka-topics --create --topic post-topic --bootstrap-server localhost:9092
 # conn consumer
-# docker exec -it kafka bash /bin/kafka-console-consumer --topic post-topic --from-beginning --bootstrap-server localhost:9092
+# docker exec -it kafka bash /bin/kafka-console-consumer --topic interact-topic --from-beginning --bootstrap-server localhost:9092
 # conn producer
 # docker exec -it kafka bash /bin/kafka-console-producer --topic post-topic --bootstrap-server localhost:9092
 # ---------------------------------------
