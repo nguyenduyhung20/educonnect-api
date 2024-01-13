@@ -33,12 +33,12 @@ export type document = {
   id: Generated<number>;
   title: string | null;
   url: string | null;
-  subject_id: number | null;
-  teacher_id: number | null;
-  document_uuid: Generated<string>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
+  subject_id: number | null;
+  teacher_id: number | null;
+  document_uuid: Generated<string>;
 };
 export type follow = {
   follower_id: number;
@@ -50,14 +50,14 @@ export type follow = {
 };
 export type group = {
   id: Generated<number>;
-  avatar: string | null;
-  background: string | null;
   title: string | null;
   meta_title: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
   group_uuid: Generated<string>;
+  background: string | null;
+  avatar: string | null;
 };
 export type interact = {
   user_id: number;
@@ -109,14 +109,14 @@ export type post = {
   id: Generated<number>;
   title: Generated<string>;
   content: string | null;
-  file_content: string[];
+  create_at: Generated<Timestamp>;
+  update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
   post_uuid: Generated<string>;
   user_id: number;
   parent_post_id: number | null;
   group_id: number | null;
-  create_at: Generated<Timestamp>;
-  update_at: Generated<Timestamp>;
-  deleted: Generated<boolean>;
+  file_content: string[];
 };
 export type school = {
   id: Generated<number>;
@@ -158,18 +158,17 @@ export type transcript = {
   fifteen_minutes_score: number | null;
   midterm_score: number | null;
   final_score: number | null;
-  student_id: number | null;
-  subject_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
+  student_id: number | null;
+  subject_id: number | null;
 };
 export type user = {
   id: Generated<number>;
   address: string | null;
   name: string | null;
   avatar: string | null;
-  background: string | null;
   role: user_role;
   phone: string | null;
   birthday: Timestamp | null;
@@ -180,6 +179,7 @@ export type user = {
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
+  background: string | null;
 };
 export type DB = {
   account: account;
