@@ -13,7 +13,9 @@ export class PostService {
       interactCount: post._count.interact,
       userInteract: post.interact[0]?.type ?? null,
       createdAt: post.create_at,
-      fileContent: post.file_content,
+      fileContent: post.file_content.map((item) => {
+        return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+      }),
       comment: post.other_post.map((comment) => ({
         id: comment.id,
         user: comment.user,
@@ -63,7 +65,9 @@ export class PostService {
           interactCount: post._count.interact,
           userInteract: post.interact[0]?.type ?? null,
           createdAt: post.create_at,
-          fileContent: post.file_content
+          fileContent: post.file_content.map((item) => {
+            return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+          })
         };
         return mappedPost;
       });
@@ -82,7 +86,9 @@ export class PostService {
           interactCount: post._count.interact,
           userInteract: post.interact[0]?.type ?? null,
           createdAt: post.create_at,
-          fileContent: post.file_content,
+          fileContent: post.file_content.map((item) => {
+            return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+          }),
           comment: post.other_post.map((comment) => ({
             id: comment.id,
             user: comment.user,
@@ -125,7 +131,9 @@ export class PostService {
         interactCount: post._count.interact,
         userInteract: post.interact[0]?.type ?? null,
         createdAt: post.create_at,
-        fileContent: post.file_content,
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        }),
         comment: post.other_post.map((comment) => ({
           id: comment.id,
           user: comment.user,

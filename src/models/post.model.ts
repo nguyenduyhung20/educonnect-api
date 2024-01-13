@@ -400,7 +400,14 @@ export class PostModel {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = queryResult.map((post) => mapPost(post));
+    const mappedResult = queryResult.map((post) => {
+      return {
+        ...mapPost(post),
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        })
+      };
+    });
 
     return mappedResult;
   }
@@ -504,7 +511,13 @@ export class PostModel {
     }
 
     const mappedResult = queryResult.map((post) => {
-      return { ...mapPost(post), userInteract: post.interact[0]?.type ?? null };
+      return {
+        ...mapPost(post),
+        userInteract: post.interact[0]?.type ?? null,
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        })
+      };
     });
 
     return mappedResult;
