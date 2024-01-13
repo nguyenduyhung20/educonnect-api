@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { InteractModel } from '../models/interact.model';
+import { producer } from '../services/kafka-client';
 
 export const handleGetPostInteract = async (req: Request, res: Response, next: NextFunction) => {
   const { requestPost } = req;
@@ -15,6 +16,17 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
   const { requestUser, requestPost, body: postFields } = req;
   try {
     const users = await InteractModel.create(postFields, requestUser.id, requestPost.id);
+    const messages = [
+      {
+        key: 'notification',
+        value: JSON.stringify({
+          type: postFields.type,
+          userId: requestUser.id,
+          receiver: postFields.receiver
+        })
+      }
+    ];
+    producer('notification-topic', messages, 'kafka-producer-notification');
     res.status(200).json({ data: users });
   } catch (error) {
     next(error);
