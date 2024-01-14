@@ -185,18 +185,31 @@ export class GroupModel {
           sort: 'asc'
         }
       },
+      select: {
+        id: true,
+        title: true,
+        meta_title: true,
+        create_at: true,
+        member: {
+          take: 4,
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            member: true
+          }
+        }
+      },
       take: take
     });
 
-    const mapGroups = groups.map((group) => {
-      return {
-        id: group.id,
-        title: group.title,
-        metaTitle: group.meta_title,
-        createAt: group.create_at
-      };
-    });
-
-    return mapGroups;
+    return groups;
   }
 }

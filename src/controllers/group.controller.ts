@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { GroupModel } from '../models/group.model';
 import { UserModel } from '../models/user.model';
 import { AppError } from '../config/AppError';
+import { SearchService } from '../services/group.service';
 
 export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -107,7 +108,7 @@ export const handleDeleteGroupMember = async (req: Request, res: Response, next:
 export const handleSearchGroup = async (req: Request, res: Response, next: NextFunction) => {
   const { text } = req.query;
   try {
-    const members = await GroupModel.searchGroup(text as string);
+    const members = await SearchService.searchGroup(text as string);
     res.status(200).json({ data: members });
   } catch (error) {
     next(error);
