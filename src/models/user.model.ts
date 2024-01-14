@@ -244,7 +244,7 @@ export class UserModel {
 
   static async getNotifications(userId: number, limit = 10) {
     return prisma.notification.findMany({
-      take: limit,
+      // take: limit,
       where: {
         user_id: userId
       },
