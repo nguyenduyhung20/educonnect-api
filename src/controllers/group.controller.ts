@@ -3,6 +3,7 @@ import { GroupModel } from '../models/group.model';
 import { UserModel } from '../models/user.model';
 import { AppError } from '../config/AppError';
 import { SearchService } from '../services/group.service';
+import { member_status } from '@prisma/client';
 
 export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -63,6 +64,40 @@ export const handleGetGroupMember = async (req: Request, res: Response, next: Ne
   }
 };
 
+export const handleGetGroupMemberByStatus = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestGroup: group } = req;
+  const userId: number = req.body.userId;
+  let status: member_status = req.params.status as any;
+  try {
+    const checkAdmin = await GroupModel.checkJoinGroup(group.id, userId);
+    if (checkAdmin?.role !== 'admin') {
+      status = 'active';
+    }
+    const members = await GroupModel.getAllMemberByIdAndStatus(group.id, status);
+    res.status(200).json({ data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleCheckJoinGroup = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestGroup: group } = req;
+  try {
+    const members = await GroupModel.checkJoinGroup(group.id, req.body.userId);
+    console.log(members);
+    res.status(200).json({
+      data: {
+        userId: members?.user_id,
+        groupId: members?.group_id,
+        role: members?.role,
+        status: members?.status
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 type IAddMember = {
   memberId: number;
   role: 'admin' | 'user';
@@ -87,7 +122,12 @@ export const handleUpdateGroupMember = async (req: Request, res: Response, next:
   const { requestGroup: group } = req;
   const { userId, ...body } = req.body;
   try {
-    const members = await GroupModel.updateMember(group.id, userId, body);
+    const checkAdmin = await GroupModel.checkJoinGroup(group.id, userId);
+    if (checkAdmin?.role !== 'admin') {
+      res.status(400).json({ message: 'Tài khoản không có quyền này' });
+      return;
+    }
+    const members = await GroupModel.updateMember(group.id, body?.memberId, body?.role, body?.status);
     res.status(200).json({ data: members });
   } catch (error) {
     next(error);

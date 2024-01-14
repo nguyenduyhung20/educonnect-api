@@ -1,4 +1,4 @@
-import { Prisma, member_role } from '@prisma/client';
+import { Prisma, member_role, member_status } from '@prisma/client';
 import prisma from '../databases/client';
 
 export class GroupModel {
@@ -132,9 +132,61 @@ export class GroupModel {
     });
   }
 
+  static async getAllMemberByIdAndStatus(groupId: number, status: member_status, limit = 20) {
+    return prisma.group.findUnique({
+      where: {
+        id: groupId,
+        deleted: false
+      },
+      include: {
+        member: {
+          take: limit,
+          where: {
+            deleted: false,
+            status: status
+          },
+          orderBy: {
+            create_at: 'desc'
+          }
+        },
+        _count: {
+          select: {
+            member: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  static async checkJoinGroup(groupId: number, userId: number) {
+    return prisma.member.findUnique({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        },
+        deleted: false
+      }
+    });
+  }
+
   static async addMember(groupId: number, userId: number, role: string) {
-    const member = await prisma.member.create({
-      data: {
+    const member = await prisma.member.upsert({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        }
+      },
+      update: {
+        deleted: false,
+        status: 'pending'
+      },
+      create: {
         user_id: userId,
         group_id: groupId,
         role: (role as member_role) ?? 'user',
@@ -144,15 +196,18 @@ export class GroupModel {
     return member;
   }
 
-  static async updateMember(groupId: number, userId: number, data: Prisma.memberUpdateInput) {
+  static async updateMember(groupId: number, memberId: number, role: member_role, status: member_status) {
     return prisma.member.update({
       where: {
         user_id_group_id: {
-          user_id: userId,
+          user_id: memberId,
           group_id: groupId
         }
       },
-      data
+      data: {
+        role: role,
+        status: status
+      }
     });
   }
 
