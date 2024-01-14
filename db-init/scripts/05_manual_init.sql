@@ -25,10 +25,9 @@ VALUES
     (2, 1);
 
 INSERT INTO
-    "notification" (id, user_id, message)
+    "notification" (user_id, message)
 VALUES
-    (1, 1, 'Oh');
-
+    (1, 'Oh');
 
 INSERT INTO
     interact ("type", user_id, post_id)

@@ -6,8 +6,8 @@ generator client {
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  enumFileName = "enums.ts"
   fileName     = "types.ts"
+  enumFileName = "enums.ts"
 }
 
 datasource db {
@@ -51,12 +51,12 @@ model document {
   id            Int      @id @default(autoincrement())
   title         String?  @db.VarChar
   url           String?  @db.VarChar
-  create_at     DateTime @default(now()) @db.Timestamp(6)
-  update_at     DateTime @default(now()) @db.Timestamp(6)
-  deleted       Boolean  @default(false)
   subject_id    Int?
   teacher_id    Int?
   document_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at     DateTime @default(now()) @db.Timestamp(6)
+  update_at     DateTime @default(now()) @db.Timestamp(6)
+  deleted       Boolean  @default(false)
   subject       subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher       teacher? @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -76,14 +76,14 @@ model follow {
 
 model group {
   id         Int      @id @default(autoincrement())
+  avatar     String?  @db.VarChar
+  background String?  @db.VarChar
   title      String?  @db.VarChar
   meta_title String?  @db.VarChar
   create_at  DateTime @default(now()) @db.Timestamp(6)
   update_at  DateTime @default(now()) @db.Timestamp(6)
   deleted    Boolean  @default(false)
   group_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  background String?  @db.VarChar
-  avatar     String?  @db.VarChar
   member     member[]
   post       post[]
 }
@@ -117,7 +117,7 @@ model member {
   user_id   Int
   group_id  Int
   role      member_role?
-  status    member_status?
+  status    member_status? @default(pending)
   create_at DateTime       @default(now()) @db.Timestamp(6)
   update_at DateTime       @default(now()) @db.Timestamp(6)
   deleted   Boolean        @default(false)
@@ -163,14 +163,14 @@ model post {
   id             Int        @id @default(autoincrement())
   title          String     @default("") @db.VarChar
   content        String?    @db.VarChar
-  create_at      DateTime   @default(now()) @db.Timestamp(6)
-  update_at      DateTime   @default(now()) @db.Timestamp(6)
-  deleted        Boolean    @default(false)
+  file_content   String[]
   post_uuid      String     @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   user_id        Int
   parent_post_id Int?
   group_id       Int?
-  file_content   String[]
+  create_at      DateTime   @default(now()) @db.Timestamp(6)
+  update_at      DateTime   @default(now()) @db.Timestamp(6)
+  deleted        Boolean    @default(false)
   interact       interact[]
   group          group?     @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   post           post?      @relation("postTopost", fields: [parent_post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -240,11 +240,11 @@ model transcript {
   fifteen_minutes_score Float?
   midterm_score         Float?
   final_score           Float?
+  student_id            Int?
+  subject_id            Int?
   create_at             DateTime @default(now()) @db.Timestamp(6)
   update_at             DateTime @default(now()) @db.Timestamp(6)
   deleted               Boolean  @default(false)
-  student_id            Int?
-  subject_id            Int?
   student               student? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subject               subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -254,6 +254,7 @@ model user {
   address                         String?        @db.VarChar
   name                            String?        @db.VarChar
   avatar                          String?        @db.VarChar
+  background                      String?        @db.VarChar
   role                            user_role
   phone                           String?        @db.VarChar
   birthday                        DateTime?      @db.Timestamp(6)
@@ -264,7 +265,6 @@ model user {
   create_at                       DateTime       @default(now()) @db.Timestamp(6)
   update_at                       DateTime       @default(now()) @db.Timestamp(6)
   deleted                         Boolean        @default(false)
-  background                      String?        @db.VarChar
   account                         account?
   admin                           admin?
   follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
