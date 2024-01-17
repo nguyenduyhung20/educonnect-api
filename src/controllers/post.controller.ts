@@ -5,6 +5,7 @@ import prisma from '../databases/client';
 import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
+import { producer } from '../services/kafka-client';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -15,7 +16,6 @@ export const handleGetHotPostByUserID = async (req: Request, res: Response, next
     next(error);
   }
 };
-import { producer } from '../services/kafka-client';
 
 export const handleGetUserPost = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;

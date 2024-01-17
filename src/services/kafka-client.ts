@@ -3,6 +3,10 @@ import { Kafka, Partitioners, EachMessagePayload } from 'kafkajs';
 const brokers = ['localhost:29092'];
 
 export async function consumer(topic: string, clientId = 'kafka-consumer-client') {
+  if (process.env.NO_KAFKA === 'true') {
+    return;
+  }
+
   const kafka = new Kafka({ clientId, brokers });
   const consumer = kafka.consumer({ groupId: clientId });
   await consumer.connect();
@@ -15,6 +19,10 @@ export async function consumer(topic: string, clientId = 'kafka-consumer-client'
 }
 
 export async function producer(topic: string, messages: any, clientId = 'kafka-producer-client') {
+  if (process.env.NO_KAFKA === 'true') {
+    return;
+  }
+
   const kafka = new Kafka({
     clientId,
     brokers
