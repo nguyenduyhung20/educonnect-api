@@ -480,3 +480,174 @@ Hiệp định Paris ký kết tháng 1/1973, chiến sự Bình Long dịu xu�
         null,
         null
     );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Trà là loại đố uống xuất xứ từ Trung Quốc. Ở Châu Âu, những thương nhân người Bồ Đào Nha là những người đầu tiên uống trà và giới thiệu nó với người nước mình. Đến đầu thế kỷ 17, trà lần đầu tiên du nhập vào Anh, Hà Lan. 
+Xem chi tiết ở phía dưới!',
+        '{https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/416336289_773848008118525_2640504804500294432_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=3635dc&_nc_eui2=AeHv6rCYYJRWOTpCy5uqY4gAjP_4b2hBHYiM__hvaEEdiHQST8kiPC2WiCDwsbeaRk2_Ta8_mpJh7YPA40RkaBOM&_nc_ohc=mm1szwLL6JAAX90JhN3&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfC5B9s0GbvV0Eek4Nn0Sd5mHjYQS53f215Lvirt8KbrWw&oe=65AD7310}',
+        8,
+        null,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Đánh nhau cũng tranh thủ đun nước pha trà',
+        13,
+        30,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Trước khi đến Việt Nam, lí.nh M.ỹ đã được học một khóa thời lượng 5 tiếng về các loại b.ẫy mà người Đức và người Nhật từng sử dụng trong th.ế chi.ến II. 
+Nhưng rồi, họ nhanh chóng nhận ra phần lớn kiến thức đó đều vô dụng ở dải đất bé nhỏ hình chữ S này...
+Xem chi tiết ở phía dưới!',
+        '{https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/415001512_771163845053608_8844311999638558726_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=3635dc&_nc_eui2=AeGZHC94YfL7Gtjjfkq_bfjMWqxWQvrnD1NarFZC-ucPU0yBjv0WvACUqanTuoOWoyTRjgPOmAHPEwS8YH2OchG_&_nc_ohc=qK4WjPlix9YAX8Qqv3u&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDH1ZuOgwTXEBXU-UXasekwu-KCP4woYzH_6kzo61TumA&oe=65AC558D}',
+        8,
+        null,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Ngày này năm xưa: Ngày 28/12/1964 - Trận Bình Giã
+Trận Bình Giã là trậ.n đán.h chính nằm trong Chiế.n dị.ch Bình Giã xảy ra vào cuối tháng 12 năm 1964 tại địa bàn làng Bình Giã, tỉnh Phước Tuy, cách Sài Gòn 67 km, giữa Quân giả.i phó.ng miền Nam và Quâ.n lự.c Việt Nam Cộng hòa, với cố vấn Mỹ chỉ huy. 
+Xem chi tiết ở bên dưới!',
+        '{https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/414745853_767047918798534_928225736976030664_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=3635dc&_nc_eui2=AeGMj28dJPnBGGzudXVYu04ZkIlkfp0aXDGQiWR-nRpcMe-k3Z2z6J_ux8yR1VoAgdjJCxlsgTXaVfGDlxDr--h_&_nc_ohc=w0BY-fgx8PcAX9gT9pY&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfAeIC5vWvGj_445pX5LV3k3hGQcLRvImhrsotJJGqzSAw&oe=65AC7CCF}',
+        8,
+        null,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Ngày này năm xưa: 29/12/1427 - Quân Minh rút về nước, khởi nghĩa Lam Sơn chính thức thắng lợi
+Xem chi tiết ở bình luận.',
+        '{https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/414667383_767955198707806_860536884531408043_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=3635dc&_nc_eui2=AeEvnhodA6BjZAm3wEhK13oh6Sv52VDDmX3pK_nZUMOZfVYrA2SDW708agtt670I0NuWhkn1Qq8Gudjr9DH_oqWx&_nc_ohc=vhaW76RrTC4AX_S6OwP&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfCt512nHqm25y6AroYdKML1IXQOhKPXny_JvXAhb5Wb_w&oe=65AD4D5F}',
+        8,
+        null,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Trong chiế.n dị.ch Nguyễn Huệ (1/4/1972 đến 19/1/1973), việc phò.ng th.ủ mặt Nam của tiểu khu Bình Long, chỉ rộng không đầy 3km2 được giao cho trung tá Nguyễn Thống Thành chỉ huy. Đó cũng chính là hướng tấ.n cô.ng của Trung đoàn 201A quân Giải phóng do Chính ủy Nguyễn Văn Có phụ trách.
+Một điều oái oăm: Thiếu tá Nguyễn Văn Có bên tấ.n cô.ng và Trung tá Nguyễn Thống Thành bên phò.ng th.ủ, cách đó không lâu lại là một cặp bạn bè thân thiết!
+Xem thêm ở phần bình luận.',
+        '{/public/imgs/486ff478-e7b6-469a-919d-38db232805e8_lsvn_banthan.jpg,/public/imgs/3382106a-585f-412e-ab80-44507e40a732_lsvn_banthan2.jpg}',
+        8,
+        null,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Không tránh khỏi trong chiến tranh ..',
+        10,
+        35,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'Tài liệu này mà làm phim thì Hollywood tuổi',
+        11,
+        35,
+        2
+    );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        '',
+        'hơi tiếc nhỉ, ô Thống mà còn sống hoà bình 2 ô gặp lại nhau thì hay',
+        12,
+        35,
+        2
+    );

@@ -32,6 +32,7 @@ INSERT INTO
     "user" (
         address,
         name,
+        avatar,
         phone,
         birthday,
         email,
@@ -43,6 +44,7 @@ VALUES
     (
         'hcm',
         'Nguyen Duy Hung',
+        'https://i.imgur.com/PwqrcYG.png',
         '0852222222',
         '2023-10-19 00:00:00',
         'hung@gmail.com',
@@ -258,6 +260,111 @@ INSERT INTO
     "account" (id, username, password)
 VALUES
     (9, 'express', 'express');
+
+INSERT INTO
+    "user" (
+        address,
+        name,
+        avatar,
+        phone,
+        birthday,
+        email,
+        ssn,
+        sex,
+        role
+    )
+VALUES
+    (
+        'hcm',
+        'Nguyễn Hải Đăng',
+        'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/533.jpg',
+        '0852222222',
+        '2023-10-19 00:00:00',
+        'test3@gmail.com',
+        '3541242341234134',
+        'male',
+        'user'
+    );
+
+INSERT INTO
+    "account" (id, username, password)
+VALUES
+    (10, 'haidang', 'haidang');
+
+INSERT INTO
+    "user" (
+        address,
+        name,
+        avatar,
+        phone,
+        birthday,
+        email,
+        ssn,
+        sex,
+        role
+    )
+VALUES
+    (
+        'hcm',
+        'Trần Thư',
+        'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/2.jpg',
+        '0852222222',
+        '2023-10-19 00:00:00',
+        'test3@gmail.com',
+        '1234324142134',
+        'male',
+        'user'
+    );
+
+INSERT INTO
+    "user" (
+        address,
+        name,
+        avatar,
+        phone,
+        birthday,
+        email,
+        ssn,
+        sex,
+        role
+    )
+VALUES
+    (
+        'hcm',
+        'Nguyễn Văn Bắc',
+        'https://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/1231.jpg',
+        '0852222222',
+        '2023-10-19 00:00:00',
+        'test3@gmail.com',
+        '1242144322134124',
+        'male',
+        'user'
+    );
+
+INSERT INTO
+    "user" (
+        address,
+        name,
+        avatar,
+        phone,
+        birthday,
+        email,
+        ssn,
+        sex,
+        role
+    )
+VALUES
+    (
+        'hcm',
+        'Nguyen Vinh',
+        'hhttps://cloudflare-ipfs.com/ipfs/Qmd3W5DuhgHirLHGVixi6V76LhCkZUz6pnFt5AJBiyvHye/avatar/104.jpg',
+        '0852222222',
+        '2023-10-19 00:00:00',
+        'test3@gmail.com',
+        '123123423424',
+        'male',
+        'user'
+    );
 
 INSERT INTO
     "user" (
