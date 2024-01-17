@@ -1,14 +1,14 @@
 INSERT INTO
     "post" (content, user_id, parent_post_id, group_id)
 VALUES
-    ('Example group post', 2, null, 1);
+    ('Hello mọi người', 2, null, 1);
 
 INSERT INTO
     "post" (title, content, user_id, create_at)
 VALUES
     (
         'Title of example post',
-        'This is an example post.',
+        'Ngày mai phải đi học rồi.',
         1,
         '2023-01-01 00:00:01'
     );
@@ -92,7 +92,7 @@ WITH new_post AS (
     VALUES
         (
             'Example 2: Post example',
-            'This is second example post',
+            'Ngày thứ hai đi học.',
             1
         ) RETURNING id
 )
