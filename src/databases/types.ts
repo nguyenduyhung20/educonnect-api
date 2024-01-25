@@ -78,7 +78,7 @@ export type member = {
   user_id: number;
   group_id: number;
   role: member_role | null;
-  status: member_status | null;
+  status: Generated<member_status | null>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;

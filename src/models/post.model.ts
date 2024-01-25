@@ -380,6 +380,7 @@ export class PostModel {
       },
       where: {
         parent_post_id: null,
+        group_id: null,
         deleted: false
       },
       select: {
@@ -481,6 +482,7 @@ export class PostModel {
       orderBy: { create_at: 'desc' },
       where: {
         parent_post_id: null,
+        group_id: null,
         deleted: false
       },
       select: {

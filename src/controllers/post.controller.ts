@@ -5,6 +5,7 @@ import prisma from '../databases/client';
 import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
+import { producer } from '../services/kafka-client';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -98,6 +99,18 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
     }
 
     const post = await PostModel.create(requestUser.id, postFields, listFile);
+    const messages = [
+      {
+        key: 'post',
+        value: JSON.stringify({
+          content: postFields.content,
+          user_id: requestUser.id,
+          post_uuid: post.post_uuid,
+          id: post.id
+        })
+      }
+    ];
+    producer('post-topic', messages, 'kafka-producer-post');
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);

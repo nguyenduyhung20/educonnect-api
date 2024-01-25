@@ -1,0 +1,20 @@
+setupAll: setupDB setupRedis setupELK
+
+downAll: downDB downRedis downELK
+
+downDB:
+	docker-compose down -v
+downRedis:
+	docker-compose -f docker-compose-redis.yml down -v
+downELK:
+	docker-compose -f docker-compose-kz-elk.yml down -v
+
+
+setupDB: docker-compose.yml
+	docker-compose up -d 
+
+setupRedis: docker-compose-redis.yml
+	docker-compose -f docker-compose-redis.yml up -d
+
+setupELK: docker-compose-kz-elk.yml
+	docker-compose -f docker-compose-kz-elk.yml up -d

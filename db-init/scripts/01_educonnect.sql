@@ -114,7 +114,7 @@ CREATE TABLE "member" (
     "user_id" int,
     "group_id" int,
     "role" "member_role",
-    "status" "member_status",
+    "status" "member_status" DEFAULT 'pending',
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL,

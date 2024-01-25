@@ -2,6 +2,8 @@ import express from 'express';
 import { verifyGroup } from '../middleware/group.middleware';
 import {
   handleAddGroupMember,
+  handleCheckJoinGroup,
+  handleGetGroupMemberByStatus,
   handleDeleteGroupMember,
   handleGetGroupList,
   handleUpdateGroupMember
@@ -28,6 +30,8 @@ groupRouter.get('/:groupId/posts', [verifyGroup, handleGetGroupPosts]);
 
 // Member
 groupRouter.get('/:groupId/members', [verifyGroup, handleGetGroupMember]);
+groupRouter.get('/:groupId/members/status/:status', [verifyGroup, handleGetGroupMemberByStatus]);
+groupRouter.get('/:groupId/members/:memberId', [verifyGroup, handleCheckJoinGroup]);
 groupRouter.post('/:groupId/members', [verifyGroup, handleAddGroupMember]);
 groupRouter.patch('/:groupId/members', [verifyGroup, handleUpdateGroupMember]);
 groupRouter.delete('/:groupId/members', [verifyGroup, handleDeleteGroupMember]);
