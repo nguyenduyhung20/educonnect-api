@@ -651,3 +651,22 @@ VALUES
         35,
         2
     );
+
+INSERT INTO
+    "post" (
+        title,
+        content,
+        file_content,
+        user_id,
+        parent_post_id,
+        group_id
+    )
+VALUES
+    (
+        'Bất đẳng thức Cauchy',
+        'Bất đẳng thức Cauchy',
+        '{/public/imgs/e89e1a91-e968-45dc-ab2c-4fe634ac917b_cauchy.png}',
+        2,
+        null,
+        null
+    );
