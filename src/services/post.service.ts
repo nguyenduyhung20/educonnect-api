@@ -1,8 +1,16 @@
 import { PostModel } from '../models/post.model';
 
 export class PostService {
-  static async getPost({ postId, userIdRequesting }: { postId: number; userIdRequesting: number }) {
-    const post = await PostModel.getById(postId, userIdRequesting);
+  static async getPost({
+    postId,
+    userIdRequesting,
+    type
+  }: {
+    postId: number;
+    userIdRequesting: number;
+    type: 'post' | 'comment';
+  }) {
+    const post = await PostModel.getById(postId, userIdRequesting, type);
     const mappedPost = {
       id: post.id,
       user: post.user,

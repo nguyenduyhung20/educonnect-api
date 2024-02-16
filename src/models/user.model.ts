@@ -264,7 +264,7 @@ export class UserModel {
       return null;
     }
     const promises = userFolloweds.map((followed) => {
-      return PostService.getPost({ postId: followed.id, userIdRequesting: userId });
+      return PostService.getPost({ postId: followed.id, userIdRequesting: userId, type: 'post' });
     });
 
     const result = await Promise.allSettled(promises);
