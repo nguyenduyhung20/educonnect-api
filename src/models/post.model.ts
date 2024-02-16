@@ -114,13 +114,19 @@ export class PostModel {
     });
   }
 
-  static async getById(id: number, userIdRequesting: number, commentLimit = 10) {
+  static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 10) {
     const result = await prisma.post.findFirst({
-      where: {
-        id: id,
-        parent_post_id: null,
-        deleted: false
-      },
+      where:
+        type == 'post'
+          ? {
+              id: id,
+              parent_post_id: null,
+              deleted: false
+            }
+          : {
+              id: id,
+              deleted: false
+            },
       select: {
         ...COMMENT_SELECT,
         other_post: {
@@ -523,5 +529,30 @@ export class PostModel {
     });
 
     return mappedResult;
+  }
+
+  static async getMostInteractPost(postLimit: number = 20, commentLimit: number = 5) {
+    const queryResult = await prisma.post.findMany({
+      take: postLimit,
+      orderBy: { create_at: 'desc' },
+      where: {
+        parent_post_id: null,
+        deleted: false
+      },
+      select: {
+        ...COMMENT_SELECT,
+        interact: {
+          where: {
+            deleted: false
+          },
+          select: {
+            type: true
+          }
+        }
+      }
+    });
+    if (!queryResult) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
   }
 }

@@ -6,7 +6,30 @@ export const verifyPost = async (req: Request, res: Response, next: NextFunction
   const { postId } = req.params;
   const { requestUser } = req;
   try {
-    const post = await PostService.getPost({ postId: parseInt(postId, 10), userIdRequesting: requestUser.id });
+    const post = await PostService.getPost({
+      postId: parseInt(postId, 10),
+      userIdRequesting: requestUser.id,
+      type: 'post'
+    });
+    if (!post) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    req.requestPost = post;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyComment = async (req: Request, res: Response, next: NextFunction) => {
+  const { postId } = req.params;
+  const { requestUser } = req;
+  try {
+    const post = await PostService.getPost({
+      postId: parseInt(postId, 10),
+      userIdRequesting: requestUser.id,
+      type: 'comment'
+    });
     if (!post) {
       throw new AppError(404, 'NOT_FOUND');
     }

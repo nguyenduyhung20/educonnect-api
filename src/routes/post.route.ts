@@ -7,7 +7,7 @@ import {
   handleGetUserPost,
   handleUpdatePost
 } from '../controllers/post.controller';
-import { verifyPost } from '../middleware/post.middleware';
+import { verifyComment, verifyPost } from '../middleware/post.middleware';
 import { interactRouter } from './interact.route';
 
 export const postRouter = express.Router();
@@ -20,6 +20,6 @@ postRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
 postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 
 // User have userUuid post comment to a post which have postId
-postRouter.post('/:postId/comment', [verifyPost, handleCreateComment]);
+postRouter.post('/:postId/comment', [verifyComment, handleCreateComment]);
 
 postRouter.use('/:postId/interact', [verifyPost, interactRouter]);
