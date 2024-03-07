@@ -378,11 +378,11 @@ export class PostModel {
     return queryResult;
   }
 
-  static async getHotPosts(postLimit = 20, commentLimit = 5) {
+  static async getHotPostsForPublic(postLimit = 20, commentLimit = 5) {
     const queryResult = await prisma.post.findMany({
       take: postLimit,
       orderBy: {
-        create_at: 'desc'
+        interact: { _count: 'desc' }
       },
       where: {
         parent_post_id: null,
@@ -390,17 +390,7 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: COMMENT_SELECT,
-          orderBy: {
-            create_at: 'desc'
-          }
-        }
+        ...COMMENT_SELECT
       }
     });
     if (!queryResult) {
@@ -531,28 +521,40 @@ export class PostModel {
     return mappedResult;
   }
 
-  static async getMostInteractPost(postLimit: number = 20, commentLimit: number = 5) {
+  static async getMostInteractPost(postLimit: number = 30) {
     const queryResult = await prisma.post.findMany({
       take: postLimit,
-      orderBy: { create_at: 'desc' },
       where: {
         parent_post_id: null,
         deleted: false
       },
       select: {
         ...COMMENT_SELECT,
-        interact: {
-          where: {
-            deleted: false
-          },
-          select: {
-            type: true
-          }
-        }
+        group_id: true
+      },
+      orderBy: {
+        interact: { _count: 'desc' }
       }
     });
+
     if (!queryResult) {
       throw new AppError(404, 'NOT_FOUND');
     }
+
+    const mappedResult = queryResult.map((post) => {
+      return {
+        id: post.id,
+        user: post.user,
+        title: post.title,
+        content: post.content,
+        parentPostId: post.post?.id ?? undefined,
+        commentCount: post._count.other_post,
+        interactCount: post._count.interact,
+        createdAt: post.create_at instanceof Date ? post.create_at.toISOString() : post.create_at,
+        groupId: post.group_id ?? undefined
+      };
+    });
+
+    return mappedResult;
   }
 }

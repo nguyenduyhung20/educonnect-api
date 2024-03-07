@@ -52,9 +52,9 @@ export const handleGetGroupPosts = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const handleGetHotPost = async (req: Request, res: Response, next: NextFunction) => {
+export const handleGetHotPostForPublic = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await PostModel.getHotPosts();
+    const result = await PostModel.getHotPostsForPublic();
 
     return res.status(200).json({ data: result });
   } catch (error) {
@@ -157,6 +157,15 @@ export const handleSearchPost = async (req: Request, res: Response, next: NextFu
   const { text } = req.query;
   try {
     const posts = await PostModel.searchPost(text as string);
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetMostInteractPost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const posts = await PostModel.getMostInteractPost();
     return res.status(200).json({ data: posts });
   } catch (error) {
     next(error);
