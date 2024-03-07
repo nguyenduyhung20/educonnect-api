@@ -3,6 +3,7 @@ import {
   handleCreateComment,
   handleCreatePost,
   handleDeletePost,
+  handleGetMostInteractPost,
   handleGetPost,
   handleGetUserPost,
   handleUpdatePost
@@ -15,7 +16,11 @@ export const postRouter = express.Router();
 postRouter.get('/', [handleGetUserPost]);
 
 postRouter.post('/', [handleCreatePost]);
+
+postRouter.get('/most-interact', [handleGetMostInteractPost]);
+
 postRouter.get('/:postId', [verifyPost, handleGetPost]);
+
 postRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
 postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 
