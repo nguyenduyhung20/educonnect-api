@@ -21,6 +21,20 @@ export type admin = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
+export type calendar = {
+  id: Generated<number>;
+  calendarId: string;
+  title: string;
+  category: string;
+  location: string | null;
+  state: string | null;
+  start: string;
+  end: string;
+  user_id: number;
+  create_at: Generated<Timestamp>;
+  update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
 export type classroom = {
   id: Generated<number>;
   name: string | null;
@@ -118,6 +132,21 @@ export type post = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
+export type post_summarization = {
+  id: Generated<number>;
+  content_summarization: string | null;
+  create_at: Generated<Timestamp>;
+  update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
+export type post_tag = {
+  id: Generated<number>;
+  post_id: number | null;
+  tag: string | null;
+  create_at: Generated<Timestamp>;
+  update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
 export type school = {
   id: Generated<number>;
   address: string | null;
@@ -184,6 +213,7 @@ export type user = {
 export type DB = {
   account: account;
   admin: admin;
+  calendar: calendar;
   classroom: classroom;
   document: document;
   follow: follow;
@@ -195,6 +225,8 @@ export type DB = {
   of: of;
   parent: parent;
   post: post;
+  post_summarization: post_summarization;
+  post_tag: post_tag;
   school: school;
   student: student;
   subject: subject;
