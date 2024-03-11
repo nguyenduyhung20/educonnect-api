@@ -269,6 +269,7 @@ model user {
   deleted                         Boolean        @default(false)
   account                         account?
   admin                           admin?
+  calendar                        calendar[]
   follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
   follow_follow_follower_idTouser follow[]       @relation("follow_follower_idTouser")
   interact                        interact[]
@@ -297,6 +298,22 @@ model post_summarization {
   update_at             DateTime @default(now()) @db.Timestamp(6)
   deleted               Boolean  @default(false)
   post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model calendar {
+  id         Int      @id @default(autoincrement())
+  calendarId String   @db.VarChar
+  title      String   @db.VarChar
+  category   String   @db.VarChar
+  location   String?  @db.VarChar
+  state      String?  @db.VarChar
+  start      String   @db.VarChar
+  end        String   @db.VarChar
+  user_id    Int
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum interact_type {
