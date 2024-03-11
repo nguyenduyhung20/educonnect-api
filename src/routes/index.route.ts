@@ -9,6 +9,7 @@ import { calendarRouter } from './calendar.route';
 import verifyJWT from '../middleware/verifyJWT';
 import { searchRouter } from './search.route';
 import { verifyUser } from '../middleware/user.middleware';
+import { exploreRouter } from './explore.route';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/v1/user', [verifyJWT, userRouter]);
 router.use('/v1/calendar', [verifyJWT, calendarRouter]);
 router.use('/v1/group', [verifyJWT, verifyUser, groupRouter]);
 router.use('/v1/post', [verifyJWT, verifyUser, postRouter]);
+router.use('/v1/explore', [verifyJWT, verifyUser, exploreRouter]);
 
 export default router;

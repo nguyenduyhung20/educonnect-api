@@ -1,27 +1,47 @@
-import { SummarizePostsApi } from '../models/summarizePost.model';
 import { PostModel } from '../models/post.model';
+import { SummarizePostModel } from '../models/summarizePost.model';
+import { Prisma } from '@prisma/client';
+import { logger } from '../utils/logger';
+import { redisClient } from '../config/redis-client';
 
-interface Post {
-  groupId: number | undefined;
-  id: number;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  title: string;
-  content: string | null;
-  commentCount: number;
-  interactCount: number;
-  createdAt: string;
-}
-
-export const handleSummarizeMostInteractPost = async (): Promise<{ summaries: Post[] }> => {
+export const handleSummarizeMostInteractPost = async () => {
   try {
     const posts = await PostModel.getMostInteractPost();
-    const results = await SummarizePostsApi.postSummarizePost(posts);
-    return results;
+    const results = await SummarizePostModel.postSummarizePost(
+      posts
+        .filter((item) => typeof item.content_summarization === 'undefined')
+        .map((item) => {
+          return { id: item.id, content_summarization: item.content };
+        })
+    );
+    await handleStoreSummarizeContentPost(results.summaries); // Store the summarized posts in the database only if they haven't been summarized before.
+
+    // Push id of post summarized
+    posts.forEach((item) => {
+      const findItem = results.summaries.find((subItem) => subItem.id === item.id);
+      if (!findItem) {
+        results.summaries.push({ id: item.id, content_summarization: item.content_summarization });
+      } else {
+        item.content_summarization = findItem.content_summarization ?? undefined;
+      }
+    });
+
+    results.summaries.forEach(async (summary) => {
+      const key = `summary`;
+      await redisClient.SADD(key, `${summary.id}`);
+    });
+
+    return posts;
   } catch (error: any) {
+    return error;
+  }
+};
+
+export const handleStoreSummarizeContentPost = async (summaries: Prisma.post_summarizationCreateManyInput[]) => {
+  try {
+    await SummarizePostModel.createSummarizeContentPost(summaries);
+  } catch (error: any) {
+    logger.error(error);
     return error;
   }
 };

@@ -269,7 +269,6 @@ model user {
   deleted                         Boolean        @default(false)
   account                         account?
   admin                           admin?
-  calendar                        calendar[]
   follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
   follow_follow_follower_idTouser follow[]       @relation("follow_follower_idTouser")
   interact                        interact[]
@@ -281,31 +280,6 @@ model user {
   teacher                         teacher?
 }
 
-model calendar {
-  id         Int      @id @default(autoincrement())
-  calendarId String   @db.VarChar
-  title      String   @db.VarChar
-  category   String   @db.VarChar
-  location   String?  @db.VarChar
-  state      String?  @db.VarChar
-  start      String   @db.VarChar
-  end        String   @db.VarChar
-  user_id    Int
-  create_at  DateTime @default(now()) @db.Timestamp(6)
-  update_at  DateTime @default(now()) @db.Timestamp(6)
-  deleted    Boolean  @default(false)
-  user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model post_summarization {
-  id                    Int      @id @default(autoincrement())
-  content_summarization String?  @db.VarChar
-  create_at             DateTime @default(now()) @db.Timestamp(6)
-  update_at             DateTime @default(now()) @db.Timestamp(6)
-  deleted               Boolean  @default(false)
-  post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
 model post_tag {
   id        Int      @id @default(autoincrement())
   post_id   Int?
@@ -314,6 +288,15 @@ model post_tag {
   update_at DateTime @default(now()) @db.Timestamp(6)
   deleted   Boolean  @default(false)
   post      post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_summarization {
+  id                    Int      @id
+  content_summarization String?  @db.VarChar
+  create_at             DateTime @default(now()) @db.Timestamp(6)
+  update_at             DateTime @default(now()) @db.Timestamp(6)
+  deleted               Boolean  @default(false)
+  post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum interact_type {
