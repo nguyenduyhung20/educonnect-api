@@ -1,22 +1,18 @@
 import { apiPost } from '../utils/apiRequest';
+import prisma from '../databases/client';
+import { Prisma } from '@prisma/client';
 
-interface Post {
-  groupId: number | undefined;
-  id: number;
-  user: {
-    id: number;
-    name: string | null;
-    avatar: string | null;
-  };
-  title: string;
-  content: string | null;
-  commentCount: number;
-  interactCount: number;
-  createdAt: string;
-}
-
-export class SummarizePostsApi {
-  static async postSummarizePost(posts: Post[]): Promise<{ summaries: Post[] }> {
+export class SummarizePostModel {
+  static async postSummarizePost(
+    posts: Prisma.post_summarizationCreateManyInput[]
+  ): Promise<{ summaries: Prisma.post_summarizationCreateManyInput[] }> {
     return await apiPost('/summarize', posts);
+  }
+
+  static async createSummarizeContentPost(summaries: Prisma.post_summarizationCreateManyInput[]) {
+    return await prisma.post_summarization.createMany({
+      data: summaries,
+      skipDuplicates: true
+    });
   }
 }

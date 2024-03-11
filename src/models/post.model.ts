@@ -378,7 +378,7 @@ export class PostModel {
     return queryResult;
   }
 
-  static async getHotPostsForPublic(postLimit = 20, commentLimit = 5) {
+  static async getHotPostsForPublic(postLimit = 20) {
     const queryResult = await prisma.post.findMany({
       take: postLimit,
       orderBy: {
@@ -530,7 +530,15 @@ export class PostModel {
       },
       select: {
         ...COMMENT_SELECT,
-        group_id: true
+        group_id: true,
+        post_summarization: {
+          where: {
+            deleted: false
+          },
+          select: {
+            content_summarization: true
+          }
+        }
       },
       orderBy: {
         interact: { _count: 'desc' }
@@ -551,7 +559,8 @@ export class PostModel {
         commentCount: post._count.other_post,
         interactCount: post._count.interact,
         createdAt: post.create_at instanceof Date ? post.create_at.toISOString() : post.create_at,
-        groupId: post.group_id ?? undefined
+        groupId: post.group_id ?? undefined,
+        content_summarization: post.post_summarization?.content_summarization ?? undefined
       };
     });
 
