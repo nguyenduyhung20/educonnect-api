@@ -15,3 +15,16 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
+export const verifyParent = async (req: Request, res: Response, next: NextFunction) => {
+  const { userId } = req.body;
+  try {
+    const parent = await UserModel.getParentById(parseInt(userId, 10));
+    if (!parent) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};

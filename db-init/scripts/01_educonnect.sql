@@ -212,6 +212,7 @@ CREATE TABLE "transcript" (
     "final_score" FLOAT,
     "student_id" int,
     "subject_id" int,
+    "semester" VARCHAR NOT NULL,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL
