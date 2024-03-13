@@ -282,6 +282,25 @@ model user {
   teacher                         teacher?
 }
 
+model post_tag {
+  id        Int      @id @default(autoincrement())
+  post_id   Int?
+  tag       String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  post      post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_summarization {
+  id                    Int      @id
+  content_summarization String?  @db.VarChar
+  create_at             DateTime @default(now()) @db.Timestamp(6)
+  update_at             DateTime @default(now()) @db.Timestamp(6)
+  deleted               Boolean  @default(false)
+  post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
 model calendar {
   id         Int      @id @default(autoincrement())
   calendarId String   @db.VarChar
@@ -296,25 +315,6 @@ model calendar {
   update_at  DateTime @default(now()) @db.Timestamp(6)
   deleted    Boolean  @default(false)
   user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model post_summarization {
-  id                    Int      @id @default(autoincrement())
-  content_summarization String?  @db.VarChar
-  create_at             DateTime @default(now()) @db.Timestamp(6)
-  update_at             DateTime @default(now()) @db.Timestamp(6)
-  deleted               Boolean  @default(false)
-  post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model post_tag {
-  id        Int      @id @default(autoincrement())
-  post_id   Int?
-  tag       String?  @db.VarChar
-  create_at DateTime @default(now()) @db.Timestamp(6)
-  update_at DateTime @default(now()) @db.Timestamp(6)
-  deleted   Boolean  @default(false)
-  post      post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum interact_type {
