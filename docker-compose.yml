@@ -37,7 +37,6 @@ services:
       context: ./mongodb-service
     depends_on:
       - mongo
-      - kafka
 
 volumes:
   pgdata:

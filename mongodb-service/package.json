@@ -12,10 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "kafkajs": "^2.2.4",
-    "mongodb": "^6.5.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.27",
-    "typescript": "^5.4.2"
+    "mongodb": "^6.5.0",
+    "typescript": "^5.4.2",
+    "@types/node": "^20.11.27"
   }
 }
