@@ -8,26 +8,26 @@ import { handleSummarizeMostInteractPost } from './controllers/summarizePost.con
 
 app.listen(PORT, () => logger.info(`running server on http://localhost:${PORT}`));
 
-redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
+// redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
 
-(async () => {
-  await redisClient.connect();
-})();
+// (async () => {
+//   await redisClient.connect();
+// })();
 
-cron.schedule('* * * * *', async () => {
-  logger.info('Running your cron job');
-  const posts = await handleSummarizeMostInteractPost();
-  redisClient.select(1); // database 1 stores data summarized
-  posts.summaries.forEach(async (summary) => {
-    const key = `summary:${summary.id}`;
-    await redisClient.hSet(key, {
-      groupId: summary.groupId || -1,
-      title: summary.title,
-      user: JSON.stringify({ id: summary.user.id, name: summary.user.name || '', avatar: summary.user.avatar || '' }),
-      content: summary.content || '',
-      commentCount: summary.commentCount,
-      interactCount: summary.interactCount,
-      createdAt: summary.createdAt
-    });
-  });
-});
+// cron.schedule('* * * * *', async () => {
+//   logger.info('Running your cron job');
+//   const posts = await handleSummarizeMostInteractPost();
+//   redisClient.select(1); // database 1 stores data summarized
+//   posts.summaries.forEach(async (summary) => {
+//     const key = `summary:${summary.id}`;
+//     await redisClient.hSet(key, {
+//       groupId: summary.groupId || -1,
+//       title: summary.title,
+//       user: JSON.stringify({ id: summary.user.id, name: summary.user.name || '', avatar: summary.user.avatar || '' }),
+//       content: summary.content || '',
+//       commentCount: summary.commentCount,
+//       interactCount: summary.interactCount,
+//       createdAt: summary.createdAt
+//     });
+//   });
+// });

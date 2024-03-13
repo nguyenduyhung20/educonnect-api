@@ -192,6 +192,7 @@ export type transcript = {
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
+  semester: string;
 };
 export type user = {
   id: Generated<number>;

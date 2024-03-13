@@ -285,7 +285,7 @@ VALUES
         'test3@gmail.com',
         '3541242341234134',
         'male',
-        'user'
+        'parent'
     );
 
 INSERT INTO

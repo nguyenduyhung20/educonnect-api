@@ -25,6 +25,15 @@ export class UserModel {
     });
   }
 
+  static async getParentById(id: number) {
+    return prisma.parent.findFirst({
+      where: {
+        id: id,
+        deleted: false
+      }
+    });
+  }
+
   static async getByUuid(uuid: string) {
     return prisma.user.findFirst({
       where: {
