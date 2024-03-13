@@ -22,6 +22,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - kafka_elk
+      - educonnect
 
   kafka:
     container_name: kafka
@@ -40,6 +41,7 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: localhost
     networks:
       - kafka_elk
+      - educonnect
     healthcheck:
       test: nc -vz kafka 9092 || exit -1
       interval: 5s
@@ -53,7 +55,7 @@ services:
       - cluster.name=kafka-cluster
       - bootstrap.memory_lock=true
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
       - xpack.security.enabled=false
     volumes:
       - elk_data:/usr/share/elasticsearch/data:rw
@@ -96,14 +98,7 @@ services:
     networks:
       - kafka_elk
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "--silent",
-          "--fail",
-          "http://logstash:9600"
-        ]
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://logstash:9600']
       interval: 30s
       timeout: 15s
       retries: 3
@@ -124,7 +119,7 @@ services:
     restart: unless-stopped
     networks:
       - kafka_elk
-    links: [ 'elasticsearch' ]
+    links: ['elasticsearch']
     healthcheck:
       test: curl --fail http://kibana:5601 || exit 1
       interval: 30s
