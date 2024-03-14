@@ -6,6 +6,7 @@ import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { producer } from '../services/kafka-client';
+import { redisClient } from '../config/redis-client';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -99,6 +100,9 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
     }
 
     const post = await PostModel.create(requestUser.id, postFields, listFile);
+
+    redisClient.select(1);
+
     const messages = [
       {
         key: 'post',

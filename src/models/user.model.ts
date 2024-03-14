@@ -260,11 +260,12 @@ export class UserModel {
 
   static async getFiendsLatestPosts(userId: number, take = 20) {
     const userFolloweds = await UserModel.getUserFolloweds(userId);
+
     if (!userFolloweds) {
       return null;
     }
     const promises = userFolloweds.map((followed) => {
-      return PostService.getPost({ postId: followed.id, userIdRequesting: userId, type: 'post' });
+      return PostService.getUserPosts({ userId: followed.id, userIdRequesting: userId, detail: false });
     });
 
     const result = await Promise.allSettled(promises);
