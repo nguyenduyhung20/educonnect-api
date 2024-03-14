@@ -3,6 +3,8 @@ import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
 import { AppError } from '../config/AppError';
 import { PostService } from '../services/post.service';
+import { redisClient } from '../config/redis-client';
+import { PostModel } from '../models/post.model';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -95,9 +97,33 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
   const { requestUser } = req;
 
   try {
-    const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+    await redisClient.select(1);
+    const listIdPosts = await redisClient.zRange(`${requestUser.id}`, 0, 9);
+    await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
+    if (listIdPosts.length) {
+      const postIdNumberList = listIdPosts.map(Number);
+      const posts = await PostModel.getByListIdNotHaveComment(postIdNumberList, requestUser.id);
+      res.status(200).json({ data: posts });
+    } else {
+      const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+      const mySeftPosts = await PostService.getUserPosts({
+        userId: requestUser.id,
+        userIdRequesting: requestUser.id,
+        detail: false
+      });
 
-    res.status(200).json({ data: posts });
+      const hotposts = await PostModel.getHotPostByUserID(requestUser.id);
+
+      const results = [...(posts || []), ...(mySeftPosts || []), ...(hotposts || [])];
+      redisClient.select(1);
+      results.forEach(async (item) => {
+        const key = `${requestUser.id}` || '';
+        const value = `${item.id}` || '';
+        await redisClient.zAdd(key, { score: 1, value: value });
+      });
+
+      res.status(200).json({ data: results });
+    }
   } catch (error) {
     next(error);
   }
