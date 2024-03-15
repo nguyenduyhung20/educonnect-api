@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 3
 
-  mongo:
+  mongodb:
     container_name: mongodb
     image: mongo:latest
     restart: unless-stopped
@@ -33,10 +33,15 @@ services:
       MONGO_INITDB_DATABASE: educonnect
 
   mongodb-service:
+    container_name: mongodb-service
     build:
       context: ./mongodb-service
+    environment:
+      - MONGO_DOMAIN=mongodb
+      - MONGO_DATABASE=educonnect
+      - KAFKA_DOMAIN=kafka
     depends_on:
-      - mongo
+      - mongodb
 
 volumes:
   pgdata:
