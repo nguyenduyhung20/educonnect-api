@@ -54,6 +54,8 @@ services:
     image: provectuslabs/kafka-ui:latest
     ports:
       - 8080:8080
+    networks:
+      - kafka_elk
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
@@ -140,6 +142,37 @@ services:
       retries: 3
       timeout: 10s
 
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    restart: unless-stopped
+    volumes:
+      - mgdata:/data/db
+    ports:
+      - '27017:27017'
+    networks:
+      - kafka_elk
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: educonnect
+
+  mongodb-service:
+    container_name: mongodb-service
+    restart: unless-stopped
+    build:
+      context: ./mongodb-service
+    environment:
+      - MONGO_DOMAIN=mongodb
+      - MONGO_DATABASE=educonnect
+      - KAFKA_DOMAIN=kafka
+      - KAFKA_PORT=9092
+    networks:
+      - kafka_elk
+    depends_on:
+      - mongodb
+      - kafka
+
 networks:
   kafka_elk:
     driver: bridge
@@ -151,3 +184,10 @@ volumes:
       o: bind
       type: none
       device: ./elk-data
+
+  mgdata:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./mg-data
