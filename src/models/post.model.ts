@@ -114,6 +114,125 @@ export class PostModel {
     });
   }
 
+  static async getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList: number[], postLimit = 100) {
+    const posts = await prisma.post.findMany({
+      take: postLimit,
+      where: {
+        deleted: false,
+        id: {
+          in: postIdNumberList
+        }
+      },
+      select: {
+        id: true,
+        title: true,
+        create_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        },
+        post_summarization: {
+          select: {
+            content_summarization: true
+          }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      }
+    });
+    return posts;
+  }
+
+  static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number, commentLimit = 20) {
+    const result = await prisma.post.findMany({
+      where: {
+        deleted: false,
+        id: {
+          in: postIdNumberList
+        }
+      },
+      select: {
+        ...COMMENT_SELECT,
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          select: {
+            ...COMMENT_SELECT,
+            other_post: {
+              take: commentLimit,
+              where: {
+                deleted: false
+              },
+              select: {
+                ...COMMENT_SELECT,
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          },
+          orderBy: {
+            create_at: 'desc'
+          }
+        },
+        interact: {
+          where: {
+            user_id: userIdRequesting,
+            deleted: false
+          },
+          select: {
+            type: true
+          }
+        }
+      }
+    });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const mappedResult = result.map((post) => {
+      return {
+        ...mapPost(post),
+        userInteract: post.interact[0]?.type ?? null,
+        fileContent: post.file_content.map((item) => {
+          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+        })
+      };
+    });
+    return mappedResult;
+  }
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 10) {
     const result = await prisma.post.findFirst({
       where:
