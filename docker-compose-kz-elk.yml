@@ -58,8 +58,8 @@ services:
       - kafka_elk
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEPPER: zookeeper:2181
       DYNAMIC_CONFIG_ENABLED: 'true'
     depends_on:
       - kafka
@@ -172,6 +172,23 @@ services:
     depends_on:
       - mongodb
       - kafka
+
+  mongodb-ui:
+    container_name: mongodb-ui
+    image: mongo-express:1.0.2-20-alpine3.19
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: 'admin'
+      ME_CONFIG_BASICAUTH_PASSWORD: 'admin'
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dev
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_URL: mongodb://dev:password@mongodb:27017/
+    networks:
+      - kafka_elk
+    depends_on:
+      - mongodb
 
 networks:
   kafka_elk:

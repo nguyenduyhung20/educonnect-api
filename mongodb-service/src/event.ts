@@ -7,7 +7,7 @@ const UserPostInteractionEventSchema = z.object({
   userId: z.string(),
   postId: z.string(),
   interactionType: z.enum(['LIKE', 'COMMENT', 'SHARE', 'VIEW']),
-  timestamp: z.date(),
+  timestamp: z.string(),
   metadata: z.record(z.any()).optional()
 });
 type UserPostInteractionEvent = z.infer<typeof UserPostInteractionEventSchema>;
