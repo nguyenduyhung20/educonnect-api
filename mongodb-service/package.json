@@ -1,0 +1,23 @@
+{
+  "name": "mongodb-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "mongodb": "^6.5.0",
+    "pino": "^8.19.0",
+    "typescript": "^5.4.2",
+    "zod": "^3.22.4",
+    "@types/node": "^20.11.27",
+    "pino-pretty": "^10.3.1"
+  }
+}
