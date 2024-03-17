@@ -147,7 +147,7 @@ services:
     volumes:
       - mgdata:/data/db
     ports:
-      - '27017:27017'
+      - '27018:27017'
     networks:
       - kafka_elk
     environment:
@@ -163,6 +163,7 @@ services:
     environment:
       - MONGO_DOMAIN=mongodb
       - MONGO_DATABASE=educonnect
+      - MONGO_PORT=27017
       - KAFKA_DOMAIN=kafka
       - KAFKA_PORT=9092
     networks:
