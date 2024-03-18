@@ -17,6 +17,10 @@ async function main() {
   const collection = await connectToMongoDB(mongoURI);
   const consumer = await createKafkaConsumer(kafkaBrokers, consumerGroupId);
 
+  if (!consumer) {
+    return;
+  }
+
   await consumer.run({
     eachMessage: async (payload) => {
       await processEvent(collection, payload);
