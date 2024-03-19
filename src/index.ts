@@ -8,11 +8,11 @@ import { handleSummarizeMostInteractPost } from './controllers/summarizePost.con
 
 app.listen(PORT, () => logger.info(`running server on http://localhost:${PORT}`));
 
-// redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
+redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
 
-// (async () => {
-//   await redisClient.connect();
-// })();
+(async () => {
+  await redisClient.connect();
+})();
 
 cron.schedule('* * * * *', async () => {
   logger.info('Running your cron job');

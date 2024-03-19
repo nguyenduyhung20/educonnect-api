@@ -5,11 +5,32 @@ import { AppError } from '../config/AppError';
 import { PostService } from '../services/post.service';
 import { redisClient } from '../config/redis-client';
 import { PostModel } from '../models/post.model';
+import { GroupModel } from '../models/group.model';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await UserModel.getAll();
     res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserHost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'admin');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'user');
+    res.status(200).json({ data: group });
   } catch (error) {
     next(error);
   }

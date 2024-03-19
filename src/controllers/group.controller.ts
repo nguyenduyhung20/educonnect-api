@@ -4,6 +4,8 @@ import { UserModel } from '../models/user.model';
 import { AppError } from '../config/AppError';
 import { SearchService } from '../services/group.service';
 import { member_status } from '@prisma/client';
+import { UploadedFile } from 'express-fileupload';
+import { uploadFile } from '../utils/uploadFile';
 
 export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -16,8 +18,24 @@ export const handleGetGroupList = async (req: Request, res: Response, next: Next
 
 export const handleCreateGroup = async (req: Request, res: Response, next: NextFunction) => {
   const createRequest = req.body;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const userId = req.requestUser.id;
+
+  const listFile = [];
   try {
-    const post = await GroupModel.create(createRequest);
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+
+    const post = await GroupModel.create(createRequest, listFile, userId);
     res.status(200).json({ data: post });
   } catch (error) {
     next(error);
