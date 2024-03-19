@@ -16,11 +16,12 @@ import {
   handleUpdateGroup
 } from '../controllers/group.controller';
 import { handleGetGroupPosts } from '../controllers/post.controller';
+import { verifyUser } from '../middleware/user.middleware';
 
 export const groupRouter = express.Router();
 
 groupRouter.get('/', [handleGetGroupList]);
-groupRouter.post('/', [handleCreateGroup]);
+groupRouter.post('/', [verifyUser, handleCreateGroup]);
 groupRouter.get('/:groupId', [verifyGroup, handleGetGroup]);
 groupRouter.patch('/:groupId', [verifyGroup, handleUpdateGroup]);
 groupRouter.delete('/:groupId', [verifyGroup, handleDeleteGroup]);

@@ -244,10 +244,10 @@ model transcript {
   final_score           Float?
   student_id            Int?
   subject_id            Int?
+  semester              String   @db.VarChar
   create_at             DateTime @default(now()) @db.Timestamp(6)
   update_at             DateTime @default(now()) @db.Timestamp(6)
   deleted               Boolean  @default(false)
-  semester              String   @db.VarChar
   student               student? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subject               subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
