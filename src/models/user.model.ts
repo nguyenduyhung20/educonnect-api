@@ -323,4 +323,40 @@ export class UserModel {
 
     return mapUsers;
   }
+
+  static async getUserMostFollower() {
+    const results = await prisma.user.findMany({
+      take: 5,
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        _count: {
+          select: {
+            follow_follow_followed_idTouser: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      },
+      where: {
+        deleted: false
+      },
+      orderBy: {
+        follow_follow_followed_idTouser: {
+          _count: 'desc'
+        }
+      }
+    });
+    return results.map((item) => {
+      return {
+        id: item.id,
+        name: item.name,
+        avatar: item.avatar,
+        followerCount: item._count.follow_follow_followed_idTouser
+      };
+    });
+  }
 }
