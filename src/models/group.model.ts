@@ -51,12 +51,18 @@ export class GroupModel {
                 }
               },
               where: {
-                deleted: false
+                deleted: false,
+                status: 'active'
               }
             },
             _count: {
               select: {
-                member: true
+                member: {
+                  where: {
+                    deleted: false,
+                    status: 'active'
+                  }
+                }
               }
             }
           }
@@ -99,12 +105,18 @@ export class GroupModel {
             }
           },
           where: {
-            deleted: false
+            deleted: false,
+            status: 'active'
           }
         },
         _count: {
           select: {
-            member: true
+            member: {
+              where: {
+                deleted: false,
+                status: 'active'
+              }
+            }
           }
         }
       },
@@ -260,6 +272,28 @@ export class GroupModel {
     });
   }
 
+  static async getListApplyingGroup(groupId: number) {
+    return prisma.member.findMany({
+      where: {
+        group_id: groupId,
+        status: 'pending',
+        deleted: false
+      },
+      select: {
+        role: true,
+        status: true,
+        create_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      }
+    });
+  }
+
   static async checkJoinGroup(groupId: number, userId: number) {
     return prisma.member.findUnique({
       where: {
@@ -272,7 +306,7 @@ export class GroupModel {
     });
   }
 
-  static async addMember(groupId: number, userId: number, role: string) {
+  static async addMember(groupId: number, userId: number) {
     const member = await prisma.member.upsert({
       where: {
         user_id_group_id: {
@@ -287,8 +321,38 @@ export class GroupModel {
       create: {
         user_id: userId,
         group_id: groupId,
-        role: (role as member_role) ?? 'user',
-        status: 'active'
+        status: 'pending'
+      }
+    });
+    return member;
+  }
+
+  static async approveMember(groupId: number, userId: number) {
+    const member = await prisma.member.update({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        }
+      },
+      data: {
+        status: 'active',
+        role: 'user'
+      }
+    });
+    return member;
+  }
+
+  static async refuseMember(groupId: number, userId: number) {
+    const member = await prisma.member.update({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        }
+      },
+      data: {
+        deleted: true
       }
     });
     return member;

@@ -114,11 +114,7 @@ export class PostModel {
     });
   }
 
-  static async getByListIdNotHaveCommentNotHaveFileContent(
-    postIdNumberList: number[],
-    userIdRequesting: number,
-    postLimit = 100
-  ) {
+  static async getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList: number[], postLimit = 100) {
     const posts = await prisma.post.findMany({
       take: postLimit,
       where: {
@@ -128,6 +124,7 @@ export class PostModel {
         }
       },
       select: {
+        group_id: true,
         id: true,
         title: true,
         create_at: true,
@@ -141,15 +138,6 @@ export class PostModel {
         post_summarization: {
           select: {
             content_summarization: true
-          }
-        },
-        interact: {
-          where: {
-            user_id: userIdRequesting,
-            deleted: false
-          },
-          select: {
-            type: true
           }
         },
         _count: {
@@ -177,7 +165,7 @@ export class PostModel {
         createAt: item.create_at,
         commentCount: item._count.other_post,
         interactCount: item._count.interact,
-        userInteract: item.interact[0]?.type ?? null
+        groupId: item.group_id ?? null
       };
     });
     return mapPosts;
