@@ -8,7 +8,7 @@ import { handleSummarizeMostInteractPost } from './controllers/summarizePost.con
 
 app.listen(PORT, () => logger.info(`running server on http://localhost:${PORT}`));
 
-redisClient.on('error', (err: Error) => console.log('Redis Client Error', err));
+redisClient.on('error', (err: Error) => logger.error('Redis Client Error', err));
 
 (async () => {
   await redisClient.connect();

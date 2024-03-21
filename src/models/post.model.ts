@@ -318,7 +318,7 @@ export class PostModel {
     return result;
   }
 
-  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 10) {
+  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 30) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -353,7 +353,7 @@ export class PostModel {
     return result;
   }
 
-  static async getPostWithCommentByUserId(userId: number, userIdRequesting: number, postLimit = 10, commentLimit = 10) {
+  static async getPostWithCommentByUserId(userId: number, userIdRequesting: number, postLimit = 30, commentLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -541,13 +541,14 @@ export class PostModel {
     return mappedResult;
   }
 
-  static async create(userId: number, input: Prisma.postCreateInput, uploadedFiles: string[]) {
+  static async create(userId: number, input: Prisma.postCreateInput, uploadedFiles: string[], groupId: string | null) {
     return prisma.post.create({
       data: {
         title: input.title,
         content: input.content,
         user_id: userId,
-        file_content: uploadedFiles
+        file_content: uploadedFiles,
+        group_id: groupId ? parseInt(groupId, 10) : null
       }
     });
   }

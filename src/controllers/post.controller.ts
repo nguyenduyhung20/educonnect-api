@@ -7,6 +7,9 @@ import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { producer } from '../services/kafka-client';
 import { redisClient } from '../config/redis-client';
+import cheerio from 'cheerio';
+import { apiGet } from '../utils/apiRequest';
+import axios from 'axios';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -99,22 +102,52 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
       }
     }
 
-    const post = await PostModel.create(requestUser.id, postFields, listFile);
+    const groupId = postFields?.groupId;
+
+    const type: 'post' | 'link' = postFields.type;
+
+    if (type == 'link') {
+      const fetchPreviewData = async () => {
+        try {
+          const link = postFields.content;
+          const response = await axios.get(link);
+          const html = await response.data;
+          const $ = cheerio.load(html);
+
+          const title = $('title').text();
+          const description = $('meta[name="description"]').attr('content') || '';
+          const imageUrl = $('meta[property="og:image"]').attr('content');
+
+          postFields.content = `${title}\n${description}\nChi tiết: ${link}`;
+          listFile.push(imageUrl);
+        } catch (error) {
+          console.error('Error fetching preview data:', error);
+          throw new Error('Error fetching preview data');
+        }
+      };
+      try {
+        await fetchPreviewData();
+      } catch (error) {
+        return res.status(500).json({ message: 'Error Internal Server' });
+      }
+    }
+
+    const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
 
     redisClient.select(1);
 
-    const messages = [
-      {
-        key: 'post',
-        value: JSON.stringify({
-          content: postFields.content,
-          user_id: requestUser.id,
-          post_uuid: post.post_uuid,
-          id: post.id
-        })
-      }
-    ];
-    producer('post-topic', messages, 'kafka-producer-post');
+    // const messages = [
+    //   {
+    //     key: 'post',
+    //     value: JSON.stringify({
+    //       content: postFields.content,
+    //       user_id: requestUser.id,
+    //       post_uuid: post.post_uuid,
+    //       id: post.id
+    //     })
+    //   }
+    // ];
+    // producer('post-topic', messages, 'kafka-producer-post');
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);
