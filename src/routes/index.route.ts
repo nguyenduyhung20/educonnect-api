@@ -23,6 +23,6 @@ router.use('/v1/group', [verifyJWT, verifyUser, groupRouter]);
 router.use('/v1/post', [verifyJWT, verifyUser, postRouter]);
 router.use('/v1/explore', [verifyJWT, verifyUser, exploreRouter]);
 router.use('/v1/elearning', [verifyJWT, elearningRouter]);
-router.use('v1/event', [verifyJWT, verifyUser, eventRouter]);
+router.use('/v1/event', [verifyJWT, verifyUser, eventRouter]);
 
 export default router;

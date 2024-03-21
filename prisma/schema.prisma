@@ -6,8 +6,8 @@ generator client {
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  fileName     = "types.ts"
   enumFileName = "enums.ts"
+  fileName     = "types.ts"
 }
 
 datasource db {
