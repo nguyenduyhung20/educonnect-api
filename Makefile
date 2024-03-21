@@ -18,3 +18,6 @@ setupRedis: docker-compose-redis.yml
 
 setupELK: docker-compose-kz-elk.yml
 	docker-compose -f docker-compose-kz-elk.yml up -d
+
+setupMS:
+	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui mongodb-service kafka kafka-ui zookeeper --build -d
