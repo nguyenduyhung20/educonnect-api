@@ -21,6 +21,20 @@ export type admin = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
+export type calendar = {
+  id: Generated<number>;
+  calendarId: string;
+  title: string;
+  category: string;
+  location: string | null;
+  state: string | null;
+  start: string;
+  end: string;
+  user_id: number;
+  create_at: Generated<Timestamp>;
+  update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
 export type classroom = {
   id: Generated<number>;
   name: string | null;
@@ -175,10 +189,10 @@ export type transcript = {
   final_score: number | null;
   student_id: number | null;
   subject_id: number | null;
+  semester: string;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  semester: string;
 };
 export type user = {
   id: Generated<number>;
@@ -200,6 +214,7 @@ export type user = {
 export type DB = {
   account: account;
   admin: admin;
+  calendar: calendar;
   classroom: classroom;
   document: document;
   follow: follow;

@@ -4,6 +4,8 @@ import { UserModel } from '../models/user.model';
 import { AppError } from '../config/AppError';
 import { SearchService } from '../services/group.service';
 import { member_status } from '@prisma/client';
+import { UploadedFile } from 'express-fileupload';
+import { uploadFile } from '../utils/uploadFile';
 
 export const handleGetGroupList = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -16,8 +18,24 @@ export const handleGetGroupList = async (req: Request, res: Response, next: Next
 
 export const handleCreateGroup = async (req: Request, res: Response, next: NextFunction) => {
   const createRequest = req.body;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const userId = req.requestUser.id;
+
+  const listFile = [];
   try {
-    const post = await GroupModel.create(createRequest);
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+
+    const post = await GroupModel.create(createRequest, listFile, userId);
     res.status(200).json({ data: post });
   } catch (error) {
     next(error);
@@ -84,7 +102,6 @@ export const handleCheckJoinGroup = async (req: Request, res: Response, next: Ne
   const { requestGroup: group } = req;
   try {
     const members = await GroupModel.checkJoinGroup(group.id, req.body.userId);
-    console.log(members);
     res.status(200).json({
       data: {
         userId: members?.user_id,
@@ -93,6 +110,17 @@ export const handleCheckJoinGroup = async (req: Request, res: Response, next: Ne
         status: members?.status
       }
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetListApplyingGroup = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupId } = req.params;
+  try {
+    const result = await GroupModel.getListApplyingGroup(parseInt(groupId, 10));
+
+    return res.status(200).json({ data: result });
   } catch (error) {
     next(error);
   }
@@ -111,7 +139,29 @@ export const handleAddGroupMember = async (req: Request, res: Response, next: Ne
     if (!member) {
       throw new AppError(400, 'BAD_REQUEST');
     }
-    const members = await GroupModel.addMember(requestGroup.id, member.id, member.role);
+    const members = await GroupModel.addMember(requestGroup.id, member.id);
+    res.status(200).json({ data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleApproveMember = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupId } = req.params;
+  const body = req.body;
+  try {
+    const members = await GroupModel.approveMember(parseInt(groupId, 10), body.memberId);
+    res.status(200).json({ data: members });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleRefuseMember = async (req: Request, res: Response, next: NextFunction) => {
+  const { groupId } = req.params;
+  const body = req.body;
+  try {
+    const members = await GroupModel.refuseMember(parseInt(groupId, 10), body.memberId);
     res.status(200).json({ data: members });
   } catch (error) {
     next(error);

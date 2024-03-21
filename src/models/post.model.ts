@@ -124,6 +124,7 @@ export class PostModel {
         }
       },
       select: {
+        group_id: true,
         id: true,
         title: true,
         create_at: true,
@@ -155,7 +156,19 @@ export class PostModel {
         }
       }
     });
-    return posts;
+    const mapPosts = posts.map((item) => {
+      return {
+        id: item.id,
+        title: item.title,
+        user: item.user,
+        contentSummarization: item.post_summarization?.content_summarization,
+        createAt: item.create_at,
+        commentCount: item._count.other_post,
+        interactCount: item._count.interact,
+        groupId: item.group_id ?? null
+      };
+    });
+    return mapPosts;
   }
 
   static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number, commentLimit = 20) {
