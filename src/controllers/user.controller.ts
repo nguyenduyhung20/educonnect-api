@@ -26,10 +26,20 @@ export const handleGetGroupUserHost = async (req: Request, res: Response, next: 
   }
 };
 
-export const handleGetGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+export const handleGetGroupUserByRole = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { requestUser } = req;
     const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'user');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserJoin(requestUser.id);
     res.status(200).json({ data: group });
   } catch (error) {
     next(error);
@@ -174,7 +184,7 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
     const newsfeed = await PostService.getUserPosts({
       userId: user.id,
       userIdRequesting: requestUser.id,
-      detail: true
+      detail: false
     });
 
     const data = {

@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   handleDeleteUser,
+  handleGetGroupUserByRole,
   handleGetGroupUserHost,
   handleGetGroupUserJoin,
   handleGetNewsfeed,
@@ -32,6 +33,7 @@ userRouter.get('/hot-post', [verifyUser, handleGetHotPostByUserID]);
 userRouter.use('/follow', [verifyUser, followRouter]);
 
 userRouter.get('/:userId/host-group', [verifyUser, handleGetGroupUserHost]);
-userRouter.get('/:userId/join-group', [verifyUser, handleGetGroupUserJoin]);
+userRouter.get('/:userId/join-group', [verifyUser, handleGetGroupUserByRole]);
+userRouter.get('/:userId/host-join-group', [verifyUser, handleGetGroupUserJoin]);
 
 userRouter.get('/:userId', [verifyUser, handleGetUserProfilePage]);
