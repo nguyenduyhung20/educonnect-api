@@ -20,6 +20,6 @@ cron.schedule('* * * * *', async () => {
     await handleSummarizeMostInteractPost();
   } catch (error) {
     logger.error(error);
-    return error;
+    throw error;
   }
 });

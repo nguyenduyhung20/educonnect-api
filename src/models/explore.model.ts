@@ -1,33 +1,50 @@
 import { redisClient } from '../config/redis-client';
 import { handleSummarizeMostInteractPost } from '../controllers/summarizePost.controller';
+import { logger } from '../utils/logger';
 import { PostModel } from './post.model';
 import { UserModel } from './user.model';
 
 export class ExploreModel {
   static async getExplorePost() {
-    const postIdList = await redisClient.sMembers('summary');
-    if (postIdList) {
-      const postIdNumberList = postIdList.map(Number);
-      const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
-      return posts;
-    } else {
-      await handleSummarizeMostInteractPost();
+    try {
+      const postIdList = await redisClient.sMembers('summary');
+      if (postIdList.length) {
+        const postIdNumberList = postIdList.map(Number);
+        const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
+        return posts;
+      } else {
+        const posts = await handleSummarizeMostInteractPost();
+        return posts;
+      }
+    } catch (error) {
+      logger.error('Error in handleSummarizeMostInteractPost:', error);
+      throw error; // Re-throw the error to propagate it up the call stack
     }
   }
 
   static async getPublicExplorePost() {
-    const postIdList = await redisClient.sMembers('summary');
-    if (postIdList) {
-      const postIdNumberList = postIdList.map(Number);
-      const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
-      return posts.filter((item) => !item.groupId);
-    } else {
-      await handleSummarizeMostInteractPost();
+    try {
+      const postIdList = await redisClient.sMembers('summary');
+      if (postIdList) {
+        const postIdNumberList = postIdList.map(Number);
+        const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
+        return posts.filter((item) => !item.group);
+      } else {
+        await handleSummarizeMostInteractPost();
+      }
+    } catch (error) {
+      logger.error(error);
+      throw error;
     }
   }
 
   static async getPublicMostUserFollower() {
-    const results = await UserModel.getUserMostFollower();
-    return results;
+    try {
+      const results = await UserModel.getUserMostFollower();
+      return results;
+    } catch (error) {
+      logger.error(error);
+      throw error;
+    }
   }
 }

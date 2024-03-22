@@ -6,6 +6,7 @@ import { PostService } from '../services/post.service';
 import { redisClient } from '../config/redis-client';
 import { PostModel } from '../models/post.model';
 import { GroupModel } from '../models/group.model';
+import { CACHE_NEWSFEED_POST } from '../constants/redis';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -128,7 +129,6 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
   const { requestUser } = req;
 
   try {
-    await redisClient.select(1);
     const listIdPosts = await redisClient.zRange(`${requestUser.id}`, 0, 9);
     await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
     if (listIdPosts.length) {
@@ -146,7 +146,6 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
       const hotposts = await PostModel.getHotPostByUserID(requestUser.id);
 
       const results = [...(posts || []), ...(mySeftPosts || []), ...(hotposts || [])];
-      redisClient.select(1);
       results.forEach(async (item) => {
         const key = `${requestUser.id}` || '';
         const value = `${item.id}` || '';

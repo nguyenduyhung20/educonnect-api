@@ -47,7 +47,7 @@ export class PostService {
         }))
       }))
     };
-    return mappedPost;
+    return { ...mappedPost, group: post.group ?? null };
   }
 
   static async getUserPosts({
@@ -75,7 +75,8 @@ export class PostService {
           createdAt: post.create_at,
           fileContent: post.file_content.map((item) => {
             return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-          })
+          }),
+          group: post.group ?? null
         };
         return mappedPost;
       });
@@ -97,6 +98,7 @@ export class PostService {
           fileContent: post.file_content.map((item) => {
             return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
           }),
+          group: post.group ?? null,
           comment: post.other_post.map((comment) => ({
             id: comment.id,
             user: comment.user,
