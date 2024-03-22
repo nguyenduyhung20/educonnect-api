@@ -1,6 +1,6 @@
 import { Message } from 'kafkajs';
 import { producer } from './kafka-client';
-import { KAFKA_CLIENT_ID, KAFKA_TOPIC } from '../constants/constants';
+import { KAFKA_TOPIC } from '../constants/constants';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 
@@ -22,7 +22,7 @@ export const produceUserEventMessage = async (input: IUserEventMessage) => {
         value: JSON.stringify(validatedInput)
       }
     ];
-    await producer(KAFKA_TOPIC.USER_EVENTS, message, KAFKA_CLIENT_ID.USER_EVENTS_1);
+    await producer(KAFKA_TOPIC.USER_EVENTS, message);
   } catch (error) {
     logger.error('Error in validating event');
   }
