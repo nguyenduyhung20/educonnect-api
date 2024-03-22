@@ -10,6 +10,7 @@ import { redisClient } from '../config/redis-client';
 import cheerio from 'cheerio';
 import { apiGet } from '../utils/apiRequest';
 import axios from 'axios';
+import { CACHE_NEWSFEED_POST } from '../constants/redis';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -133,8 +134,6 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
     }
 
     const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
-
-    redisClient.select(1);
 
     // const messages = [
     //   {

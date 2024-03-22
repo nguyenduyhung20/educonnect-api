@@ -124,7 +124,12 @@ export class PostModel {
         }
       },
       select: {
-        group_id: true,
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
         id: true,
         title: true,
         create_at: true,
@@ -165,7 +170,7 @@ export class PostModel {
         createAt: item.create_at,
         commentCount: item._count.other_post,
         interactCount: item._count.interact,
-        groupId: item.group_id ?? null
+        group: item.group ?? null
       };
     });
     return mapPosts;
@@ -181,45 +186,6 @@ export class PostModel {
       },
       select: {
         ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: {
-            ...COMMENT_SELECT,
-            other_post: {
-              take: commentLimit,
-              where: {
-                deleted: false
-              },
-              select: {
-                ...COMMENT_SELECT,
-                interact: {
-                  where: {
-                    user_id: userIdRequesting,
-                    deleted: false
-                  },
-                  select: {
-                    type: true
-                  }
-                }
-              }
-            },
-            interact: {
-              where: {
-                user_id: userIdRequesting,
-                deleted: false
-              },
-              select: {
-                type: true
-              }
-            }
-          },
-          orderBy: {
-            create_at: 'desc'
-          }
-        },
         interact: {
           where: {
             user_id: userIdRequesting,
@@ -227,6 +193,12 @@ export class PostModel {
           },
           select: {
             type: true
+          }
+        },
+        group: {
+          select: {
+            id: true,
+            title: true
           }
         }
       }
@@ -241,7 +213,8 @@ export class PostModel {
         userInteract: post.interact[0]?.type ?? null,
         fileContent: post.file_content.map((item) => {
           return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-        })
+        }),
+        group: post.group ?? null
       };
     });
     return mappedResult;
@@ -308,6 +281,12 @@ export class PostModel {
           select: {
             type: true
           }
+        },
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
     });
@@ -328,7 +307,6 @@ export class PostModel {
           take: postLimit,
           where: {
             parent_post_id: null,
-            group_id: null,
             deleted: false
           },
           select: {
@@ -340,6 +318,12 @@ export class PostModel {
               },
               select: {
                 type: true
+              }
+            },
+            group: {
+              select: {
+                id: true,
+                title: true
               }
             }
           }
@@ -363,7 +347,6 @@ export class PostModel {
           take: postLimit,
           where: {
             parent_post_id: null,
-            group_id: null,
             deleted: false
           },
           select: {
@@ -416,6 +399,12 @@ export class PostModel {
               },
               select: {
                 type: true
+              }
+            },
+            group: {
+              select: {
+                id: true,
+                title: true
               }
             },
             ...InteractCountInclude
@@ -611,7 +600,6 @@ export class PostModel {
       orderBy: { create_at: 'desc' },
       where: {
         parent_post_id: null,
-        group_id: null,
         deleted: false
       },
       select: {
@@ -634,6 +622,12 @@ export class PostModel {
           select: {
             type: true
           }
+        },
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       }
     });
@@ -647,7 +641,8 @@ export class PostModel {
         userInteract: post.interact[0]?.type ?? null,
         fileContent: post.file_content.map((item) => {
           return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-        })
+        }),
+        group: post.group ?? null
       };
     });
 
@@ -663,7 +658,12 @@ export class PostModel {
       },
       select: {
         ...COMMENT_SELECT,
-        group_id: true,
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
         post_summarization: {
           where: {
             deleted: false
@@ -692,7 +692,7 @@ export class PostModel {
         commentCount: post._count.other_post,
         interactCount: post._count.interact,
         createdAt: post.create_at instanceof Date ? post.create_at.toISOString() : post.create_at,
-        groupId: post.group_id ?? undefined,
+        group: post.group ?? undefined,
         content_summarization: post.post_summarization?.content_summarization ?? undefined
       };
     });

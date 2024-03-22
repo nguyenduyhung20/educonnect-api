@@ -6,7 +6,12 @@ export class SummarizePostModel {
   static async postSummarizePost(
     posts: Prisma.post_summarizationCreateManyInput[]
   ): Promise<{ summaries: Prisma.post_summarizationCreateManyInput[] }> {
-    return await apiPost('/summarize', posts);
+    try {
+      return await apiPost('/summarize', posts);
+    } catch (error) {
+      // Handle the error here
+      throw new Error(`Failed to summarize posts ${error}`);
+    }
   }
 
   static async createSummarizeContentPost(summaries: Prisma.post_summarizationCreateManyInput[]) {
