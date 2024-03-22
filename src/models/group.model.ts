@@ -88,6 +88,67 @@ export class GroupModel {
     });
   }
 
+  static async getGroupsByUserJoin(userId: number) {
+    const results = await prisma.member.findMany({
+      where: {
+        user_id: userId,
+        status: 'active',
+        deleted: false
+      },
+      select: {
+        group: {
+          include: {
+            member: {
+              take: 4,
+              select: {
+                role: true,
+                status: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatar: true
+                  }
+                }
+              },
+              where: {
+                deleted: false,
+                status: 'active'
+              }
+            },
+            _count: {
+              select: {
+                member: {
+                  where: {
+                    deleted: false,
+                    status: 'active'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    return results.map((item) => {
+      const group = item.group;
+      return {
+        id: group.id,
+        title: group.title,
+        avatar: group.avatar?.startsWith('http')
+          ? group.avatar
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.avatar,
+        background: group.background?.startsWith('http')
+          ? group.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.background,
+        metaTitle: group.meta_title,
+        createAt: group.create_at,
+        memberCount: group._count.member,
+        members: group.member
+      };
+    });
+  }
+
   static async getMostMembers(take = 10) {
     const groups = await prisma.group.findMany({
       include: {
