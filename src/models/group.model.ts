@@ -19,7 +19,7 @@ export class GroupModel {
         avatar: item.avatar?.startsWith('http') ? item.avatar : process.env.NEXT_PUBLIC_API_HOST ?? '' + item.avatar,
         background: item.background?.startsWith('http')
           ? item.background
-          : process.env.NEXT_PUBLIC_API_HOST ?? '' + item.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.background
       };
     });
   }
@@ -83,7 +83,17 @@ export class GroupModel {
         metaTitle: group.meta_title,
         createAt: group.create_at,
         memberCount: group._count.member,
-        members: group.member
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
       };
     });
   }
@@ -144,7 +154,17 @@ export class GroupModel {
         metaTitle: group.meta_title,
         createAt: group.create_at,
         memberCount: group._count.member,
-        members: group.member
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
       };
     });
   }
@@ -202,7 +222,17 @@ export class GroupModel {
         metaTitle: group.meta_title,
         createAt: group.create_at,
         memberCount: group._count.member,
-        members: group.member
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
       };
     });
 

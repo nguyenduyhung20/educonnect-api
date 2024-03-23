@@ -120,7 +120,19 @@ export const handleGetListApplyingGroup = async (req: Request, res: Response, ne
   try {
     const result = await GroupModel.getListApplyingGroup(parseInt(groupId, 10));
 
-    return res.status(200).json({ data: result });
+    return res.status(200).json({
+      data: result.map((item) => {
+        return {
+          ...item,
+          user: {
+            ...item.user,
+            avatar: item.user.avatar?.startsWith('http')
+              ? item.user.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (item.user.avatar ?? '')
+          }
+        };
+      })
+    });
   } catch (error) {
     next(error);
   }

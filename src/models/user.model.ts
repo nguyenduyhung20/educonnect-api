@@ -4,6 +4,27 @@ import { AppError } from '../config/AppError';
 import { PostService } from '../services/post.service';
 
 export class UserModel {
+  static async changeAvatar(userId: number, image: string) {
+    return prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        avatar: image
+      }
+    });
+  }
+  static async changeBackground(userId: number, image: string) {
+    return prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        background: image
+      }
+    });
+  }
+
   static async getAll(limit = 20) {
     return prisma.user.findMany({
       take: limit,
@@ -17,12 +38,23 @@ export class UserModel {
   }
 
   static async getById(id: number) {
-    return prisma.user.findFirst({
+    const results = await prisma.user.findFirst({
       where: {
         id: id,
         deleted: false
       }
     });
+    return results
+      ? {
+          ...results,
+          avatar: results?.avatar?.startsWith('http')
+            ? results.avatar
+            : process.env.NEXT_PUBLIC_API_HOST + (results?.avatar ?? ''),
+          background: results?.background?.startsWith('http')
+            ? results.background
+            : process.env.NEXT_PUBLIC_API_HOST + (results?.background ?? '')
+        }
+      : null;
   }
 
   static async getParentById(id: number) {
@@ -128,7 +160,11 @@ export class UserModel {
           id: follower.user_follow_follower_idTouser.id,
           uuid: follower.user_follow_follower_idTouser.user_uuid,
           name: follower.user_follow_follower_idTouser.name,
-          avatar: follower.user_follow_follower_idTouser.avatar ?? null
+          avatar: follower.user_follow_follower_idTouser.avatar
+            ? follower.user_follow_follower_idTouser.avatar?.startsWith('http')
+              ? follower.user_follow_follower_idTouser.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (follower.user_follow_follower_idTouser.avatar ?? '')
+            : null
         })),
         count: queryResult._count.follow_follow_followed_idTouser
       },
@@ -137,7 +173,11 @@ export class UserModel {
           id: following.user_follow_followed_idTouser.id,
           uuid: following.user_follow_followed_idTouser.user_uuid,
           name: following.user_follow_followed_idTouser.name,
-          avatar: following.user_follow_followed_idTouser.avatar ?? null
+          avatar: following.user_follow_followed_idTouser.avatar
+            ? following.user_follow_followed_idTouser.avatar?.startsWith('http')
+              ? following.user_follow_followed_idTouser.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (following.user_follow_followed_idTouser.avatar ?? '')
+            : null
         })),
         count: queryResult._count.follow_follow_follower_idTouser
       }
@@ -191,7 +231,11 @@ export class UserModel {
     const result = queryResult.follow_follow_follower_idTouser.map((following) => ({
       id: following.user_follow_followed_idTouser.id,
       name: following.user_follow_followed_idTouser.name,
-      avatar: following.user_follow_followed_idTouser.avatar ?? null
+      avatar: following.user_follow_followed_idTouser.avatar
+        ? following.user_follow_followed_idTouser.avatar?.startsWith('http')
+          ? following.user_follow_followed_idTouser.avatar
+          : process.env.NEXT_PUBLIC_API_HOST + (following.user_follow_followed_idTouser.avatar ?? '')
+        : null
     }));
 
     return result;
@@ -313,7 +357,10 @@ export class UserModel {
       return {
         id: user.id,
         name: user.name,
-        avatar: user.avatar,
+        avatar: user.avatar?.startsWith('http') ? user.avatar : process.env.NEXT_PUBLIC_API_HOST + (user.avatar ?? ''),
+        background: user.background?.startsWith('http')
+          ? user.background
+          : process.env.NEXT_PUBLIC_API_HOST + (user.background ?? ''),
         email: user.email,
         birthday: user.birthday,
         sex: user.sex,
@@ -354,7 +401,7 @@ export class UserModel {
       return {
         id: item.id,
         name: item.name,
-        avatar: item.avatar,
+        avatar: item.avatar?.startsWith('http') ? item.avatar : process.env.NEXT_PUBLIC_API_HOST + (item.avatar ?? ''),
         followerCount: item._count.follow_follow_followed_idTouser
       };
     });
