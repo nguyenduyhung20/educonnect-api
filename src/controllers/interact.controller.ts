@@ -62,15 +62,17 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
             })
           }
         ]);
-
-        // Produce like event
-        await produceUserEventMessage({
-          userId: requestUser.id.toString(),
-          postId: requestPost.id.toString(),
-          interactionType: 'like',
-          timestamp: dayjs().utc().format()
-        });
       }
+    }
+
+    if (inputFields.type === 'like' && interaction.deleted === false) {
+      // Produce like event
+      await produceUserEventMessage({
+        userId: requestUser.id.toString(),
+        postId: requestPost.id.toString(),
+        interactionType: inputFields.type,
+        timestamp: dayjs().utc().format()
+      });
     }
 
     return res.status(200).json({ data: interaction });
