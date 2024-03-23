@@ -68,7 +68,12 @@ type RawPost = Prisma.postGetPayload<{
 const mapComment = (post: RawComment) => {
   const result = {
     id: post.id,
-    user: post.user,
+    user: {
+      ...post.user,
+      avatar: post.user.avatar?.startsWith('http')
+        ? post.user.avatar
+        : process.env.NEXT_PUBLIC_API_HOST + (post.user.avatar ?? '')
+    },
     title: post.title,
     content: post.content,
     parentPostId: post.post?.id ?? undefined,
@@ -165,7 +170,12 @@ export class PostModel {
       return {
         id: item.id,
         title: item.title,
-        user: item.user,
+        user: {
+          ...item.user,
+          avatar: item.user.avatar?.startsWith('http')
+            ? item.user.avatar
+            : process.env.NEXT_PUBLIC_API_HOST + (item.user.avatar ?? '')
+        },
         contentSummarization: item.post_summarization?.content_summarization,
         createAt: item.create_at,
         commentCount: item._count.other_post,

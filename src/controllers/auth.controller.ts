@@ -35,7 +35,9 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
       id: account.id,
       name: account.user.name,
       role: account.user.role,
-      avatar: account.user.avatar
+      avatar: account.user.avatar?.startsWith('http')
+        ? account.user.avatar
+        : (process.env.NEXT_PUBLIC_API_HOST ?? '') + account.user.avatar
     };
 
     res

@@ -65,7 +65,12 @@ export class PostService {
       const mappedResult = result.post.map((post) => {
         const mappedPost = {
           id: post.id,
-          user: post.user,
+          user: {
+            ...post.user,
+            avatar: post.user.avatar?.startsWith('http')
+              ? post.user.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (post.user.avatar ?? '')
+          },
           title: post.title,
           content: post.content,
           parentPostId: post.post?.id ?? undefined,
@@ -87,7 +92,12 @@ export class PostService {
       const mappedResult = result.post.map((post) => {
         const mappedPost = {
           id: post.id,
-          user: post.user,
+          user: {
+            ...post.user,
+            avatar: post.user.avatar?.startsWith('http')
+              ? post.user.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (post.user.avatar ?? '')
+          },
           title: post.title,
           content: post.content,
           parentPostId: post.post?.id ?? undefined,
@@ -133,7 +143,12 @@ export class PostService {
     const mappedResult = result.post.map((post) => {
       const mappedPost = {
         id: post.id,
-        user: post.user,
+        user: {
+          ...post.user,
+          avatar: post.user.avatar?.startsWith('http')
+            ? post.user.avatar
+            : process.env.NEXT_PUBLIC_API_HOST + (post.user.avatar ?? '')
+        },
         title: post.title,
         content: post.content,
         parentPostId: post.post?.id ?? undefined,
