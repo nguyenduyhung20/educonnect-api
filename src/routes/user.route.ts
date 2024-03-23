@@ -9,6 +9,8 @@ import {
   handleGetUserNotification,
   handleGetUserProfilePage,
   handleGetUsers,
+  handleUpdateAvatar,
+  handleUpdateBackGround,
   handleUpdateUser
 } from '../controllers/user.controller';
 import { verifyUser } from '../middleware/user.middleware';
@@ -37,3 +39,6 @@ userRouter.get('/:userId/join-group', [verifyUser, handleGetGroupUserByRole]);
 userRouter.get('/:userId/host-join-group', [verifyUser, handleGetGroupUserJoin]);
 
 userRouter.get('/:userId', [verifyUser, handleGetUserProfilePage]);
+
+userRouter.post('/avatar/:userId', [verifyUser, handleUpdateAvatar]);
+userRouter.post('/background/:userId', [verifyUser, handleUpdateBackGround]);

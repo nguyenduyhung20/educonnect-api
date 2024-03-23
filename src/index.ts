@@ -11,12 +11,12 @@ const startServer = () => {
 };
 const scheduleCronJob = () => {
   cron.schedule('* * * * *', async () => {
-    logger.info('Started summarizing posts job');
+    logger.info('Running your cron job');
     try {
       await handleSummarizeMostInteractPost();
     } catch (error) {
       logger.error(error);
-      return error;
+      throw error;
     }
   });
 };
