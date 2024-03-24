@@ -25,6 +25,15 @@ export class UserModel {
     });
   }
 
+  static async getAdminById(id: number) {
+    return prisma.admin.findUnique({
+      where: {
+        id: id,
+        deleted: false
+      }
+    });
+  }
+
   static async getParentById(id: number) {
     return prisma.parent.findFirst({
       where: {
@@ -45,6 +54,12 @@ export class UserModel {
 
   static async create(data: Prisma.userCreateInput) {
     return prisma.user.create({
+      data
+    });
+  }
+
+  static async createAccount(data: any) {
+    return prisma.account.create({
       data
     });
   }

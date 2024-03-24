@@ -134,7 +134,8 @@ CREATE TABLE "student" (
     "parent_id" int,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
-    "deleted" boolean DEFAULT False NOT NULL
+    "deleted" boolean DEFAULT False NOT NULL,
+    "school_id" int
 );
 
 CREATE TABLE "parent" (
@@ -148,7 +149,8 @@ CREATE TABLE "teacher" (
     "id" int PRIMARY KEY,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
-    "deleted" boolean DEFAULT False NOT NULL
+    "deleted" boolean DEFAULT False NOT NULL,
+    "school_id" int
 );
 
 CREATE TABLE "school" (
@@ -187,10 +189,11 @@ CREATE TABLE "classroom" (
 CREATE TABLE "learn" (
     "class_id" int,
     "subject_id" int,
+    "teacher_id" int,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL,
-    PRIMARY KEY ("class_id", "subject_id")
+    PRIMARY KEY ("class_id", "subject_id", "teacher_id")
 );
 
 CREATE TABLE "document" (
@@ -198,8 +201,10 @@ CREATE TABLE "document" (
     "title" varchar,
     "url" varchar,
     "subject_id" int,
+    "class_id" int,
     "teacher_id" int,
     "document_uuid" uuid DEFAULT uuid_generate_v4 () NOT NULL,
+    "public" BOOLEAN DEFAULT false NOT NULL,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL
@@ -229,10 +234,11 @@ CREATE TABLE "subject" (
 CREATE TABLE "teaching" (
     "subject_id" int,
     "teacher_id" int,
+    "class_id" int,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL,
-    PRIMARY KEY ("subject_id", "teacher_id")
+    PRIMARY KEY ("subject_id", "teacher_id", "class_id")
 );
 
 CREATE TABLE "of" (
@@ -323,6 +329,16 @@ ALTER TABLE
     "admin"
 ADD
     FOREIGN KEY ("school_id") REFERENCES "school" ("id");
+    
+ALTER TABLE
+    "student"
+ADD
+    FOREIGN KEY ("school_id") REFERENCES "school" ("id");
+
+ALTER TABLE
+    "teacher"
+ADD
+    FOREIGN KEY ("school_id") REFERENCES "school" ("id");
 
 ALTER TABLE
     "student"
@@ -360,9 +376,19 @@ ADD
     FOREIGN KEY ("subject_id") REFERENCES "subject" ("id");
 
 ALTER TABLE
+    "learn"
+ADD 
+    FOREIGN KEY ("teacher_id") REFERENCES "teacher" ("id");
+
+ALTER TABLE
     "document"
 ADD
     FOREIGN KEY ("subject_id") REFERENCES "subject" ("id");
+
+ALTER TABLE
+    "document"
+ADD
+    FOREIGN KEY ("class_id") REFERENCES "classroom" ("id");
 
 ALTER TABLE
     "document"
@@ -378,16 +404,6 @@ ALTER TABLE
     "transcript"
 ADD
     FOREIGN KEY ("subject_id") REFERENCES "subject" ("id");
-
-ALTER TABLE
-    "teaching"
-ADD
-    FOREIGN KEY ("subject_id") REFERENCES "subject" ("id");
-
-ALTER TABLE
-    "teaching"
-ADD
-    FOREIGN KEY ("teacher_id") REFERENCES "teacher" ("id");
 
 ALTER TABLE
     "of"

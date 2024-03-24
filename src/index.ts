@@ -14,12 +14,12 @@ app.listen(PORT, () => logger.info(`running server on http://localhost:${PORT}`)
 //   await redisClient.connect();
 // })();
 
-cron.schedule('* * * * *', async () => {
-  logger.info('Running your cron job');
-  try {
-    await handleSummarizeMostInteractPost();
-  } catch (error) {
-    logger.error(error);
-    return error;
-  }
-});
+// cron.schedule('* * * * *', async () => {
+//   logger.info('Running your cron job');
+//   try {
+//     await handleSummarizeMostInteractPost();
+//   } catch (error) {
+//     logger.error(error);
+//     return error;
+//   }
+// });
