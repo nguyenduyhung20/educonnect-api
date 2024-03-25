@@ -41,23 +41,23 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
           inputFields.info.itemType == 'post' ? 'bài viết' : 'bình luận'
         } của bạn.`;
 
-        await NotificationModel.create({
-          userId: inputFields.info.receiverID,
-          message: content
-        });
+        // await NotificationModel.create({
+        //   userId: inputFields.info.receiverID,
+        //   message: content
+        // });
 
-        const messages = [
-          {
-            key: 'notification',
-            value: JSON.stringify({
-              senderInfo: { id: requestUser.id, avatar: inputFields.info.senderAvatar },
-              receiverID: inputFields.info.receiverID,
-              content: content,
-              postId: inputFields.info.postID
-            })
-          }
-        ];
-        producer('notification-topic', messages, 'kafka-producer-notification');
+        // const messages = [
+        //   {
+        //     key: 'notification',
+        //     value: JSON.stringify({
+        //       senderInfo: { id: requestUser.id, avatar: inputFields.info.senderAvatar },
+        //       receiverID: inputFields.info.receiverID,
+        //       content: content,
+        //       postId: inputFields.info.postID
+        //     })
+        //   }
+        // ];
+        // producer('notification-topic', messages, 'kafka-producer-notification');
       }
     }
 
