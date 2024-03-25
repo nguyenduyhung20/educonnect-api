@@ -3,6 +3,10 @@ import { InteractModel } from '../models/interact.model';
 import { producer } from '../services/kafka-client';
 import { NotificationModel } from '../models/notification.model';
 import { interact_type } from '@prisma/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { produceUserEventMessage } from '../services/recommend.service';
+dayjs.extend(utc);
 
 export const handleGetPostInteract = async (req: Request, res: Response, next: NextFunction) => {
   const { requestPost } = req;
@@ -32,7 +36,7 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
   const { requestUser, requestPost } = req;
   const inputFields: CreateInteractFields = req.body;
   try {
-    const users = await InteractModel.create(inputFields, requestUser.id, requestPost.id);
+    const interaction = await InteractModel.create(inputFields, requestUser.id, requestPost.id);
 
     const action = inputFields.action;
     if (action) {
@@ -41,27 +45,37 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
           inputFields.info.itemType == 'post' ? 'bài viết' : 'bình luận'
         } của bạn.`;
 
-        // await NotificationModel.create({
-        //   userId: inputFields.info.receiverID,
-        //   message: content
-        // });
+        await NotificationModel.create({
+          userId: inputFields.info.receiverID,
+          message: content
+        });
 
-        // const messages = [
-        //   {
-        //     key: 'notification',
-        //     value: JSON.stringify({
-        //       senderInfo: { id: requestUser.id, avatar: inputFields.info.senderAvatar },
-        //       receiverID: inputFields.info.receiverID,
-        //       content: content,
-        //       postId: inputFields.info.postID
-        //     })
-        //   }
-        // ];
-        // producer('notification-topic', messages, 'kafka-producer-notification');
+        // Produce notification
+        producer('notification-topic', [
+          {
+            key: 'notification',
+            value: JSON.stringify({
+              senderInfo: { id: requestUser.id, avatar: inputFields.info.senderAvatar },
+              receiverID: inputFields.info.receiverID,
+              content: content,
+              postId: inputFields.info.postID
+            })
+          }
+        ]);
       }
     }
 
-    return res.status(200).json({ data: users });
+    if (inputFields.type === 'like' && interaction.deleted === false) {
+      // Produce like event
+      await produceUserEventMessage({
+        userId: requestUser.id.toString(),
+        postId: requestPost.id.toString(),
+        interactionType: inputFields.type,
+        timestamp: dayjs().utc().format()
+      });
+    }
+
+    return res.status(200).json({ data: interaction });
   } catch (error) {
     next(error);
   }

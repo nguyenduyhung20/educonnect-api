@@ -2,9 +2,17 @@ import { Kafka, Partitioners, EachMessagePayload } from 'kafkajs';
 
 const brokers = ['localhost:29092'];
 
-export async function consumer(topic: string, clientId = 'kafka-consumer-client') {
-  const kafka = new Kafka({ clientId, brokers });
-  const consumer = kafka.consumer({ groupId: clientId });
+const kafka = new Kafka({
+  clientId: 'web-server-client',
+  brokers
+});
+
+const consumerInstance = kafka.consumer({ groupId: 'web-server-consumer-client' });
+const producerInstance = kafka.producer({
+  createPartitioner: Partitioners.LegacyPartitioner
+});
+
+export async function consumer(topic: string, consumer = consumerInstance) {
   await consumer.connect();
   await consumer.subscribe({ topic });
   await consumer.run({
@@ -14,31 +22,10 @@ export async function consumer(topic: string, clientId = 'kafka-consumer-client'
   });
 }
 
-export async function producer(topic: string, messages: any, clientId = 'kafka-producer-client') {
-  const kafka = new Kafka({
-    clientId,
-    brokers
-  });
-
-  const producer = kafka.producer({
-    createPartitioner: Partitioners.LegacyPartitioner
-  });
+export async function producer(topic: string, messages: any, producer = producerInstance) {
   await producer.connect();
   await producer.send({
     topic,
     messages: messages
   });
 }
-
-// produce()
-//     .then(() => {
-//         console.log('produced successfully');
-//     })
-//     .catch((err) => console.log(err));
-
-// consume().
-//     then((data) => {
-//         console.log('consumed successfully')
-//         console.log(data)
-//     })
-//     .catch(err => console.log(err));

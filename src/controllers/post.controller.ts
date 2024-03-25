@@ -11,6 +11,8 @@ import cheerio from 'cheerio';
 import { apiGet } from '../utils/apiRequest';
 import axios from 'axios';
 import { CACHE_NEWSFEED_POST } from '../constants/redis';
+import { produceUserEventMessage } from '../services/recommend.service';
+import dayjs from 'dayjs';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -183,6 +185,13 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
   const { requestUser, requestPost, body: postFields } = req;
   try {
     const post = await PostModel.createComment(requestUser.id, requestPost.id, postFields);
+    // Produce comment event
+    await produceUserEventMessage({
+      userId: requestUser.id.toString(),
+      postId: requestPost.id.toString(),
+      interactionType: 'comment',
+      timestamp: dayjs().utc().format()
+    });
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);
