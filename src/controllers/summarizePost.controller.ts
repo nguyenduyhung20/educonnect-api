@@ -26,14 +26,15 @@ export const handleSummarizeMostInteractPost = async () => {
       }
     });
 
-    results.summaries.forEach(async (summary) => {
+    for (const summary of results.summaries) {
       const key = `summary`;
       await redisClient.SADD(key, `${summary.id}`);
-    });
+    }
 
     return posts;
   } catch (error: any) {
-    return error;
+    logger.error(error);
+    throw error;
   }
 };
 

@@ -1,57 +1,50 @@
-import prisma from '../databases/client';
 import { redisClient } from '../config/redis-client';
 import { handleSummarizeMostInteractPost } from '../controllers/summarizePost.controller';
+import { logger } from '../utils/logger';
+import { PostModel } from './post.model';
+import { UserModel } from './user.model';
 
 export class ExploreModel {
-  static async getExplorePost(postLimit = 100) {
-    const postIdList = await redisClient.sMembers('summary');
-    if (postIdList) {
-      console.log('this is ', postIdList);
-      const postIdNumberList = postIdList.map(Number);
+  static async getExplorePost() {
+    try {
+      const postIdList = await redisClient.sMembers('summary');
+      if (postIdList.length) {
+        const postIdNumberList = postIdList.map(Number);
+        const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
+        return posts;
+      } else {
+        const posts = await handleSummarizeMostInteractPost();
+        return posts;
+      }
+    } catch (error) {
+      logger.error('Error in handleSummarizeMostInteractPost:', error);
+      throw error; // Re-throw the error to propagate it up the call stack
+    }
+  }
 
-      const posts = await prisma.post.findMany({
-        take: postLimit,
-        where: {
-          deleted: false,
-          id: {
-            in: postIdNumberList
-          }
-        },
-        select: {
-          id: true,
-          title: true,
-          create_at: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true
-            }
-          },
-          post_summarization: {
-            select: {
-              content_summarization: true
-            }
-          },
-          _count: {
-            select: {
-              interact: {
-                where: {
-                  deleted: false
-                }
-              },
-              other_post: {
-                where: {
-                  deleted: false
-                }
-              }
-            }
-          }
-        }
-      });
-      return posts;
-    } else {
-      await handleSummarizeMostInteractPost();
+  static async getPublicExplorePost() {
+    try {
+      const postIdList = await redisClient.sMembers('summary');
+      if (postIdList) {
+        const postIdNumberList = postIdList.map(Number);
+        const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
+        return posts.filter((item) => !item.group);
+      } else {
+        await handleSummarizeMostInteractPost();
+      }
+    } catch (error) {
+      logger.error(error);
+      throw error;
+    }
+  }
+
+  static async getPublicMostUserFollower() {
+    try {
+      const results = await UserModel.getUserMostFollower();
+      return results;
+    } catch (error) {
+      logger.error(error);
+      throw error;
     }
   }
 }

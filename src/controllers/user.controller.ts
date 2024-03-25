@@ -3,11 +3,92 @@ import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
 import { AppError } from '../config/AppError';
 import { PostService } from '../services/post.service';
+import { redisClient } from '../config/redis-client';
+import { PostModel } from '../models/post.model';
+import { GroupModel } from '../models/group.model';
+import { UploadedFile } from 'express-fileupload';
+import { uploadFile } from '../utils/uploadFile';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await UserModel.getAll();
     res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateAvatar = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const users = await UserModel.changeAvatar(requestUser.id, listFile[0]);
+    res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateBackGround = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const users = await UserModel.changeBackground(requestUser.id, listFile[0]);
+    res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserHost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'admin');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserByRole = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'user');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserJoin(requestUser.id);
+    res.status(200).json({ data: group });
   } catch (error) {
     next(error);
   }
@@ -111,9 +192,31 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
   const { requestUser } = req;
 
   try {
-    const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+    const listIdPosts = await redisClient.zRange(`${requestUser.id}`, 0, 9);
+    await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
+    if (listIdPosts.length) {
+      const postIdNumberList = listIdPosts.map(Number);
+      const posts = await PostModel.getByListIdNotHaveComment(postIdNumberList, requestUser.id);
+      res.status(200).json({ data: posts });
+    } else {
+      const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+      const mySeftPosts = await PostService.getUserPosts({
+        userId: requestUser.id,
+        userIdRequesting: requestUser.id,
+        detail: false
+      });
 
-    res.status(200).json({ data: posts });
+      const hotposts = await PostModel.getHotPostByUserID(requestUser.id);
+
+      const results = [...(posts || []), ...(mySeftPosts || []), ...(hotposts || [])];
+      results.forEach(async (item) => {
+        const key = `${requestUser.id}` || '';
+        const value = `${item.id}` || '';
+        await redisClient.zAdd(key, { score: 1, value: value });
+      });
+
+      res.status(200).json({ data: results });
+    }
   } catch (error) {
     next(error);
   }
@@ -143,7 +246,7 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
     const newsfeed = await PostService.getUserPosts({
       userId: user.id,
       userIdRequesting: requestUser.id,
-      detail: true
+      detail: false
     });
 
     const data = {

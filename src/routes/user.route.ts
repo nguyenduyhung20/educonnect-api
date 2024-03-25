@@ -1,11 +1,16 @@
 import express from 'express';
 import {
   handleDeleteUser,
+  handleGetGroupUserByRole,
+  handleGetGroupUserHost,
+  handleGetGroupUserJoin,
   handleGetNewsfeed,
   handleGetUserById,
   handleGetUserNotification,
   handleGetUserProfilePage,
   handleGetUsers,
+  handleUpdateAvatar,
+  handleUpdateBackGround,
   handleUpdateUser
 } from '../controllers/user.controller';
 import { verifyUser } from '../middleware/user.middleware';
@@ -29,4 +34,11 @@ userRouter.get('/hot-post', [verifyUser, handleGetHotPostByUserID]);
 
 userRouter.use('/follow', [verifyUser, followRouter]);
 
+userRouter.get('/:userId/host-group', [verifyUser, handleGetGroupUserHost]);
+userRouter.get('/:userId/join-group', [verifyUser, handleGetGroupUserByRole]);
+userRouter.get('/:userId/host-join-group', [verifyUser, handleGetGroupUserJoin]);
+
 userRouter.get('/:userId', [verifyUser, handleGetUserProfilePage]);
+
+userRouter.post('/avatar/:userId', [verifyUser, handleUpdateAvatar]);
+userRouter.post('/background/:userId', [verifyUser, handleUpdateBackGround]);

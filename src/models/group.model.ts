@@ -1,9 +1,10 @@
-import { Prisma, member_role, member_status } from '@prisma/client';
+import { $Enums, Prisma, member_role, member_status } from '@prisma/client';
 import prisma from '../databases/client';
+import e from 'express';
 
 export class GroupModel {
   static async getAll(limit = 20) {
-    return prisma.group.findMany({
+    const results = await prisma.group.findMany({
       take: limit,
       where: {
         deleted: false
@@ -11,6 +12,160 @@ export class GroupModel {
       orderBy: {
         create_at: 'desc'
       }
+    });
+    return results.map((item) => {
+      return {
+        ...item,
+        avatar: item.avatar?.startsWith('http') ? item.avatar : process.env.NEXT_PUBLIC_API_HOST ?? '' + item.avatar,
+        background: item.background?.startsWith('http')
+          ? item.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.background
+      };
+    });
+  }
+
+  static async getGroupsByUserRole(
+    userId: number,
+    role: Prisma.Enummember_roleNullableFilter<'member'> | $Enums.member_role
+  ) {
+    const results = await prisma.member.findMany({
+      where: {
+        user_id: userId,
+        role: role,
+        deleted: false
+      },
+      select: {
+        group: {
+          include: {
+            member: {
+              take: 4,
+              select: {
+                role: true,
+                status: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatar: true
+                  }
+                }
+              },
+              where: {
+                deleted: false,
+                status: 'active'
+              }
+            },
+            _count: {
+              select: {
+                member: {
+                  where: {
+                    deleted: false,
+                    status: 'active'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    return results.map((item) => {
+      const group = item.group;
+      return {
+        id: group.id,
+        title: group.title,
+        avatar: group.avatar?.startsWith('http')
+          ? group.avatar
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.avatar,
+        background: group.background?.startsWith('http')
+          ? group.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.background,
+        metaTitle: group.meta_title,
+        createAt: group.create_at,
+        memberCount: group._count.member,
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
+      };
+    });
+  }
+
+  static async getGroupsByUserJoin(userId: number) {
+    const results = await prisma.member.findMany({
+      where: {
+        user_id: userId,
+        status: 'active',
+        deleted: false
+      },
+      select: {
+        group: {
+          include: {
+            member: {
+              take: 4,
+              select: {
+                role: true,
+                status: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    avatar: true
+                  }
+                }
+              },
+              where: {
+                deleted: false,
+                status: 'active'
+              }
+            },
+            _count: {
+              select: {
+                member: {
+                  where: {
+                    deleted: false,
+                    status: 'active'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    return results.map((item) => {
+      const group = item.group;
+      return {
+        id: group.id,
+        title: group.title,
+        avatar: group.avatar?.startsWith('http')
+          ? group.avatar
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.avatar,
+        background: group.background?.startsWith('http')
+          ? group.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.background,
+        metaTitle: group.meta_title,
+        createAt: group.create_at,
+        memberCount: group._count.member,
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
+      };
     });
   }
 
@@ -31,12 +186,18 @@ export class GroupModel {
             }
           },
           where: {
-            deleted: false
+            deleted: false,
+            status: 'active'
           }
         },
         _count: {
           select: {
-            member: true
+            member: {
+              where: {
+                deleted: false,
+                status: 'active'
+              }
+            }
           }
         }
       },
@@ -52,13 +213,29 @@ export class GroupModel {
       return {
         id: group.id,
         title: group.title,
-        avatar: group.avatar,
+        avatar: group.avatar?.startsWith('http')
+          ? group.avatar
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.avatar,
+        background: group.background?.startsWith('http')
+          ? group.background
+          : (process.env.NEXT_PUBLIC_API_HOST ?? '') + group.background,
         metaTitle: group.meta_title,
         createAt: group.create_at,
         memberCount: group._count.member,
-        members: group.member
+        members: group.member.map((item) => {
+          return {
+            ...item,
+            user: {
+              ...item.user,
+              avatar: item.user.avatar?.startsWith('http')
+                ? item.user.avatar
+                : (process.env.NEXT_PUBLIC_API_HOST ?? '') + item.user.avatar
+            }
+          };
+        })
       };
     });
+
     return mappedGroups;
   }
 
@@ -72,20 +249,44 @@ export class GroupModel {
   }
 
   static async getById(groupId: number) {
-    return prisma.group.findFirst({
+    const result = await prisma.group.findFirst({
       where: {
         id: groupId,
         deleted: false
       }
     });
+    return result
+      ? {
+          ...result,
+          avatar: result.avatar?.startsWith('http')
+            ? result.avatar
+            : (process.env.NEXT_PUBLIC_API_HOST ?? '') + result.avatar,
+          background: result.background?.startsWith('http')
+            ? result.background
+            : (process.env.NEXT_PUBLIC_API_HOST ?? '') + result.background
+        }
+      : result;
   }
 
-  static async create(input: Prisma.groupCreateInput) {
-    return prisma.group.create({
-      data: {
-        title: input.title,
-        meta_title: input.meta_title
-      }
+  static async create(input: Prisma.groupCreateInput, uploadedFiles: string[], userId: number) {
+    return prisma.$transaction(async (tx) => {
+      const groupCreationResult = await tx.group.create({
+        data: {
+          title: input.title,
+          meta_title: input.meta_title,
+          avatar: uploadedFiles[0],
+          background: uploadedFiles[1]
+        }
+      });
+      await tx.member.create({
+        data: {
+          user_id: userId,
+          group_id: groupCreationResult.id,
+          status: 'active',
+          role: 'admin'
+        }
+      });
+      return groupCreationResult;
     });
   }
 
@@ -162,6 +363,28 @@ export class GroupModel {
     });
   }
 
+  static async getListApplyingGroup(groupId: number) {
+    return prisma.member.findMany({
+      where: {
+        group_id: groupId,
+        status: 'pending',
+        deleted: false
+      },
+      select: {
+        role: true,
+        status: true,
+        create_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        }
+      }
+    });
+  }
+
   static async checkJoinGroup(groupId: number, userId: number) {
     return prisma.member.findUnique({
       where: {
@@ -174,7 +397,7 @@ export class GroupModel {
     });
   }
 
-  static async addMember(groupId: number, userId: number, role: string) {
+  static async addMember(groupId: number, userId: number) {
     const member = await prisma.member.upsert({
       where: {
         user_id_group_id: {
@@ -189,8 +412,38 @@ export class GroupModel {
       create: {
         user_id: userId,
         group_id: groupId,
-        role: (role as member_role) ?? 'user',
-        status: 'active'
+        status: 'pending'
+      }
+    });
+    return member;
+  }
+
+  static async approveMember(groupId: number, userId: number) {
+    const member = await prisma.member.update({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        }
+      },
+      data: {
+        status: 'active',
+        role: 'user'
+      }
+    });
+    return member;
+  }
+
+  static async refuseMember(groupId: number, userId: number) {
+    const member = await prisma.member.update({
+      where: {
+        user_id_group_id: {
+          group_id: groupId,
+          user_id: userId
+        }
+      },
+      data: {
+        deleted: true
       }
     });
     return member;
