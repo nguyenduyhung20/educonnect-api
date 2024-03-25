@@ -48,8 +48,10 @@ export type document = {
   title: string | null;
   url: string | null;
   subject_id: number | null;
+  class_id: number | null;
   teacher_id: number | null;
   document_uuid: Generated<string>;
+  public: Generated<boolean>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -84,6 +86,7 @@ export type interact = {
 export type learn = {
   class_id: number;
   subject_id: number;
+  teacher_id: number;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -133,7 +136,7 @@ export type post = {
   deleted: Generated<boolean>;
 };
 export type post_summarization = {
-  id: number;
+  id: Generated<number>;
   content_summarization: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
@@ -161,6 +164,7 @@ export type student = {
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
+  school_id: number | null;
 };
 export type subject = {
   id: Generated<number>;
@@ -174,13 +178,7 @@ export type teacher = {
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-};
-export type teaching = {
-  subject_id: number;
-  teacher_id: number;
-  create_at: Generated<Timestamp>;
-  update_at: Generated<Timestamp>;
-  deleted: Generated<boolean>;
+  school_id: number | null;
 };
 export type transcript = {
   id: Generated<number>;
@@ -232,7 +230,6 @@ export type DB = {
   student: student;
   subject: subject;
   teacher: teacher;
-  teaching: teaching;
   transcript: transcript;
   user: user;
 };

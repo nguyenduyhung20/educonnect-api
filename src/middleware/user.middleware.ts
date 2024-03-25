@@ -17,11 +17,34 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const verifyParent = async (req: Request, res: Response, next: NextFunction) => {
-  const { userId } = req.body;
+export const verifyParent = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const parent = await UserModel.getParentById(parseInt(userId, 10));
-    if (!parent) {
+    if (req.body.role != 'parent') {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.body.role != 'admin') {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+    const { userId } = req.body;
+    const admin = await UserModel.getAdminById(parseInt(userId, 10));
+    req.body.schoolId = admin?.school_id;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyTeacher = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.body.role != 'teacher') {
       throw new AppError(404, 'NOT_FOUND');
     }
     next();

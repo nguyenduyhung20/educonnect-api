@@ -1,18 +1,9 @@
-// INSERT INTO "transcript"("fifteen_minutes_score","midterm_score","final_score","student_id","subject_id","semester") VALUES(10,9,9,1,1,'1');
 let data = [];
-for (let semester = 1; semester < 3; semester++)
-  for (let student_id = 1; student_id < 6; student_id++) {
-    for (let subject_id = 1; subject_id < 40; subject_id++) {
-      data.push(
-        `INSERT INTO "transcript"("fifteen_minutes_score","midterm_score","final_score","student_id","subject_id","semester") VALUES(${
-          Math.floor(Math.random() * (10 - 5 + 1)) + 5
-        },${Math.floor(Math.random() * (10 - 5 + 1)) + 5},${
-          Math.floor(Math.random() * (10 - 6 + 1)) + 6
-        },${student_id},${subject_id},${semester.toString()});`
-      );
-    }
+for (let class_id = 1; class_id < 4; class_id++) {
+  for (let subject_id = 1; subject_id < 14; subject_id++) {
+    data.push(`INSERT INTO "learn"("class_id","subject_id") VALUES(${class_id},${subject_id + 13 * (class_id - 1)});`);
   }
-
+}
 const fs = require('fs');
 
 const filePath = 'sql.sql';

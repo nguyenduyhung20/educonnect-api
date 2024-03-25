@@ -103,6 +103,22 @@ export const handleGetUserById = async (req: Request, res: Response, next: NextF
   }
 };
 
+export const handleCreateUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { body: userFields } = req;
+  try {
+    const user = await UserModel.create(userFields);
+    const accountData = {
+      id: user.id,
+      username: (user.name?.replace(/\s/g, '') || '') + user.id,
+      password: '123123'
+    };
+    const account = await UserModel.createAccount(accountData);
+    res.status(200).json({ data: { ...user, ...account } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleUpdateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser, body: updateFields } = req;
   try {
