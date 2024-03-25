@@ -38,10 +38,10 @@ export type calendar = {
 export type classroom = {
   id: Generated<number>;
   name: string | null;
+  school_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  school_id: number | null;
 };
 export type document = {
   id: Generated<number>;
@@ -136,7 +136,7 @@ export type post = {
   deleted: Generated<boolean>;
 };
 export type post_summarization = {
-  id: Generated<number>;
+  id: number;
   content_summarization: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
@@ -161,10 +161,10 @@ export type school = {
 export type student = {
   id: number;
   parent_id: number | null;
+  school_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  school_id: number | null;
 };
 export type subject = {
   id: Generated<number>;
@@ -175,10 +175,10 @@ export type subject = {
 };
 export type teacher = {
   id: number;
+  school_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
-  school_id: number | null;
 };
 export type transcript = {
   id: Generated<number>;

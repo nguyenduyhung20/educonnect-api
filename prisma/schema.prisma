@@ -38,10 +38,10 @@ model admin {
 model classroom {
   id        Int        @id @default(autoincrement())
   name      String?    @db.VarChar
+  school_id Int?
   create_at DateTime   @default(now()) @db.Timestamp(6)
   update_at DateTime   @default(now()) @db.Timestamp(6)
   deleted   Boolean    @default(false)
-  school_id Int?
   school    school?    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   document  document[]
   learn     learn[]
@@ -202,10 +202,10 @@ model school {
 model student {
   id         Int          @id
   parent_id  Int?
+  school_id  Int?
   create_at  DateTime     @default(now()) @db.Timestamp(6)
   update_at  DateTime     @default(now()) @db.Timestamp(6)
   deleted    Boolean      @default(false)
-  school_id  Int?
   of         of[]
   user       user         @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   parent     parent?      @relation(fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -226,10 +226,10 @@ model subject {
 
 model teacher {
   id        Int        @id
+  school_id Int?
   create_at DateTime   @default(now()) @db.Timestamp(6)
   update_at DateTime   @default(now()) @db.Timestamp(6)
   deleted   Boolean    @default(false)
-  school_id Int?
   document  document[]
   learn     learn[]
   user      user       @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -292,7 +292,7 @@ model post_tag {
 }
 
 model post_summarization {
-  id                    Int      @id @default(autoincrement())
+  id                    Int      @id
   content_summarization String?  @db.VarChar
   create_at             DateTime @default(now()) @db.Timestamp(6)
   update_at             DateTime @default(now()) @db.Timestamp(6)
