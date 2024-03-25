@@ -229,7 +229,7 @@ export class PostModel {
     });
     return mappedResult;
   }
-  static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 10) {
+  static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
     const result = await prisma.post.findFirst({
       where:
         type == 'post'
@@ -280,7 +280,7 @@ export class PostModel {
             }
           },
           orderBy: {
-            create_at: 'desc'
+            create_at: 'asc'
           }
         },
         interact: {

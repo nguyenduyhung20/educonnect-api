@@ -20,6 +20,7 @@ postRouter.post('/', [handleCreatePost]);
 postRouter.get('/most-interact', [handleGetMostInteractPost]);
 
 postRouter.get('/:postId', [verifyPost, handleGetPost]);
+postRouter.get('/comment/:postId', [verifyComment, handleGetPost]);
 
 postRouter.patch('/:postId', [verifyPost, handleUpdatePost]);
 postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
@@ -28,3 +29,4 @@ postRouter.delete('/:postId', [verifyPost, handleDeletePost]);
 postRouter.post('/:postId/comment', [verifyComment, handleCreateComment]);
 
 postRouter.use('/:postId/interact', [verifyPost, interactRouter]);
+postRouter.use('/:postId/interact-comment', [verifyComment, interactRouter]);
