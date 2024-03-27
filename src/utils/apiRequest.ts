@@ -41,10 +41,11 @@ const apiFetch = async (input: RequestInfo | URL, init?: RequestInit | undefined
 export const apiPost = async (query: string, body: any) => {
   const isFormData = body instanceof FormData;
   const headers = await getRequestHeaders(isFormData);
+  const bodyData = isFormData ? body : JSON.stringify(body);
   return await apiFetch(getRequestUrl(query), {
     method: 'POST',
     headers,
-    body: isFormData ? body : JSON.stringify(body)
+    body: bodyData
   });
 };
 

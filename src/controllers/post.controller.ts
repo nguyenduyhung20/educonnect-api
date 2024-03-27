@@ -137,18 +137,18 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
 
     const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
 
-    // const messages = [
-    //   {
-    //     key: 'post',
-    //     value: JSON.stringify({
-    //       content: postFields.content,
-    //       user_id: requestUser.id,
-    //       post_uuid: post.post_uuid,
-    //       id: post.id
-    //     })
-    //   }
-    // ];
-    // producer('post-topic', messages, 'kafka-producer-post');
+    const messages = [
+      {
+        key: 'post',
+        value: JSON.stringify({
+          content: postFields.content,
+          user_id: requestUser.id,
+          post_uuid: post.post_uuid,
+          id: post.id
+        })
+      }
+    ];
+    producer('post-topic', messages);
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);

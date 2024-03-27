@@ -196,6 +196,8 @@ services:
     container_name: notification-service
     build:
       context: ./notification-service
+    ports:
+      - 5001:5001
     environment:
       - PORT=5001
       - KAFKA_BROKER_URI_1=kafka:9092

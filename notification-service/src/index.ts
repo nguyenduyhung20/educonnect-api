@@ -74,11 +74,14 @@ io.on('connection', async (socket) => {
 
           const user = getUser(receiverID);
           if (user) {
-            io.to(user.socketId).emit('getNotification', {
+            const payload = {
               senderInfo,
               content,
               postId
-            });
+            };
+            console.log('prepare data to send', payload);
+
+            io.to(user.socketId).emit('getNotification', payload);
           }
         }
       } catch (error) {
