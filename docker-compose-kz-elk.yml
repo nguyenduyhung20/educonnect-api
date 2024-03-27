@@ -192,6 +192,17 @@ services:
     depends_on:
       - mongodb
 
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification-service
+    environment:
+      - PORT=5001
+      - KAFKA_BROKER_URI_1=kafka:9092
+    networks:
+      - kafka_elk
+      - educonnect
+
 networks:
   kafka_elk:
     name: kafka_elk
