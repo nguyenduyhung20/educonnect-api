@@ -25,9 +25,12 @@ upMS:
 buildMS:
 	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui mongodb-service kafka kafka-ui zookeeper --build -d
 
-
 upNoti:
 	docker-compose -f docker-compose-kz-elk.yml up notification-service -d
 
 buildNoti:
-	docker-compose -f docker-compose-kz-elk.yml up notification-service --build -d
+	docker-compose -f docker-compose-kz-elk.yml up notification-service --build -d && docker image prune -f
+
+upKafka: 
+	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
+
