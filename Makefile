@@ -20,10 +20,10 @@ setupELK: docker-compose-kz-elk.yml
 	docker-compose -f docker-compose-kz-elk.yml up -d
 
 upMS:
-	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui mongodb-service kafka kafka-ui zookeeper -d
+	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service  -d
 
 buildMS:
-	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui mongodb-service kafka kafka-ui zookeeper --build -d
+	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
 
 upNoti:
 	docker-compose -f docker-compose-kz-elk.yml up notification-service -d
