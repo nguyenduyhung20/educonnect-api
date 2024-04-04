@@ -9,7 +9,9 @@ import {
   handleUpdateGroupMember,
   handleGetListApplyingGroup,
   handleApproveMember,
-  handleRefuseMember
+  handleRefuseMember,
+  handleUpdateAvatar,
+  handleUpdateBackGround
 } from '../controllers/group.controller';
 import {
   handleCreateGroup,
@@ -46,3 +48,8 @@ groupRouter.get('/:groupId/members/:memberId', [verifyGroup, handleCheckJoinGrou
 groupRouter.post('/:groupId/members', [verifyGroup, handleAddGroupMember]);
 groupRouter.patch('/:groupId/members', [verifyGroup, handleUpdateGroupMember]);
 groupRouter.delete('/:groupId/members', [verifyGroup, handleDeleteGroupMember]);
+
+// Change Avatar, Background
+
+groupRouter.post('/avatar/:groupId', [verifyGroup, handleUpdateAvatar]);
+groupRouter.post('/background/:groupId', [verifyGroup, handleUpdateBackGround]);

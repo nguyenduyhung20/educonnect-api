@@ -342,10 +342,7 @@ export class UserModel {
       .filter((result) => result.status === 'fulfilled')
       .map((result) => (result.status === 'fulfilled' ? result.value : []));
 
-    const posts = fulfilledPost
-      .flat()
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, take);
+    const posts = fulfilledPost.flat().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return posts;
   }
