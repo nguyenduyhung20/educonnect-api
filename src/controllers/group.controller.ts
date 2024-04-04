@@ -216,3 +216,49 @@ export const handleSearchGroup = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+
+export const handleUpdateAvatar = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestGroup } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const group = await GroupModel.changeAvatar(requestGroup.id, listFile[0]);
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateBackGround = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestGroup } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const group = await GroupModel.changeBackground(requestGroup.id, listFile[0]);
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};

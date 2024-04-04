@@ -520,4 +520,25 @@ export class GroupModel {
 
     return groups;
   }
+
+  static async changeAvatar(groupId: number, image: string) {
+    return prisma.group.update({
+      where: {
+        id: groupId
+      },
+      data: {
+        avatar: image
+      }
+    });
+  }
+  static async changeBackground(groupId: number, image: string) {
+    return prisma.group.update({
+      where: {
+        id: groupId
+      },
+      data: {
+        background: image
+      }
+    });
+  }
 }

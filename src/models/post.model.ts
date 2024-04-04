@@ -150,6 +150,41 @@ export class PostModel {
             content_summarization: true
           }
         },
+        other_post: {
+          where: {
+            deleted: false
+          },
+          select: {
+            ...COMMENT_SELECT,
+            other_post: {
+              where: {
+                deleted: false
+              },
+              select: {
+                ...COMMENT_SELECT,
+                interact: {
+                  where: {
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
+            interact: {
+              where: {
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          },
+          orderBy: {
+            create_at: 'asc'
+          }
+        },
         _count: {
           select: {
             interact: {
@@ -167,7 +202,7 @@ export class PostModel {
       }
     });
     const mapPosts = posts.map((item) => {
-      return {
+      const mappedPost = {
         id: item.id,
         title: item.title,
         user: {
@@ -180,8 +215,30 @@ export class PostModel {
         createAt: item.create_at,
         commentCount: item._count.other_post,
         interactCount: item._count.interact,
-        group: item.group ?? null
+        group: item.group ?? null,
+        comment: item.other_post.map((comment) => ({
+          id: comment.id,
+          user: {
+            ...comment.user,
+            avatar: comment.user.avatar?.startsWith('http')
+              ? comment.user.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
+          },
+          title: comment.title,
+          content: comment.content,
+          parentPostId: comment.post?.id ?? undefined,
+          commentCount: comment._count.other_post,
+          interactCount: comment._count.interact,
+          userInteract: comment.interact[0]?.type ?? null,
+          createdAt: comment.create_at
+        }))
       };
+      let sumCommentCount = mappedPost.commentCount;
+
+      mappedPost.comment.forEach((item) => {
+        sumCommentCount += item.commentCount;
+      });
+      return { ...mappedPost, commentCount: sumCommentCount };
     });
     return mapPosts;
   }
@@ -314,13 +371,29 @@ export class PostModel {
       },
       select: {
         post: {
-          take: postLimit,
           where: {
             parent_post_id: null,
             deleted: false
           },
           select: {
             ...COMMENT_SELECT,
+            other_post: {
+              where: {
+                deleted: false
+              },
+              select: {
+                ...COMMENT_SELECT,
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
             interact: {
               where: {
                 user_id: userIdRequesting,
@@ -567,13 +640,33 @@ export class PostModel {
   }
 
   static async createComment(userId: number, parentPostId: number, input: Prisma.postCreateInput) {
-    return prisma.post.create({
+    const result = await prisma.post.create({
       data: {
         content: input.content,
         user_id: userId,
         parent_post_id: parentPostId
       }
     });
+    const user = await prisma.user.findFirst({
+      where: {
+        id: result.user_id
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true
+      }
+    });
+    return {
+      commentCount: 0,
+      content: result.content,
+      createdAt: result.create_at,
+      id: result.id,
+      interactCount: 0,
+      title: result.title,
+      user: user ?? null,
+      userInteract: null
+    };
   }
 
   static async searchPost(text: string, take = 10) {
@@ -606,7 +699,6 @@ export class PostModel {
 
   static async getHotPostByUserID(userId: number, postLimit: number = 20, commentLimit: number = 5) {
     const queryResult = await prisma.post.findMany({
-      take: postLimit,
       orderBy: { create_at: 'desc' },
       where: {
         parent_post_id: null,
@@ -615,7 +707,6 @@ export class PostModel {
       select: {
         ...COMMENT_SELECT,
         other_post: {
-          take: commentLimit,
           where: {
             deleted: false
           },
