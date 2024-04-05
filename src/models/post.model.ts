@@ -30,7 +30,8 @@ const COMMENT_SELECT = {
     select: {
       id: true,
       name: true,
-      avatar: true
+      avatar: true,
+      is_famous: true
     }
   },
   post: {

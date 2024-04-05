@@ -102,7 +102,9 @@ export type member = {
 };
 export type notification = {
   id: Generated<number>;
-  user_id: number;
+  item_id: number;
+  sender_id: number;
+  receiver_id: number;
   message: string | null;
   is_read: Generated<boolean>;
   create_at: Generated<Timestamp>;
@@ -205,6 +207,7 @@ export type user = {
   ssn: string | null;
   sex: user_sex | null;
   user_uuid: Generated<string>;
+  is_famous: Generated<boolean>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;

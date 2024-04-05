@@ -310,22 +310,6 @@ export class UserModel {
     });
   }
 
-  static async getNotifications(userId: number, limit = 10) {
-    return prisma.notification.findMany({
-      // take: limit,
-      where: {
-        user_id: userId
-      },
-      orderBy: {
-        create_at: 'desc'
-      },
-      select: {
-        message: true,
-        create_at: true
-      }
-    });
-  }
-
   static async getFiendsLatestPosts(userId: number, take = 20) {
     const userFolloweds = await UserModel.getUserFolloweds(userId);
 
