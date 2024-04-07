@@ -2,6 +2,58 @@ import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 
 export class ElearningModel {
+  static async getSchool(userId: number, role: string) {
+    switch (role) {
+      case 'student':
+        return prisma.student.findUnique({
+          where: {
+            id: userId
+          },
+          select: {
+            school: {
+              select: {
+                id: true,
+                name: true,
+                address: true
+              }
+            }
+          }
+        });
+      case 'admin':
+        return prisma.admin.findUnique({
+          where: {
+            id: userId
+          },
+          select: {
+            school: {
+              select: {
+                id: true,
+                name: true,
+                address: true
+              }
+            }
+          }
+        });
+      case 'teacher':
+        return prisma.teacher.findUnique({
+          where: {
+            id: userId
+          },
+          select: {
+            school: {
+              select: {
+                id: true,
+                name: true,
+                address: true
+              }
+            }
+          }
+        });
+      default:
+        return null;
+    }
+  }
+
   static async getSubject() {
     return prisma.subject.findMany({
       select: {
@@ -565,5 +617,27 @@ export class ElearningModel {
       });
     }
     return res;
+  }
+
+  static async shareDocument(input: any, userId: number) {
+    return await prisma.post.create({
+      data: {
+        title: input.title,
+        content: input.content,
+        user_id: userId,
+        file_content: input.fileContent
+      }
+    });
+  }
+
+  static async publicDocument(input: string) {
+    return await prisma.document.updateMany({
+      where: {
+        url: input
+      },
+      data: {
+        public: true
+      }
+    });
   }
 }

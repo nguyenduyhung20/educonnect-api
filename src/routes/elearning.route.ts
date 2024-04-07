@@ -25,9 +25,12 @@ import {
   handleGetSubject,
   handleDeleteUser,
   handleCreateUser,
-  handleUpdateUser
+  handleUpdateUser,
+  handleGetSchool,
+  handleShareDocument
 } from '../controllers/elearning.controller';
 import { verifyAdmin } from '../middleware/user.middleware';
+import verifyRole from '../middleware/verifyRole';
 export const elearningRouter = express.Router();
 
 elearningRouter.use('/transcript', [transcriptRouter]);
@@ -59,10 +62,12 @@ elearningRouter.patch('/document/:documentId', handleUpdateDocumentByClassIdAndS
 elearningRouter.delete('/document/:documentId', handleDeleteDocumentByClassIdAndSubjectId);
 
 // School
+elearningRouter.get('/school', [handleGetSchool]);
 elearningRouter.get('/school/student', [verifyAdmin, handleGetStudentInSchool]);
 elearningRouter.get('/school/teacher', [verifyAdmin, handleGetTeacherInSchool]);
 elearningRouter.get('/school/parent', [verifyAdmin, handleGetParentInSchool]);
 elearningRouter.get('/school/search/user', [verifyAdmin, handleSearchUser]);
+elearningRouter.use('/share-document', verifyRole.bind(null, ['teacher', 'admin']), handleShareDocument);
 
 // User
 elearningRouter.delete('/user/:userId', [verifyAdmin, handleDeleteUser]);

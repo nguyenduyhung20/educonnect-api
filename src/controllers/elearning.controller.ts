@@ -3,6 +3,8 @@ import { ElearningModel } from '../models/elearning.model';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 
+const HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:4001';
+
 export const handleGetClassById = async (req: Request, res: Response, next: NextFunction) => {
   const { userId, role } = req.body;
   try {
@@ -285,6 +287,32 @@ export const handleUpdateUser = async (req: Request, res: Response, next: NextFu
   try {
     const result = await ElearningModel.updateUser(data);
     res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetSchool = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await ElearningModel.getSchool(req.body.userId, req.body.role);
+    res.status(200).json({ data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleShareDocument = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.body;
+    const data = req.body;
+    if (data.fileContent?.length) {
+      data.fileContent[0] = data.fileContent[0].split(HOST)?.[1];
+      const result = await ElearningModel.shareDocument(data, userId);
+      await ElearningModel.publicDocument(data.fileContent[0]);
+      res.status(200).json({ data: result });
+    } else {
+      throw new Error('File is not empty');
+    }
   } catch (error) {
     next(error);
   }

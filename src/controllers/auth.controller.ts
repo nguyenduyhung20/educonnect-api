@@ -41,7 +41,7 @@ export const handleLogin = async (req: Request, res: Response, next: NextFunctio
     };
 
     res
-      .cookie('token', `Bearer ${token}`, {
+      .cookie('Token', `Bearer ${token}`, {
         httpOnly: true,
         maxAge: 86400000 // 24 hour
         // secure: process.env.NODE_ENV === 'production',
