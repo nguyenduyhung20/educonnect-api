@@ -947,8 +947,8 @@ Xem thêm ở phần bình luận.','{/public/imgs/486ff478-e7b6-469a-919d-38db2
 	 ('','hơi tiếc nhỉ, ô Thống mà còn sống hoà bình 2 ô gặp lại nhau thì hay',NULL,'c9912505-198a-4ef2-b8fb-d6224bbd0e22',12,35,2,'2024-01-25 09:16:14.571144','2024-01-25 09:16:14.571144',false);
 
 -- notifi
-INSERT INTO public.notification (user_id,message,is_read,create_at,update_at,deleted) VALUES
-	 (1,'Oh',false,'2024-01-25 09:16:14.600261','2024-01-25 09:16:14.600261',false);
+INSERT INTO public.notification (sender_id, receiver_id, item_id, message,is_read,create_at,update_at,deleted) VALUES
+	 (1,2,2,'đã like bài viết của bạn',false,'2024-01-25 09:16:14.600261','2024-01-25 09:16:14.600261',false);
 
 -- interact
 INSERT INTO public.interact (user_id,post_id,"type",create_at,update_at,deleted) VALUES

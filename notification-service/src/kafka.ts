@@ -21,7 +21,7 @@ export const connectToKafka = async () => {
   }
 };
 
-export const mockData = '{ "senderInfo": 1, "receiverID": 2, "content": "uhh", "postId": 2 }';
+export const mockData = '{ "senderInfo": 1, "receiverID": 2, "content": "uhh", "itemId": 2 }';
 
 export const startKafkaConsumer = async (io: Server) => {
   await consumer.run({
@@ -29,13 +29,13 @@ export const startKafkaConsumer = async (io: Server) => {
       console.log(`Received message: ${topic} ${partition} ${message.value}`);
       try {
         if (message.value) {
-          const { senderInfo, receiverID, content, postId } = JSON.parse(message.value.toString());
+          const { senderInfo, receiverID, content, itemId } = JSON.parse(message.value.toString());
           const user = getUser(receiverID);
           if (user) {
             const payload = {
               senderInfo,
               content,
-              postId
+              itemId
             };
             console.log('Prepare data to send', payload);
 
