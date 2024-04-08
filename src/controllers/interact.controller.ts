@@ -65,8 +65,8 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
       }
     }
 
-    if (inputFields.type === 'like' && interaction.deleted === false) {
-      // Produce like event
+    if (inputFields.type === 'like' && interaction.deleted === false && !requestPost.parentPostId) {
+      // Produce like event on post, not comment
       await produceUserEventMessage({
         userId: requestUser.id.toString(),
         postId: requestPost.id.toString(),
