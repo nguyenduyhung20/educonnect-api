@@ -11,10 +11,20 @@ export class ExploreModel {
       if (postIdList.length) {
         const postIdNumberList = postIdList.map(Number);
         const posts = await PostModel.getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList);
-        return posts;
+        return posts.sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
+
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        });
       } else {
         const posts = await handleSummarizeMostInteractPost();
-        return posts;
+        return posts.sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
+
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        });
       }
     } catch (error) {
       logger.error('Error in handleSummarizeMostInteractPost:', error);

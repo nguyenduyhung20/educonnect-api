@@ -8292,24 +8292,8 @@ Xem thêm ở phần bình luận.',
 	);
 
 -- notifi
-INSERT INTO
-	public.notification (
-		user_id,
-		message,
-		is_read,
-		create_at,
-		update_at,
-		deleted
-	)
-VALUES
-	(
-		1,
-		'Oh',
-		false,
-		'2024-01-25 09:16:14.600261',
-		'2024-01-25 09:16:14.600261',
-		false
-	);
+INSERT INTO public.notification (sender_id, receiver_id, item_id, message,is_read,create_at,update_at,deleted) VALUES
+	 (1,2,2,'đã like bài viết của bạn',false,'2024-01-25 09:16:14.600261','2024-01-25 09:16:14.600261',false);
 
 -- interact
 INSERT INTO
