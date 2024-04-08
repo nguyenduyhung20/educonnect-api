@@ -11,6 +11,7 @@ export class PostService {
     type: 'post' | 'comment';
   }) {
     const post = await PostModel.getById(postId, userIdRequesting, type);
+
     const mappedPost = {
       id: post.id,
       user: {
@@ -46,7 +47,14 @@ export class PostService {
         createdAt: comment.create_at
       }))
     };
-    return { ...mappedPost, group: post.group ?? null };
+
+    let sumCommentCount = mappedPost.commentCount;
+
+    mappedPost.comment.forEach((item) => {
+      sumCommentCount += item.commentCount;
+    });
+
+    return { ...mappedPost, group: post.group ?? null, commentCount: sumCommentCount };
   }
 
   static async getUserPosts({
@@ -80,9 +88,32 @@ export class PostService {
           fileContent: post.file_content.map((item) => {
             return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
           }),
+          comment: post.other_post.map((comment) => ({
+            id: comment.id,
+            user: {
+              ...comment.user,
+              avatar: comment.user.avatar?.startsWith('http')
+                ? comment.user.avatar
+                : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
+            },
+            title: comment.title,
+            content: comment.content,
+            parentPostId: comment.post?.id ?? undefined,
+            commentCount: comment._count.other_post,
+            interactCount: comment._count.interact,
+            userInteract: comment.interact[0]?.type ?? null,
+            createdAt: comment.create_at
+          })),
           group: post.group ?? null
         };
-        return mappedPost;
+
+        let sumCommentCount = mappedPost.commentCount;
+
+        mappedPost.comment.forEach((item) => {
+          sumCommentCount += item.commentCount;
+        });
+
+        return { ...mappedPost, commentCount: sumCommentCount };
       });
 
       return mappedResult;
@@ -196,7 +227,13 @@ export class PostService {
           }))
         }))
       };
-      return mappedPost;
+      let sumCommentCount = mappedPost.commentCount;
+
+      mappedPost.comment.forEach((item) => {
+        sumCommentCount += item.commentCount;
+      });
+
+      return { ...mappedPost, commentCount: sumCommentCount };
     });
     return mappedResult;
   }

@@ -8,6 +8,7 @@ import { PostModel } from '../models/post.model';
 import { GroupModel } from '../models/group.model';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
+import { NotificationModel } from '../models/notification.model';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -180,7 +181,7 @@ export const handleGetUserNotification = async (req: Request, res: Response, nex
   const { requestUser } = req;
 
   try {
-    const notifications = await UserModel.getNotifications(requestUser.id);
+    const notifications = await NotificationModel.getNotifications(requestUser.id);
 
     res.status(200).json({ data: notifications });
   } catch (error) {
@@ -255,6 +256,17 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
         newsfeed: newsfeed
       }
     };
+
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleReadNotification = async (req: Request, res: Response, next: NextFunction) => {
+  const { notificationId } = req.params;
+  try {
+    const data = await NotificationModel.updateIsRead(parseInt(notificationId as string, 10));
 
     return res.status(200).json(data);
   } catch (error) {

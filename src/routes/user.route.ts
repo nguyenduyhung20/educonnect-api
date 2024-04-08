@@ -9,6 +9,7 @@ import {
   handleGetUserNotification,
   handleGetUserProfilePage,
   handleGetUsers,
+  handleReadNotification,
   handleUpdateAvatar,
   handleUpdateBackGround,
   handleUpdateUser
@@ -42,3 +43,5 @@ userRouter.get('/:userId', [verifyUser, handleGetUserProfilePage]);
 
 userRouter.post('/avatar/:userId', [verifyUser, handleUpdateAvatar]);
 userRouter.post('/background/:userId', [verifyUser, handleUpdateBackGround]);
+
+userRouter.post('/read-notification/:notificationId', [handleReadNotification]);

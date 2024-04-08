@@ -310,22 +310,6 @@ export class UserModel {
     });
   }
 
-  static async getNotifications(userId: number, limit = 10) {
-    return prisma.notification.findMany({
-      // take: limit,
-      where: {
-        user_id: userId
-      },
-      orderBy: {
-        create_at: 'desc'
-      },
-      select: {
-        message: true,
-        create_at: true
-      }
-    });
-  }
-
   static async getFiendsLatestPosts(userId: number, take = 20) {
     const userFolloweds = await UserModel.getUserFolloweds(userId);
 
@@ -342,10 +326,7 @@ export class UserModel {
       .filter((result) => result.status === 'fulfilled')
       .map((result) => (result.status === 'fulfilled' ? result.value : []));
 
-    const posts = fulfilledPost
-      .flat()
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, take);
+    const posts = fulfilledPost.flat().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return posts;
   }

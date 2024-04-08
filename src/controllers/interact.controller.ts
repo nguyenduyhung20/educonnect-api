@@ -25,11 +25,12 @@ interface CreateInteractFields {
 }
 
 interface Info {
-  senderName: string;
-  senderAvatar?: any;
+  senderAvatar: string;
+  senderId: number;
+  senderName: number;
   receiverID: number;
-  itemType: string;
-  postID: number;
+  itemType: 'post' | 'comment';
+  itemId: number;
 }
 
 export const handleCreatePostInteract = async (req: Request, res: Response, next: NextFunction) => {
@@ -41,13 +42,15 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
     const action = inputFields.action;
     if (action) {
       if (action != 'dislike') {
-        const content = `${inputFields.info.senderName} đã ${inputFields.type} ${
+        const content = `đã ${inputFields.type} ${
           inputFields.info.itemType == 'post' ? 'bài viết' : 'bình luận'
         } của bạn.`;
 
         await NotificationModel.create({
-          userId: inputFields.info.receiverID,
-          message: content
+          receiverId: inputFields.info.receiverID,
+          message: content,
+          senderId: inputFields.info.senderId,
+          item_id: inputFields.info.itemId
         });
 
         // Produce notification
@@ -55,10 +58,14 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
           {
             key: 'notification',
             value: JSON.stringify({
-              senderInfo: { id: requestUser.id, avatar: inputFields.info.senderAvatar },
+              senderInfo: {
+                id: requestUser.id,
+                avatar: inputFields.info.senderAvatar,
+                name: inputFields.info.senderName
+              },
               receiverID: inputFields.info.receiverID,
               content: content,
-              postId: inputFields.info.postID
+              itemId: inputFields.info.itemId
             })
           }
         ]);
