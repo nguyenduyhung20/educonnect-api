@@ -93,32 +93,6 @@ const mapPost = (post: RawPost) => {
 };
 
 export class PostModel {
-  static async getAll(postLimit = 10, commentLimit = 10) {
-    return prisma.post.findMany({
-      take: postLimit,
-      where: {
-        parent_post_id: null,
-        deleted: false
-      },
-      select: {
-        ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: COMMENT_SELECT,
-          orderBy: {
-            create_at: 'desc'
-          }
-        }
-      },
-      orderBy: {
-        create_at: 'desc'
-      }
-    });
-  }
-
   static async getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList: number[], postLimit = 100) {
     const posts = await prisma.post.findMany({
       take: postLimit,
@@ -186,7 +160,7 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number, commentLimit = 20) {
+  static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number) {
     const result = await prisma.post.findMany({
       where: {
         deleted: false,
@@ -230,18 +204,20 @@ export class PostModel {
     return mappedResult;
   }
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
+    const postTypeWhereCondition =
+      type == 'post'
+        ? {
+            id: id,
+            parent_post_id: null,
+            deleted: false
+          }
+        : {
+            id: id,
+            deleted: false
+          };
+
     const result = await prisma.post.findFirst({
-      where:
-        type == 'post'
-          ? {
-              id: id,
-              parent_post_id: null,
-              deleted: false
-            }
-          : {
-              id: id,
-              deleted: false
-            },
+      where: postTypeWhereCondition,
       select: {
         ...COMMENT_SELECT,
         other_post: {
@@ -296,6 +272,11 @@ export class PostModel {
           select: {
             id: true,
             title: true
+          }
+        },
+        post_topic: {
+          select: {
+            topic_id: true
           }
         }
       }

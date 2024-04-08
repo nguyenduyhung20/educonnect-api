@@ -131,6 +131,7 @@ export type post = {
   user_id: number;
   parent_post_id: number | null;
   group_id: number | null;
+  topic_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -148,6 +149,12 @@ export type post_tag = {
   tag: string | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
+export type post_topic = {
+  post_id: number;
+  topic_id: number;
+  create_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
 export type school = {
@@ -178,6 +185,12 @@ export type teacher = {
   school_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
+export type topic = {
+  id: Generated<number>;
+  name: string | null;
+  create_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
 export type transcript = {
@@ -226,10 +239,12 @@ export type DB = {
   post: post;
   post_summarization: post_summarization;
   post_tag: post_tag;
+  post_topic: post_topic;
   school: school;
   student: student;
   subject: subject;
   teacher: teacher;
+  topic: topic;
   transcript: transcript;
   user: user;
 };

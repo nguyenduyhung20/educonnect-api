@@ -64,6 +64,7 @@ CREATE TABLE "post" (
     "user_id" int NOT NULL,
     "parent_post_id" int,
     "group_id" int,
+    "topic_id" int,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
     "deleted" boolean DEFAULT False NOT NULL
@@ -313,6 +314,11 @@ ALTER TABLE
     "post"
 ADD
     FOREIGN KEY ("group_id") REFERENCES "group" ("id");
+
+ALTER TABLE
+    "post"
+ADD
+    FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
 
 ALTER TABLE
     "interact"

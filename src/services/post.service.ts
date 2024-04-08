@@ -44,7 +44,8 @@ export class PostService {
         interactCount: comment._count.interact,
         userInteract: comment.interact[0]?.type ?? null,
         createdAt: comment.create_at
-      }))
+      })),
+      topicList: post.post_topic.map((topic) => topic.topic_id)
     };
     return { ...mappedPost, group: post.group ?? null };
   }

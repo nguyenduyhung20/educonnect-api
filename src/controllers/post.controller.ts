@@ -6,11 +6,8 @@ import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { producer } from '../services/kafka-client';
-import { redisClient } from '../config/redis-client';
 import cheerio from 'cheerio';
-import { apiGet } from '../utils/apiRequest';
 import axios from 'axios';
-import { CACHE_NEWSFEED_POST } from '../constants/redis';
 import { produceUserEventMessage } from '../services/recommend.service';
 import dayjs from 'dayjs';
 
@@ -190,7 +187,10 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
       userId: requestUser.id.toString(),
       postId: requestPost.id.toString(),
       interactionType: 'comment',
-      timestamp: dayjs().utc().format()
+      timestamp: dayjs().utc().format(),
+      metadata: {
+        topic_id: requestPost.topicList
+      }
     });
     return res.status(200).json({ data: post });
   } catch (error) {
