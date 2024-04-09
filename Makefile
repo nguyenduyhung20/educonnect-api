@@ -34,3 +34,5 @@ buildNoti:
 upKafka: 
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
 
+buildApi:
+	docker-compose -f docker-compose-api.yml up --build && docker image prune -f 

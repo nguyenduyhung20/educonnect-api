@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  educonnect-api:
+    container_name: educonnect-api
+    build:
+      context: ./
+    ports:
+      - 4001:4001
+    env_file:
+      - .env
+    networks:
+      - educonnect
+
+networks:
+  educonnect:
+    name: educonnect
