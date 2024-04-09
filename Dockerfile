@@ -13,9 +13,9 @@ COPY --chown=node:node tsconfig.json ./
 RUN npm run prisma:gen
 RUN npm run build
 
-FROM node:20.12.1-bookworm AS production
+FROM node:20.12.1-bookworm-slim AS production
 
-RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init && apt-get install -y openssl
 
 ENV NODE_ENV production
 
@@ -26,7 +26,7 @@ COPY --chown=node:node --from=builder /app/dist ./dist
 COPY --chown=node:node package*.json ./
 
 RUN npm pkg delete scripts.prepare
-RUN npm ci --only=prod
+RUN npm ci --omit=dev
 RUN npm run prisma:gen
 
 USER node
