@@ -37,7 +37,7 @@ type IRecommendedPost = {
   item: string;
   score: number;
 };
-export const getRecommendPost = async ({ userId }: GetRecommendPostInput) => {
+export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
   // Get user current topic list, for now its a dummy list
   const topicIdList = ['1', '2', '3'];
   const payload = {

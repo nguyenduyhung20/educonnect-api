@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import { db } from '../databases/kysely';
 import { CustomError } from '../config/AppError';
+import { getPostsByListId } from '../models/post.model';
 
-export const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const handleTest = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await db.selectFrom('user').select('name').execute();
-    res.status(200).json({ users });
+    // const users = await db.selectFrom('user').select('name').execute();
+    const data = await getPostsByListId({ postIdList: [1, 2, 3], userIdRequesting: 2, isComment: true });
+    res.status(200).json({ data });
   } catch (error) {
     next(error);
   }

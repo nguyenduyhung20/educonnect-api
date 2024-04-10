@@ -9,7 +9,7 @@ import { GroupModel } from '../models/group.model';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { NotificationModel } from '../models/notification.model';
-import { getRecommendPost } from '../services/recommend.service';
+import { getRecommendPosts } from '../services/recommend.service';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -213,7 +213,7 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
 
       const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
 
-      const recommendPosts = await getRecommendPost({ userId: requestUser.id });
+      const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
 
       const results = [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])];
       results.forEach(async (item) => {

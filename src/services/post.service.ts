@@ -1,4 +1,5 @@
-import { PostModel } from '../models/post.model';
+import { Prisma } from '@prisma/client';
+import { getPostsByListId, GetPostsByListIdArgs, PostModel } from '../models/post.model';
 
 export class PostService {
   static async getPost({
@@ -241,4 +242,8 @@ export class PostService {
     });
     return mappedResult;
   }
+}
+export async function getPostsList<T extends Prisma.postSelect>(args: GetPostsByListIdArgs, select?: T) {
+  const result = await getPostsByListId({ ...args, ...select });
+  return result;
 }

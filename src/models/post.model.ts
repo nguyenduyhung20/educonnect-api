@@ -19,7 +19,7 @@ const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   }
 };
 
-const COMMENT_SELECT = {
+const POST_SELECT = {
   id: true,
   title: true,
   content: true,
@@ -56,14 +56,14 @@ const COMMENT_SELECT = {
       }
     }
   }
-};
+} as const;
 
 type RawComment = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 type RawPost = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 const mapComment = (post: RawComment) => {
@@ -86,7 +86,7 @@ const mapComment = (post: RawComment) => {
   return result;
 };
 
-const mapPost = (post: RawPost) => {
+export const mapPost = (post: RawPost) => {
   const result = {
     ...mapComment(post)
   };
@@ -130,13 +130,13 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     deleted: false
@@ -227,7 +227,7 @@ export class PostModel {
         }
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         interact: {
           where: {
             user_id: userIdRequesting,
@@ -261,6 +261,7 @@ export class PostModel {
     });
     return mappedResult;
   }
+
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
     const postTypeWhereCondition =
       type == 'post'
@@ -277,21 +278,21 @@ export class PostModel {
     const result = await prisma.post.findFirst({
       where: postTypeWhereCondition,
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         other_post: {
           take: commentLimit,
           where: {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     user_id: userIdRequesting,
@@ -358,13 +359,13 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     user_id: userIdRequesting,
@@ -415,21 +416,21 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -501,21 +502,21 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -576,7 +577,7 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT
+        ...POST_SELECT
       }
     });
     if (!queryResult) {
@@ -663,7 +664,7 @@ export class PostModel {
         parent_post_id: null,
         deleted: false
       },
-      select: COMMENT_SELECT,
+      select: POST_SELECT,
       orderBy: {
         _relevance: {
           fields: ['title', 'content'],
@@ -687,12 +688,12 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         other_post: {
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: POST_SELECT,
           orderBy: {
             create_at: 'desc'
           }
@@ -740,7 +741,7 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         group: {
           select: {
             id: true,
@@ -782,4 +783,148 @@ export class PostModel {
 
     return mappedResult;
   }
+}
+
+type PostSelectConditionChoices = {
+  isComment?: boolean;
+  isGroup?: boolean;
+  isFileContent?: boolean;
+  isSummarize?: boolean;
+};
+
+export type GetPostsByListIdArgs = {
+  postIdList: number[];
+  userIdRequesting: number;
+  commentLimit?: number;
+} & PostSelectConditionChoices;
+
+export async function getPostsByListId({
+  postIdList,
+  userIdRequesting,
+  commentLimit,
+  isComment = true,
+  isGroup = true,
+  isSummarize = true
+}: GetPostsByListIdArgs) {
+  const selectCommentOfPost = {
+    other_post: {
+      take: commentLimit,
+      where: {
+        deleted: false
+      },
+      select: {
+        ...POST_SELECT,
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          select: {
+            ...POST_SELECT,
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          }
+        },
+        interact: {
+          where: {
+            user_id: userIdRequesting,
+            deleted: false
+          },
+          select: {
+            type: true
+          }
+        }
+      },
+      orderBy: {
+        create_at: 'asc'
+      }
+    }
+  } as const;
+
+  const selectGroupOfPost = {
+    group: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  };
+
+  const selectSummarizeOfPost = {
+    post_summarization: {
+      select: {
+        content_summarization: true
+      }
+    }
+  };
+
+  const selectUserOfPost = {
+    ...POST_SELECT,
+    interact: {
+      where: {
+        user_id: userIdRequesting,
+        deleted: false
+      },
+      select: {
+        type: true
+      }
+    }
+  } as const;
+
+  const result = await prisma.post.findMany({
+    where: {
+      deleted: false,
+      id: {
+        in: postIdList
+      }
+    },
+    select: {
+      ...selectUserOfPost,
+      ...selectCommentOfPost,
+      ...selectGroupOfPost,
+      ...selectSummarizeOfPost
+    }
+  });
+  if (!result) {
+    throw new AppError(404, 'NOT_FOUND');
+  }
+
+  const mappedResult = result.map((post) => {
+    return {
+      ...mapPost(post),
+      userInteract: post.interact[0]?.type ?? null,
+      comment: isComment
+        ? post.other_post.map((comment) => ({
+            id: comment.id,
+            user: {
+              ...comment.user,
+              avatar: comment.user.avatar?.startsWith('http')
+                ? comment.user.avatar
+                : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
+            },
+            title: comment.title,
+            content: comment.content,
+            parentPostId: comment.post?.id ?? undefined,
+            commentCount: comment._count.other_post,
+            interactCount: comment._count.interact,
+            userInteract: comment.interact[0]?.type ?? null,
+            createdAt: comment.create_at
+          }))
+        : undefined,
+      fileContent: post.file_content.map((item) => {
+        return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+      }),
+      group: isGroup ? post.group : undefined,
+      contentSummarization: post.post_summarization?.content_summarization
+    };
+  });
+
+  return mappedResult;
 }

@@ -14,3 +14,5 @@ export type RegisterType = {
   avatar?: string;
   role: user_role;
 };
+
+export type ArrayType<T> = T extends (infer U)[] ? U : never;
