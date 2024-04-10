@@ -28,3 +28,10 @@ export type GetPostsByListIdInput<T> = {
   args: GetPostsByListIdArgs;
   select: T;
 };
+export type GetPostListConfig = {
+  isComment?: boolean;
+  isGroup?: boolean;
+  isFileContent?: boolean;
+  isSummarize?: boolean;
+  commentLimit?: number;
+};

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
 import { AppError } from '../config/AppError';
-import { getPostsList, PostService } from '../services/post.service';
+import { PostService } from '../services/post.service';
 import { redisClient } from '../config/redis-client';
 import { PostModel } from '../models/post.model';
 import { GroupModel } from '../models/group.model';
@@ -201,7 +201,7 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
 
     if (listIdPosts.length) {
       const postIdNumberList = listIdPosts.map(Number);
-      const posts = await getPostsList({
+      const posts = await PostService.getPostsList({
         postIdList: postIdNumberList,
         userIdRequesting: requestUser.id,
         isComment: false,
