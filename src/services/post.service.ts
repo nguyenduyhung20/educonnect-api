@@ -60,6 +60,9 @@ export class PostService {
 
   static async getUserPosts({
     userId,
+    /**
+     * User who started this request, for example user with id 2 is looking for user with id 3, so this field will be 2
+     */
     userIdRequesting,
     detail
   }: {
