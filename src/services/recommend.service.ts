@@ -4,7 +4,7 @@ import { KAFKA_TOPIC, RECOMMEND_SERVER } from '../constants/constants';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 import axios from 'axios';
-import { PostModel } from '../models/post.model';
+import { getPostsList } from './post.service';
 
 export const UserEventMessageSchema = z.object({
   userId: z.string(),
@@ -47,7 +47,12 @@ export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
   const response = await axios.post<IRecommendedPost[]>(`${RECOMMEND_SERVER.URL}/query`, payload);
   const postIdList = response.data.map((item) => parseInt(item.item, 10));
 
-  const postList = await PostModel.getByListIdNotHaveComment(postIdList, userId);
+  const postList = await getPostsList({
+    postIdList,
+    userIdRequesting: userId,
+    isComment: false,
+    isSummarize: false
+  });
 
   return postList;
 };

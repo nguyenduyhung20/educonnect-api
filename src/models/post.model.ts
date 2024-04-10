@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
+import { GetPostsByListIdInput } from '../interfaces/type';
 
 const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
@@ -19,7 +20,7 @@ const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   }
 };
 
-const POST_SELECT = {
+export const POST_SELECT = {
   id: true,
   title: true,
   content: true,
@@ -218,48 +219,23 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number) {
+  static async getPostsByListId<T extends Prisma.postSelect>({ args, select }: GetPostsByListIdInput<T>) {
+    const { postIdList } = args;
+
     const result = await prisma.post.findMany({
       where: {
         deleted: false,
         id: {
-          in: postIdNumberList
+          in: postIdList
         }
       },
-      select: {
-        ...POST_SELECT,
-        interact: {
-          where: {
-            user_id: userIdRequesting,
-            deleted: false
-          },
-          select: {
-            type: true
-          }
-        },
-        group: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
-      }
+      select
     });
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = result.map((post) => {
-      return {
-        ...mapPost(post),
-        userInteract: post.interact[0]?.type ?? null,
-        fileContent: post.file_content.map((item) => {
-          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-        }),
-        group: post.group ?? null
-      };
-    });
-    return mappedResult;
+    return result;
   }
 
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
@@ -347,7 +323,7 @@ export class PostModel {
     return result;
   }
 
-  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 30) {
+  static async getPostsByUserId(userId: number, userIdRequesting: number) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -680,7 +656,7 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getHotPostByUserID(userId: number, postLimit: number = 20, commentLimit: number = 5) {
+  static async getHotPostByUserID(userId: number) {
     const queryResult = await prisma.post.findMany({
       orderBy: { create_at: 'desc' },
       where: {
@@ -783,148 +759,4 @@ export class PostModel {
 
     return mappedResult;
   }
-}
-
-type PostSelectConditionChoices = {
-  isComment?: boolean;
-  isGroup?: boolean;
-  isFileContent?: boolean;
-  isSummarize?: boolean;
-};
-
-export type GetPostsByListIdArgs = {
-  postIdList: number[];
-  userIdRequesting: number;
-  commentLimit?: number;
-} & PostSelectConditionChoices;
-
-export async function getPostsByListId({
-  postIdList,
-  userIdRequesting,
-  commentLimit,
-  isComment = true,
-  isGroup = true,
-  isSummarize = true
-}: GetPostsByListIdArgs) {
-  const selectCommentOfPost = {
-    other_post: {
-      take: commentLimit,
-      where: {
-        deleted: false
-      },
-      select: {
-        ...POST_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: {
-            ...POST_SELECT,
-            interact: {
-              where: {
-                user_id: userIdRequesting,
-                deleted: false
-              },
-              select: {
-                type: true
-              }
-            }
-          }
-        },
-        interact: {
-          where: {
-            user_id: userIdRequesting,
-            deleted: false
-          },
-          select: {
-            type: true
-          }
-        }
-      },
-      orderBy: {
-        create_at: 'asc'
-      }
-    }
-  } as const;
-
-  const selectGroupOfPost = {
-    group: {
-      select: {
-        id: true,
-        title: true
-      }
-    }
-  };
-
-  const selectSummarizeOfPost = {
-    post_summarization: {
-      select: {
-        content_summarization: true
-      }
-    }
-  };
-
-  const selectUserOfPost = {
-    ...POST_SELECT,
-    interact: {
-      where: {
-        user_id: userIdRequesting,
-        deleted: false
-      },
-      select: {
-        type: true
-      }
-    }
-  } as const;
-
-  const result = await prisma.post.findMany({
-    where: {
-      deleted: false,
-      id: {
-        in: postIdList
-      }
-    },
-    select: {
-      ...selectUserOfPost,
-      ...selectCommentOfPost,
-      ...selectGroupOfPost,
-      ...selectSummarizeOfPost
-    }
-  });
-  if (!result) {
-    throw new AppError(404, 'NOT_FOUND');
-  }
-
-  const mappedResult = result.map((post) => {
-    return {
-      ...mapPost(post),
-      userInteract: post.interact[0]?.type ?? null,
-      comment: isComment
-        ? post.other_post.map((comment) => ({
-            id: comment.id,
-            user: {
-              ...comment.user,
-              avatar: comment.user.avatar?.startsWith('http')
-                ? comment.user.avatar
-                : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
-            },
-            title: comment.title,
-            content: comment.content,
-            parentPostId: comment.post?.id ?? undefined,
-            commentCount: comment._count.other_post,
-            interactCount: comment._count.interact,
-            userInteract: comment.interact[0]?.type ?? null,
-            createdAt: comment.create_at
-          }))
-        : undefined,
-      fileContent: post.file_content.map((item) => {
-        return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-      }),
-      group: isGroup ? post.group : undefined,
-      contentSummarization: post.post_summarization?.content_summarization
-    };
-  });
-
-  return mappedResult;
 }

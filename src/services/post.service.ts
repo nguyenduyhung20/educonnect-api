@@ -1,5 +1,6 @@
-import { Prisma } from '@prisma/client';
-import { getPostsByListId, GetPostsByListIdArgs, PostModel } from '../models/post.model';
+import { Prettify } from '../interfaces/type';
+import { mapPost, POST_SELECT, PostModel } from '../models/post.model';
+import { GetPostsByListIdArgs } from '../interfaces/type';
 
 export class PostService {
   static async getPost({
@@ -243,7 +244,176 @@ export class PostService {
     return mappedResult;
   }
 }
-export async function getPostsList<T extends Prisma.postSelect>(args: GetPostsByListIdArgs, select?: T) {
-  const result = await getPostsByListId({ ...args, ...select });
-  return result;
+
+type GetPostListConfig = {
+  isComment?: boolean;
+  isGroup?: boolean;
+  isFileContent?: boolean;
+  isSummarize?: boolean;
+  commentLimit?: number;
+};
+
+export async function getPostsList(args: Prettify<GetPostsByListIdArgs & GetPostListConfig>) {
+  const {
+    isComment = true,
+    isGroup = true,
+    isFileContent = true,
+    isSummarize = true,
+    commentLimit,
+    userIdRequesting
+  } = args;
+
+  const selectUserOfPost = {
+    ...POST_SELECT,
+    interact: {
+      where: {
+        user_id: userIdRequesting,
+        deleted: false
+      },
+      select: {
+        type: true
+      }
+    }
+  } as const;
+
+  const selectCommentOfPost = {
+    other_post: {
+      take: commentLimit,
+      where: {
+        deleted: false
+      },
+      select: {
+        ...POST_SELECT,
+        other_post: {
+          take: commentLimit,
+          where: {
+            deleted: false
+          },
+          select: {
+            ...POST_SELECT,
+            interact: {
+              where: {
+                user_id: userIdRequesting,
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          }
+        },
+        interact: {
+          where: {
+            user_id: userIdRequesting,
+            deleted: false
+          },
+          select: {
+            type: true
+          }
+        }
+      },
+      orderBy: {
+        create_at: 'asc'
+      }
+    }
+  } as const;
+
+  const selectGroupOfPost = {
+    group: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  };
+
+  const selectSummarizeOfPost = {
+    post_summarization: {
+      select: {
+        content_summarization: true
+      }
+    }
+  };
+
+  // Only post get return, add more cases as you like
+  if (!isComment && !isGroup && !isSummarize) {
+    const select = {
+      ...selectUserOfPost
+    };
+    const result = await PostModel.getPostsByListId({ args, select });
+    const mappedResult = result.map((post) => {
+      return {
+        ...mapPost(post),
+        userInteract: post.interact[0]?.type ?? null,
+        fileContent: isFileContent
+          ? post.file_content.map((item) => {
+              return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+            })
+          : undefined
+      };
+    });
+    return mappedResult;
+  }
+
+  if (!isComment && !isSummarize) {
+    const select = {
+      ...selectUserOfPost,
+      ...selectGroupOfPost
+    };
+    const result = await PostModel.getPostsByListId<typeof select>({ args, select });
+    const mappedResult = result.map((post) => {
+      return {
+        ...mapPost(post),
+        userInteract: post.interact[0]?.type ?? null,
+        fileContent: isFileContent
+          ? post.file_content.map((item) => {
+              return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+            })
+          : undefined,
+        group: isGroup ? post.group : undefined
+      };
+    });
+    return mappedResult;
+  }
+
+  // Base case
+  const select = {
+    ...selectUserOfPost,
+    ...selectCommentOfPost,
+    ...selectGroupOfPost,
+    ...selectSummarizeOfPost
+  };
+  const result = await PostModel.getPostsByListId<typeof select>({ args, select });
+  const mappedResult = result.map((post) => {
+    return {
+      ...mapPost(post),
+      userInteract: post.interact[0]?.type ?? null,
+      comment: isComment
+        ? post.other_post.map((comment) => ({
+            id: comment.id,
+            user: {
+              ...comment.user,
+              avatar: comment.user.avatar?.startsWith('http')
+                ? comment.user.avatar
+                : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
+            },
+            title: comment.title,
+            content: comment.content,
+            parentPostId: comment.post?.id ?? undefined,
+            commentCount: comment._count.other_post,
+            interactCount: comment._count.interact,
+            userInteract: comment.interact[0]?.type ?? null,
+            createdAt: comment.create_at
+          }))
+        : undefined,
+      fileContent: isFileContent
+        ? post.file_content.map((item) => {
+            return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
+          })
+        : undefined,
+      group: isGroup ? post.group : undefined,
+      contentSummarization: isSummarize ? post.post_summarization?.content_summarization : undefined
+    };
+  });
+  return mappedResult;
 }

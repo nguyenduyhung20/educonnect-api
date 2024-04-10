@@ -16,3 +16,15 @@ export type RegisterType = {
 };
 
 export type ArrayType<T> = T extends (infer U)[] ? U : never;
+
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & unknown;
+export type GetPostsByListIdArgs = {
+  postIdList: number[];
+  userIdRequesting: number;
+};
+export type GetPostsByListIdInput<T> = {
+  args: GetPostsByListIdArgs;
+  select: T;
+};
