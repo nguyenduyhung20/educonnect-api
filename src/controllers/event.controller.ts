@@ -13,6 +13,7 @@ export const handleReceiveUserEvent = async (req: Request, res: Response, next: 
     await produceUserEventMessage({
       userId: requestUser.id.toString(),
       postId: validatedInput.postId,
+      postTopic: validatedInput.postTopic,
       interactionType: validatedInput.interactionType,
       timestamp: validatedInput.timestamp,
       metadata: validatedInput.metadata

@@ -4,7 +4,7 @@ import { getRecommendPosts } from '../services/recommend.service';
 
 export const handleTest = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const postIdList = [1, 2, 3];
+    // const postIdList = [1, 2, 3];
     // const users = await db.selectFrom('user').select('name').execute();
     const data = await getRecommendPosts({ userId: 2 });
     return res.status(200).json({ data: data });

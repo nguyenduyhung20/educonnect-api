@@ -186,11 +186,9 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
     await produceUserEventMessage({
       userId: requestUser.id.toString(),
       postId: requestPost.id.toString(),
+      postTopic: requestPost.topicList.map((item) => item.toString()),
       interactionType: 'comment',
-      timestamp: dayjs().utc().format(),
-      metadata: {
-        topic_id: requestPost.topicList
-      }
+      timestamp: dayjs().utc().format()
     });
     return res.status(200).json({ data: post });
   } catch (error) {

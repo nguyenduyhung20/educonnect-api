@@ -25,7 +25,6 @@ export const verifyComment = async (req: Request, res: Response, next: NextFunct
   const { postId } = req.params;
   const { requestUser } = req;
   try {
-    console.log(123123, postId, requestUser);
     const post = await PostService.getPost({
       postId: parseInt(postId, 10),
       userIdRequesting: requestUser.id,

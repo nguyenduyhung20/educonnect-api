@@ -77,11 +77,9 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
       await produceUserEventMessage({
         userId: requestUser.id.toString(),
         postId: requestPost.id.toString(),
+        postTopic: requestPost.topicList.map((item) => item.toString()),
         interactionType: inputFields.type,
-        timestamp: dayjs().utc().format(),
-        metadata: {
-          topic_id: requestPost.topicList
-        }
+        timestamp: dayjs().utc().format()
       });
     }
 

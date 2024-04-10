@@ -9,6 +9,7 @@ import { PostService } from './post.service';
 export const UserEventMessageSchema = z.object({
   userId: z.string(),
   postId: z.string(),
+  postTopic: z.array(z.string()),
   interactionType: z.enum(['like', 'comment', 'share', 'view']),
   timestamp: z.string().datetime(),
   metadata: z.record(z.any()).optional()
