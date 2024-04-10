@@ -29,9 +29,24 @@ export type GetPostsByListIdInput<T> = {
   select: T;
 };
 export type GetPostListConfig = {
+  /**
+   * Default: true
+   */
   isComment?: boolean;
+  /**
+   * Default: true
+   */
   isGroup?: boolean;
+  /**
+   * Default: true
+   */
   isFileContent?: boolean;
+  /**
+   * Default: true
+   */
   isSummarize?: boolean;
+  /**
+   * Default: undefined
+   */
   commentLimit?: number;
 };

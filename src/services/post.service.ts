@@ -245,6 +245,11 @@ export class PostService {
     return mappedResult;
   }
 
+  /**
+   * Function to retrieve posts based on the provided ID list.
+   * @param args All config options are defaulted to true: isComment, isGroup, isFileContent, isSummarize
+   * @returns An array of posts modified based on the provided configuration.
+   */
   static async getPostsList(args: Prettify<GetPostsByListIdArgs & GetPostListConfig>) {
     const {
       isComment = true,
