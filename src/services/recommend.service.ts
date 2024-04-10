@@ -39,13 +39,13 @@ type IRecommendedPost = {
 };
 export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
   // Get user current topic list, for now its a dummy list
-  const topicIdList = ['1', '2', '3'];
+  const topicIdList = ['2'];
   const payload = {
     user: userId.toString(),
     topic_id: topicIdList
   };
-  const response = await axios.post<IRecommendedPost[]>(`${RECOMMEND_SERVER.URL}/query`, payload);
-  const postIdList = response.data.map((item) => parseInt(item.item, 10));
+  const response = await axios.post<{ result: IRecommendedPost[] }>(`http://${RECOMMEND_SERVER.URL}/queries`, payload);
+  const postIdList = response.data.result.map((item) => parseInt(item.item, 10));
 
   const postList = await getPostsList({
     postIdList,

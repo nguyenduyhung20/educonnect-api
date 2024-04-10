@@ -1,18 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '../config/AppError';
-import { getPostsList } from '../services/post.service';
+import { getRecommendPosts } from '../services/recommend.service';
 
 export const handleTest = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const postIdList = [1, 2, 3];
     // const users = await db.selectFrom('user').select('name').execute();
-    const data = await getPostsList({
-      postIdList,
-      userIdRequesting: 2,
-      isComment: false,
-      isSummarize: false
-    });
-    return res.status(200).json({ data1: data[0] });
+    const data = await getRecommendPosts({ userId: 2 });
+    return res.status(200).json({ data: data });
   } catch (error) {
     next(error);
   }
