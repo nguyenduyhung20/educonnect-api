@@ -86,7 +86,8 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
 };
 
 export const handleCreatePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser, body: postFields } = req;
+  const { requestUser } = req;
+  const postFields = req.body;
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
   const listFile = [];
   try {
@@ -132,8 +133,24 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
       }
     }
 
+    // Create post record
     const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
 
+    // Also create post topic record
+    const postTopic = postFields.postTopic as string[] | undefined;
+    if (postTopic) {
+      await prisma.post_topic.createMany({
+        data: postTopic.map((topic) => {
+          return {
+            post_id: post.id,
+            topic_id: typeof topic === 'string' ? parseInt(topic, 10) : topic
+          };
+        }),
+        skipDuplicates: true
+      });
+    }
+
+    // Send Kafka message to show notification
     const messages = [
       {
         key: 'post',
