@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
-import { db } from '../databases/kysely';
 import { CustomError } from '../config/AppError';
+import { getRecommendPosts } from '../services/recommend.service';
 
-export const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const handleTest = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const users = await db.selectFrom('user').select('name').execute();
-    res.status(200).json({ users });
+    // const postIdList = [1, 2, 3];
+    // const users = await db.selectFrom('user').select('name').execute();
+    const data = await getRecommendPosts({ userId: 2 });
+    return res.status(200).json({ data: data });
   } catch (error) {
     next(error);
   }

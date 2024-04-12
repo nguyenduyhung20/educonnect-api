@@ -5,37 +5,32 @@ import { logger } from '../utils/logger';
 import { redisClient } from '../config/redis-client';
 
 export const handleSummarizeMostInteractPost = async () => {
-  try {
-    const posts = await PostModel.getMostInteractPost();
-    const results = await SummarizePostModel.postSummarizePost(
-      posts
-        .filter((item) => typeof item.content_summarization === 'undefined')
-        .map((item) => {
-          return { id: item.id, content_summarization: item.content };
-        })
-    );
-    await handleStoreSummarizeContentPost(results.summaries); // Store the summarized posts in the database only if they haven't been summarized before.
+  const posts = await PostModel.getMostInteractPost();
+  const results = await SummarizePostModel.postSummarizePost(
+    posts
+      .filter((item) => typeof item.content_summarization === 'undefined')
+      .map((item) => {
+        return { id: item.id, content_summarization: item.content };
+      })
+  );
+  await handleStoreSummarizeContentPost(results.summaries); // Store the summarized posts in the database only if they haven't been summarized before.
 
-    // Push id of post summarized
-    posts.forEach((item) => {
-      const findItem = results.summaries.find((subItem) => subItem.id === item.id);
-      if (!findItem) {
-        results.summaries.push({ id: item.id, content_summarization: item.content_summarization });
-      } else {
-        item.content_summarization = findItem.content_summarization ?? undefined;
-      }
-    });
-
-    for (const summary of results.summaries) {
-      const key = `summary`;
-      await redisClient.SADD(key, `${summary.id}`);
+  // Push id of post summarized
+  posts.forEach((item) => {
+    const findItem = results.summaries.find((subItem) => subItem.id === item.id);
+    if (!findItem) {
+      results.summaries.push({ id: item.id, content_summarization: item.content_summarization });
+    } else {
+      item.content_summarization = findItem.content_summarization ?? undefined;
     }
+  });
 
-    return posts;
-  } catch (error: any) {
-    logger.error(error);
-    throw error;
+  for (const summary of results.summaries) {
+    const key = `summary`;
+    await redisClient.SADD(key, `${summary.id}`);
   }
+
+  return posts;
 };
 
 export const handleStoreSummarizeContentPost = async (summaries: Prisma.post_summarizationCreateManyInput[]) => {

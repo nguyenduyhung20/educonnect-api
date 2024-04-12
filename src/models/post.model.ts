@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
+import { GetPostsByListIdInput } from '../interfaces/type';
 
 const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
@@ -19,7 +20,7 @@ const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   }
 };
 
-const COMMENT_SELECT = {
+export const POST_SELECT = {
   id: true,
   title: true,
   content: true,
@@ -56,14 +57,14 @@ const COMMENT_SELECT = {
       }
     }
   }
-};
+} as const;
 
 type RawComment = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 type RawPost = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 const mapComment = (post: RawComment) => {
@@ -86,7 +87,7 @@ const mapComment = (post: RawComment) => {
   return result;
 };
 
-const mapPost = (post: RawPost) => {
+export const mapPost = (post: RawPost) => {
   const result = {
     ...mapComment(post)
   };
@@ -94,32 +95,6 @@ const mapPost = (post: RawPost) => {
 };
 
 export class PostModel {
-  static async getAll(postLimit = 10, commentLimit = 10) {
-    return prisma.post.findMany({
-      take: postLimit,
-      where: {
-        parent_post_id: null,
-        deleted: false
-      },
-      select: {
-        ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: COMMENT_SELECT,
-          orderBy: {
-            create_at: 'desc'
-          }
-        }
-      },
-      orderBy: {
-        create_at: 'desc'
-      }
-    });
-  }
-
   static async getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList: number[], postLimit = 100) {
     const posts = await prisma.post.findMany({
       take: postLimit,
@@ -156,13 +131,13 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     deleted: false
@@ -244,78 +219,56 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getByListIdNotHaveComment(postIdNumberList: number[], userIdRequesting: number, commentLimit = 20) {
+  static async getPostsByListId<T extends Prisma.postSelect>({ args, select }: GetPostsByListIdInput<T>) {
+    const { postIdList } = args;
+
     const result = await prisma.post.findMany({
       where: {
         deleted: false,
         id: {
-          in: postIdNumberList
+          in: postIdList
         }
       },
-      select: {
-        ...COMMENT_SELECT,
-        interact: {
-          where: {
-            user_id: userIdRequesting,
-            deleted: false
-          },
-          select: {
-            type: true
-          }
-        },
-        group: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
-      }
+      select
     });
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
 
-    const mappedResult = result.map((post) => {
-      return {
-        ...mapPost(post),
-        userInteract: post.interact[0]?.type ?? null,
-        fileContent: post.file_content.map((item) => {
-          return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-        }),
-        group: post.group ?? null
-      };
-    });
-    return mappedResult;
+    return result;
   }
+
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
+    const postTypeWhereCondition =
+      type == 'post'
+        ? {
+            id: id,
+            parent_post_id: null,
+            deleted: false
+          }
+        : {
+            id: id,
+            deleted: false
+          };
+
     const result = await prisma.post.findFirst({
-      where:
-        type == 'post'
-          ? {
-              id: id,
-              parent_post_id: null,
-              deleted: false
-            }
-          : {
-              id: id,
-              deleted: false
-            },
+      where: postTypeWhereCondition,
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         other_post: {
           take: commentLimit,
           where: {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     user_id: userIdRequesting,
@@ -355,17 +308,21 @@ export class PostModel {
             id: true,
             title: true
           }
+        },
+        post_topic: {
+          select: {
+            topic_id: true
+          }
         }
       }
     });
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-
     return result;
   }
 
-  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 30) {
+  static async getPostsByUserId(userId: number, userIdRequesting: number) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -377,13 +334,13 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     user_id: userIdRequesting,
@@ -434,21 +391,21 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -520,21 +477,21 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -595,7 +552,7 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT
+        ...POST_SELECT
       }
     });
     if (!queryResult) {
@@ -682,7 +639,7 @@ export class PostModel {
         parent_post_id: null,
         deleted: false
       },
-      select: COMMENT_SELECT,
+      select: POST_SELECT,
       orderBy: {
         _relevance: {
           fields: ['title', 'content'],
@@ -698,7 +655,7 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getHotPostByUserID(userId: number, postLimit: number = 20, commentLimit: number = 5) {
+  static async getHotPostByUserID(userId: number) {
     const queryResult = await prisma.post.findMany({
       orderBy: { create_at: 'desc' },
       where: {
@@ -706,12 +663,12 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         other_post: {
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: POST_SELECT,
           orderBy: {
             create_at: 'desc'
           }
@@ -759,7 +716,7 @@ export class PostModel {
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         group: {
           select: {
             id: true,

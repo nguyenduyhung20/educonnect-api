@@ -189,6 +189,7 @@ model post {
   user               user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   post_summarization post_summarization?
   post_tag           post_tag[]
+  post_topic         post_topic[]
 }
 
 model school {
@@ -321,6 +322,25 @@ model calendar {
   update_at  DateTime @default(now()) @db.Timestamp(6)
   deleted    Boolean  @default(false)
   user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_topic {
+  post_id   Int
+  topic_id  Int
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  post      post     @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  topic     topic    @relation(fields: [topic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([post_id, topic_id])
+}
+
+model topic {
+  id         Int          @id @default(autoincrement())
+  name       String?      @db.VarChar(255)
+  create_at  DateTime     @default(now()) @db.Timestamp(6)
+  deleted    Boolean      @default(false)
+  post_topic post_topic[]
 }
 
 enum interact_type {

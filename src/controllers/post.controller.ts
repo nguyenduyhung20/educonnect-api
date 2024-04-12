@@ -6,11 +6,8 @@ import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { producer } from '../services/kafka-client';
-import { redisClient } from '../config/redis-client';
 import cheerio from 'cheerio';
-import { apiGet } from '../utils/apiRequest';
 import axios from 'axios';
-import { CACHE_NEWSFEED_POST } from '../constants/redis';
 import { produceUserEventMessage } from '../services/recommend.service';
 import dayjs from 'dayjs';
 
@@ -89,7 +86,8 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
 };
 
 export const handleCreatePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser, body: postFields } = req;
+  const { requestUser } = req;
+  const postFields = req.body;
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
   const listFile = [];
   try {
@@ -135,8 +133,24 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
       }
     }
 
+    // Create post record
     const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
 
+    // Also create post topic record
+    const postTopic = postFields.postTopic as string[] | undefined;
+    if (postTopic) {
+      await prisma.post_topic.createMany({
+        data: postTopic.map((topic) => {
+          return {
+            post_id: post.id,
+            topic_id: typeof topic === 'string' ? parseInt(topic, 10) : topic
+          };
+        }),
+        skipDuplicates: true
+      });
+    }
+
+    // Send Kafka message to show notification
     const messages = [
       {
         key: 'post',
@@ -187,8 +201,9 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
     const post = await PostModel.createComment(requestUser.id, requestPost.id, postFields);
     // Produce comment event
     await produceUserEventMessage({
-      userId: requestUser.id.toString(),
-      postId: requestPost.id.toString(),
+      userId: requestUser.id,
+      postId: requestPost.id,
+      postTopic: requestPost.topicList.map((item) => item),
       interactionType: 'comment',
       timestamp: dayjs().utc().format()
     });

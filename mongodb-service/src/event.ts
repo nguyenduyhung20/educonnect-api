@@ -4,8 +4,9 @@ import { z } from 'zod';
 import { logger } from './logger';
 
 const UserPostInteractionEventSchema = z.object({
-  userId: z.string(),
-  postId: z.string(),
+  userId: z.number(),
+  postId: z.number(),
+  postTopic: z.array(z.number()),
   interactionType: z.enum(['like', 'comment', 'share', 'view']),
   timestamp: z.string(),
   metadata: z.record(z.any()).optional()

@@ -1,7 +1,6 @@
 import type { ColumnType } from 'kysely';
-export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S, I | undefined, U>
-  : ColumnType<T, T | undefined, T>;
+export type Generated<T> =
+  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 import type { interact_type, member_role, member_status, user_role, user_sex } from './enums';
@@ -152,6 +151,12 @@ export type post_tag = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
+export type post_topic = {
+  post_id: number;
+  topic_id: number;
+  create_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
 export type school = {
   id: Generated<number>;
   address: string | null;
@@ -180,6 +185,12 @@ export type teacher = {
   school_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+};
+export type topic = {
+  id: Generated<number>;
+  name: string | null;
+  create_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
 export type transcript = {
@@ -229,10 +240,12 @@ export type DB = {
   post: post;
   post_summarization: post_summarization;
   post_tag: post_tag;
+  post_topic: post_topic;
   school: school;
   student: student;
   subject: subject;
   teacher: teacher;
+  topic: topic;
   transcript: transcript;
   user: user;
 };

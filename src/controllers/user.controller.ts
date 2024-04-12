@@ -9,6 +9,7 @@ import { GroupModel } from '../models/group.model';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { NotificationModel } from '../models/notification.model';
+import { getRecommendPosts } from '../services/recommend.service';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -193,23 +194,33 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
   const { requestUser } = req;
 
   try {
+    // Take 10 top post saved in redis sorted set with key is user id
     const listIdPosts = await redisClient.zRange(`${requestUser.id}`, 0, 9);
+    // Delete them after read
     await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
+
     if (listIdPosts.length) {
       const postIdNumberList = listIdPosts.map(Number);
-      const posts = await PostModel.getByListIdNotHaveComment(postIdNumberList, requestUser.id);
+      const posts = await PostService.getPostsList({
+        postIdList: postIdNumberList,
+        userIdRequesting: requestUser.id,
+        isComment: false,
+        isSummarize: false
+      });
       res.status(200).json({ data: posts });
     } else {
       const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
-      const mySeftPosts = await PostService.getUserPosts({
+      const selfPosts = await PostService.getUserPosts({
         userId: requestUser.id,
         userIdRequesting: requestUser.id,
         detail: false
       });
 
-      const hotposts = await PostModel.getHotPostByUserID(requestUser.id);
+      const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
 
-      const results = [...(posts || []), ...(mySeftPosts || []), ...(hotposts || [])];
+      const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
+
+      const results = [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])];
       results.forEach(async (item) => {
         const key = `${requestUser.id}` || '';
         const value = `${item.id}` || '';

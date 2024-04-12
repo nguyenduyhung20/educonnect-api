@@ -8,9 +8,9 @@ export class SummarizePostModel {
   ): Promise<{ summaries: Prisma.post_summarizationCreateManyInput[] }> {
     try {
       return await apiPost('/summarize', posts);
-    } catch (error) {
+    } catch (error: any) {
       // Handle the error here
-      throw new Error(`Failed to summarize posts ${error}`);
+      throw new Error(`Failed to summarize posts by ${error.message}`);
     }
   }
 
