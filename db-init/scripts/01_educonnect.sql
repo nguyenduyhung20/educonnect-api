@@ -328,11 +328,6 @@ ADD
     FOREIGN KEY ("group_id") REFERENCES "group" ("id");
 
 ALTER TABLE
-    "post"
-ADD
-    FOREIGN KEY ("topic_id") REFERENCES "topic" ("id");
-
-ALTER TABLE
     "interact"
 ADD
     FOREIGN KEY ("user_id") REFERENCES "user" ("id");

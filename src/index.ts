@@ -14,9 +14,8 @@ const scheduleCronJob = () => {
     logger.info('Running your cron job');
     try {
       await handleSummarizeMostInteractPost();
-    } catch (error) {
-      logger.error(error);
-      throw error;
+    } catch (error: any) {
+      logger.error(`Cronjob failed with: ${error.message}`);
     }
   });
 };

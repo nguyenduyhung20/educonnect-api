@@ -132,7 +132,6 @@ export type post = {
   user_id: number;
   parent_post_id: number | null;
   group_id: number | null;
-  topic_id: number | null;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
