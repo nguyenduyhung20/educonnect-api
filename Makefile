@@ -36,3 +36,11 @@ upKafka:
 
 buildApi:
 	docker-compose -f docker-compose-api.yml up --build -d && docker image prune -f 
+
+buildKafka:
+	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka --build -d && docker image prune -f
+
+downKafka:
+	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
+
+resetKafka: downKafka buildKafka
