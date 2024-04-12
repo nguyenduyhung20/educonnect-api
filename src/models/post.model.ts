@@ -319,7 +319,6 @@ export class PostModel {
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-
     return result;
   }
 

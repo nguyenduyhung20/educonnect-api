@@ -201,9 +201,9 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
     const post = await PostModel.createComment(requestUser.id, requestPost.id, postFields);
     // Produce comment event
     await produceUserEventMessage({
-      userId: requestUser.id.toString(),
-      postId: requestPost.id.toString(),
-      postTopic: requestPost.topicList.map((item) => item.toString()),
+      userId: requestUser.id,
+      postId: requestPost.id,
+      postTopic: requestPost.topicList.map((item) => item),
       interactionType: 'comment',
       timestamp: dayjs().utc().format()
     });
