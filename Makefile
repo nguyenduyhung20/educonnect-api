@@ -19,9 +19,6 @@ setupRedis: docker-compose-redis.yml
 setupELK: docker-compose-kz-elk.yml
 	docker-compose -f docker-compose-kz-elk.yml up -d
 
-upMS:
-	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service  -d
-
 buildMS:
 	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
 
@@ -31,11 +28,12 @@ upNoti:
 buildNoti:
 	docker-compose -f docker-compose-kz-elk.yml up notification-service --build -d && docker image prune -f
 
-upKafka: 
-	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
-
 buildApi:
 	docker-compose -f docker-compose-api.yml up --build -d && docker image prune -f 
+
+# Kafka commands
+upKafka: 
+	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
 
 buildKafka:
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka --build -d && docker image prune -f
@@ -44,3 +42,8 @@ downKafka:
 	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
 
 resetKafka: downKafka buildKafka
+
+upMongo:
+	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-service -d
+
+upMS: upKafka upMongo

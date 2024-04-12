@@ -4,7 +4,7 @@ import { connectToMongoDB } from './mongo';
 import { processEvent } from './event';
 
 const MONGO_DOMAIN = process.env.MONGO_DOMAIN || 'localhost';
-const MONGO_PORT = process.env.MONGO_PORT || '27017';
+const MONGO_PORT = process.env.MONGO_PORT || '27018';
 const KAFKA_DOMAIN = process.env.KAFKA_DOMAIN || 'localhost';
 const KAFKA_PORT = process.env.KAFKA_PORT || '29092';
 

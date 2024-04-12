@@ -15,7 +15,7 @@ const scheduleCronJob = () => {
     try {
       await handleSummarizeMostInteractPost();
     } catch (error: any) {
-      logger.error(`Cronjob failed with: ${error.message}`);
+      logger.warn(`Cronjob failed with: ${error.message}`);
     }
   });
 };
