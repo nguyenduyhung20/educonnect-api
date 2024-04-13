@@ -31,6 +31,9 @@ buildNoti:
 buildApi:
 	docker-compose -f docker-compose-api.yml up --build -d && docker image prune -f 
 
+downApi:
+	docker-compose -f docker-compose-api.yml down -v
+
 # Kafka commands
 upKafka: 
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d

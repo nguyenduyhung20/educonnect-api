@@ -17,3 +17,7 @@ export const MONGODB = {
     USER_EVENTS: 'user_events'
   }
 };
+
+export const REDIS = {
+  URI: process.env.REDIS_URL || 'redis://localhost:6379'
+};

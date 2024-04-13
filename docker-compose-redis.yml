@@ -11,6 +11,8 @@ services:
       - 8002:8001
     volumes:
       - redisdata:/data
+    networks:
+      - educonnect
 
 volumes:
   redisdata:
@@ -20,3 +22,6 @@ volumes:
       type: none
       device: ./redis-data
 
+networks:
+  educonnect:
+    name: educonnect
