@@ -5,7 +5,7 @@ services:
     container_name: educonnect-api
     build:
       context: ./
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     volumes:
       - ./src:/app/src
     ports:
