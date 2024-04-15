@@ -7,7 +7,7 @@ import cron from 'node-cron';
 import { handleSummarizeMostInteractPost } from './controllers/summarizePost.controller';
 
 const startServer = () => {
-  app.listen(PORT, () => logger.info(`Running server on http://localhost:${PORT}`));
+  app.listen(PORT, () => logger.info(`Running server on port ${PORT}`));
 };
 const scheduleCronJob = () => {
   cron.schedule('* * * * *', async () => {
@@ -15,7 +15,7 @@ const scheduleCronJob = () => {
     try {
       await handleSummarizeMostInteractPost();
     } catch (error: any) {
-      logger.warn(`Cronjob failed with: ${error.message}`);
+      logger.warn(`Cronjob failed with: ${error.message}\n`, error);
     }
   });
 };

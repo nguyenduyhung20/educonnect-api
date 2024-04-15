@@ -10,6 +10,7 @@ import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
 import { NotificationModel } from '../models/notification.model';
 import { getRecommendPosts } from '../services/recommend.service';
+import prisma from '../databases/client';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -278,6 +279,44 @@ export const handleReadNotification = async (req: Request, res: Response, next: 
   const { notificationId } = req.params;
   try {
     const data = await NotificationModel.updateIsRead(parseInt(notificationId as string, 10));
+
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleOverviewActivity = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  try {
+    const recentActivity = await prisma.user.findFirst({
+      where: {
+        id: requestUser.id
+      },
+      select: {
+        _count: {
+          select: {
+            post: {
+              where: {
+                parent_post_id: {
+                  not: null
+                }
+              }
+            },
+            interact: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const data = {
+      interactNumber: recentActivity?._count.interact,
+      commentNumber: recentActivity?._count.post
+    };
 
     return res.status(200).json(data);
   } catch (error) {
