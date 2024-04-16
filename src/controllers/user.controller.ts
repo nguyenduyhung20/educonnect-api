@@ -318,7 +318,7 @@ export const handleOverviewActivity = async (req: Request, res: Response, next: 
       commentNumber: recentActivity?._count.post
     };
 
-    return res.status(200).json(data);
+    return res.status(200).json({ data });
   } catch (error) {
     next(error);
   }
