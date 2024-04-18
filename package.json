@@ -18,7 +18,8 @@
     "prisma:gen": "prisma generate",
     "prisma:update": "npm run prisma:pull && npm run prisma:gen",
     "prepare": "husky  install",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "sync-db": "node scripts/pg-to-elastic.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,7 @@
     ]
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.13.1",
     "@prisma/client": "^5.12.1",
     "axios": "^1.6.8",
     "cheerio": "^1.0.0-rc.12",

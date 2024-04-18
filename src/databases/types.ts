@@ -101,9 +101,7 @@ export type member = {
 };
 export type notification = {
   id: Generated<number>;
-  item_id: number;
-  sender_id: number;
-  receiver_id: number;
+  user_id: number;
   message: string | null;
   is_read: Generated<boolean>;
   create_at: Generated<Timestamp>;
@@ -151,12 +149,6 @@ export type post_tag = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
-export type post_topic = {
-  post_id: number;
-  topic_id: number;
-  create_at: Generated<Timestamp>;
-  deleted: Generated<boolean>;
-};
 export type school = {
   id: Generated<number>;
   address: string | null;
@@ -187,12 +179,6 @@ export type teacher = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
-export type topic = {
-  id: Generated<number>;
-  name: string | null;
-  create_at: Generated<Timestamp>;
-  deleted: Generated<boolean>;
-};
 export type transcript = {
   id: Generated<number>;
   fifteen_minutes_score: number | null;
@@ -218,7 +204,6 @@ export type user = {
   ssn: string | null;
   sex: user_sex | null;
   user_uuid: Generated<string>;
-  is_famous: Generated<boolean>;
   create_at: Generated<Timestamp>;
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
@@ -240,12 +225,10 @@ export type DB = {
   post: post;
   post_summarization: post_summarization;
   post_tag: post_tag;
-  post_topic: post_topic;
   school: school;
   student: student;
   subject: subject;
   teacher: teacher;
-  topic: topic;
   transcript: transcript;
   user: user;
 };
