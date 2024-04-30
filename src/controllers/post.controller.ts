@@ -155,10 +155,19 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
       {
         key: 'post',
         value: JSON.stringify({
-          content: postFields.content,
-          user_id: requestUser.id,
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          content_summarization: null,
+          file_content: post.file_content,
           post_uuid: post.post_uuid,
-          id: post.id
+          user_id: post.user_id,
+          parent_post_id: post.parent_post_id,
+          group_id: post.group_id,
+          view: 0,
+          create_at: post.create_at,
+          update_at: post.update_at,
+          deleted: post.deleted
         })
       }
     ];

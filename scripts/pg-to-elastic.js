@@ -32,6 +32,13 @@ async function fetchData(offset) {
       where: {
         deleted: false
       },
+      include: {
+        post_summarization: {
+          select: {
+            content_summarization: true
+          }
+        }
+      },
       take: limit,
       skip: offset
     });
@@ -64,11 +71,13 @@ async function processRows(rows) {
             id: row.id,
             title: row.title,
             content: row.content,
+            content_summarization: row.post_summarization?.content_summarization || null,
             file_content: row.file_content,
             post_uuid: row.post_uuid,
             user_id: row.user_id,
             parent_post_id: row.parent_post_id,
             group_id: row.group_id,
+            view: 0,
             create_at: row.create_at,
             update_at: row.update_at,
             deleted: row.deleted
@@ -76,7 +85,6 @@ async function processRows(rows) {
         }
       ];
       producer('post-topic', messages);
-      // console.log(`Insert ${id}`);
     } else {
       console.log(`Row with id ${id} already exists in Elasticsearch`);
     }
@@ -85,19 +93,28 @@ async function processRows(rows) {
 
 async function searchById(indexName, id) {
   try {
-    const searchResponse = await esClient.search({
+    const searchResponse = await esClient.get({
       index: indexName,
-      body: {
-        query: {
-          term: {
-            id: id
-          }
-        }
-      }
+      id: id
     });
+    return searchResponse ? true : false;
 
-    return searchResponse?.hits?.hits.length ? true : false;
+    // const searchResponse = await esClient.search({
+    //   index: indexName,
+    //   body: {
+    //     query: {
+    //       term: {
+    //         id: id
+    //       }
+    //     }
+    //   }
+    // });
+
+    // return searchResponse?.hits?.hits.length ? true : false;
   } catch (error) {
-    console.error(error);
+    if (error?.meta?.statusCode != 404) {
+      console.error(error);
+    }
+    return false;
   }
 }
