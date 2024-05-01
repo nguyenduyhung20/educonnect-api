@@ -6,8 +6,8 @@ generator client {
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/databases"
-  fileName     = "types.ts"
   enumFileName = "enums.ts"
+  fileName     = "types.ts"
 }
 
 datasource db {
@@ -134,14 +134,18 @@ model member {
 }
 
 model notification {
-  id        Int      @id @default(autoincrement())
-  user_id   Int
-  message   String?  @db.VarChar
-  is_read   Boolean  @default(false)
-  create_at DateTime @default(now()) @db.Timestamp(6)
-  update_at DateTime @default(now()) @db.Timestamp(6)
-  deleted   Boolean  @default(false)
-  user      user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                                  Int      @id @default(autoincrement())
+  item_id                             Int
+  sender_id                           Int
+  receiver_id                         Int
+  message                             String?  @db.VarChar
+  is_read                             Boolean  @default(false)
+  create_at                           DateTime @default(now()) @db.Timestamp(6)
+  update_at                           DateTime @default(now()) @db.Timestamp(6)
+  deleted                             Boolean  @default(false)
+  post                                post     @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_notification_receiver_idTouser user     @relation("notification_receiver_idTouser", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_notification_sender_idTouser   user     @relation("notification_sender_idTouser", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model of {
@@ -178,12 +182,14 @@ model post {
   update_at          DateTime            @default(now()) @db.Timestamp(6)
   deleted            Boolean             @default(false)
   interact           interact[]
+  notification       notification[]
   group              group?              @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   post               post?               @relation("postTopost", fields: [parent_post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   other_post         post[]              @relation("postTopost")
   user               user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   post_summarization post_summarization?
   post_tag           post_tag[]
+  post_topic         post_topic[]
 }
 
 model school {
@@ -252,33 +258,35 @@ model transcript {
 }
 
 model user {
-  id                              Int            @id @default(autoincrement())
-  address                         String?        @db.VarChar
-  name                            String?        @db.VarChar
-  avatar                          String?        @db.VarChar
-  background                      String?        @db.VarChar
-  role                            user_role
-  phone                           String?        @db.VarChar
-  birthday                        DateTime?      @db.Timestamp(6)
-  email                           String?        @db.VarChar
-  ssn                             String?        @unique @db.VarChar
-  sex                             user_sex?
-  user_uuid                       String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  create_at                       DateTime       @default(now()) @db.Timestamp(6)
-  update_at                       DateTime       @default(now()) @db.Timestamp(6)
-  deleted                         Boolean        @default(false)
-  account                         account?
-  admin                           admin?
-  calendar                        calendar[]
-  follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
-  follow_follow_follower_idTouser follow[]       @relation("follow_follower_idTouser")
-  interact                        interact[]
-  member                          member[]
-  notification                    notification[]
-  parent                          parent?
-  post                            post[]
-  student                         student?
-  teacher                         teacher?
+  id                                          Int            @id @default(autoincrement())
+  address                                     String?        @db.VarChar
+  name                                        String?        @db.VarChar
+  avatar                                      String?        @db.VarChar
+  background                                  String?        @db.VarChar
+  role                                        user_role
+  phone                                       String?        @db.VarChar
+  birthday                                    DateTime?      @db.Timestamp(6)
+  email                                       String?        @db.VarChar
+  ssn                                         String?        @unique @db.VarChar
+  sex                                         user_sex?
+  user_uuid                                   String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  is_famous                                   Boolean        @default(false)
+  create_at                                   DateTime       @default(now()) @db.Timestamp(6)
+  update_at                                   DateTime       @default(now()) @db.Timestamp(6)
+  deleted                                     Boolean        @default(false)
+  account                                     account?
+  admin                                       admin?
+  calendar                                    calendar[]
+  follow_follow_followed_idTouser             follow[]       @relation("follow_followed_idTouser")
+  follow_follow_follower_idTouser             follow[]       @relation("follow_follower_idTouser")
+  interact                                    interact[]
+  member                                      member[]
+  notification_notification_receiver_idTouser notification[] @relation("notification_receiver_idTouser")
+  notification_notification_sender_idTouser   notification[] @relation("notification_sender_idTouser")
+  parent                                      parent?
+  post                                        post[]
+  student                                     student?
+  teacher                                     teacher?
 }
 
 model post_tag {
@@ -314,6 +322,25 @@ model calendar {
   update_at  DateTime @default(now()) @db.Timestamp(6)
   deleted    Boolean  @default(false)
   user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_topic {
+  post_id   Int
+  topic_id  Int
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  post      post     @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  topic     topic    @relation(fields: [topic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([post_id, topic_id])
+}
+
+model topic {
+  id         Int          @id @default(autoincrement())
+  name       String?      @db.VarChar(255)
+  create_at  DateTime     @default(now()) @db.Timestamp(6)
+  deleted    Boolean      @default(false)
+  post_topic post_topic[]
 }
 
 enum interact_type {
