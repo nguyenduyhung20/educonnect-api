@@ -478,6 +478,12 @@ export class PostModel {
           },
           select: {
             ...POST_SELECT,
+            group: {
+              select: {
+                id: true,
+                title: true
+              }
+            },
             other_post: {
               take: commentLimit,
               where: {

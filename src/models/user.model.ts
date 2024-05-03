@@ -312,7 +312,6 @@ export class UserModel {
 
   static async getFiendsLatestPosts(userId: number, take = 20) {
     const userFolloweds = await UserModel.getUserFolloweds(userId);
-
     if (!userFolloweds) {
       return null;
     }

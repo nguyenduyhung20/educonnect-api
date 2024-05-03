@@ -106,6 +106,18 @@ CREATE TABLE "post_tag" (
     "deleted" boolean DEFAULT False NOT NULL
 );
 
+CREATE TABLE "post_reported" (
+    "post_id" INT,
+    "group_id" INT,
+    "user_id" INT,
+    "reason" varchar,
+    "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
+    "deleted" boolean DEFAULT False NOT NULL,
+    "update_at" TIMESTAMP DEFAULT (now ()) NOT NULL,
+    PRIMARY KEY ("post_id", "user_id"),
+    FOREIGN KEY ("post_id") REFERENCES "post" ("id")
+);
+
 CREATE TABLE "interact" (
     "user_id" int,
     "post_id" int,
@@ -266,6 +278,21 @@ CREATE TABLE "of" (
     "deleted" boolean DEFAULT False NOT NULL,
     PRIMARY KEY ("student_id", "class_id")
 );
+
+ALTER TABLE 
+    "post_reported"
+ADD
+    FOREIGN KEY ("group_id") REFERENCES "group" ("id");
+
+ALTER TABLE 
+    "post_reported"
+ADD
+    FOREIGN KEY ("post_id") REFERENCES "post" ("id");
+
+ALTER TABLE 
+    "post_reported"
+ADD
+    FOREIGN KEY ("user_id") REFERENCES "user" ("id");
 
 ALTER TABLE
     "account"
