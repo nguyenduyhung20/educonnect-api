@@ -67,8 +67,23 @@ export const handleRegister = async (req: Request, res: Response, next: NextFunc
         body.avatar = await uploadFile(uploadedFiles);
       }
     }
-    await AuthModel.create(body);
-    return res.status(200).json(SUCCESS_RESPONSE);
+    const result = await AuthModel.create(body);
+    const data = {
+      id: result.id,
+      name: result.name,
+      role: result.role,
+      avatar: result.avatar
+    };
+    const token = jwt.sign({ userId: data.id, role: data.role }, process.env.ACCESS_TOKEN_SECRET as string, {
+      expiresIn: '1d'
+    });
+    return res
+      .cookie('Token', `Bearer ${token}`, {
+        httpOnly: true,
+        maxAge: 86400000
+      })
+      .status(200)
+      .json({ data, token });
   } catch (error) {
     next(error);
   }
