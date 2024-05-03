@@ -136,6 +136,15 @@ export type post = {
   update_at: Generated<Timestamp>;
   deleted: Generated<boolean>;
 };
+export type post_reported = {
+  post_id: number;
+  group_id: number | null;
+  user_id: number;
+  reason: string | null;
+  create_at: Generated<Timestamp>;
+  deleted: Generated<boolean>;
+  update_at: Generated<Timestamp>;
+};
 export type post_summarization = {
   id: number;
   content_summarization: string | null;
@@ -238,6 +247,7 @@ export type DB = {
   of: of;
   parent: parent;
   post: post;
+  post_reported: post_reported;
   post_summarization: post_summarization;
   post_tag: post_tag;
   post_topic: post_topic;

@@ -206,6 +206,7 @@ export class PostService {
         fileContent: post.file_content.map((item) => {
           return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
         }),
+        group: post.group,
         comment: post.other_post.map((comment) => ({
           id: comment.id,
           user: comment.user,
