@@ -85,6 +85,7 @@ async function processRows(rows) {
         }
       ];
       producer('post-topic', messages);
+      console.log(`Indexing ${id}`);
     } else {
       console.log(`Row with id ${id} already exists in Elasticsearch`);
     }

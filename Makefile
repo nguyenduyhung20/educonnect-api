@@ -24,29 +24,26 @@ buildMS:
 
 upNoti:
 	docker-compose -f docker-compose-kz-elk.yml up notification-service -d
-
 buildNoti:
 	docker-compose -f docker-compose-kz-elk.yml up notification-service --build -d && docker image prune -f
 
 buildApi:
 	docker-compose -f docker-compose-api.yml up --build -d && docker image prune -f 
-
 downApi:
 	docker-compose -f docker-compose-api.yml down -v
 
 # Kafka commands
 upKafka: 
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
-
 buildKafka:
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka --build -d && docker image prune -f
-
 downKafka:
 	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
-
 resetKafka: downKafka buildKafka
 
 upMongo:
 	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-service -d
-
 upMS: upKafka upMongo
+
+upDev: 
+	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash -d
