@@ -48,21 +48,6 @@ services:
       timeout: 10s
       retries: 10
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
-    networks:
-      - kafka_elk
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_ZOOKEPPER: zookeeper:2181
-      DYNAMIC_CONFIG_ENABLED: 'true'
-    depends_on:
-      - kafka
-
   elasticsearch:
     container_name: elasticsearch_api
     image: elasticsearch:8.10.2

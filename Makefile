@@ -19,6 +19,10 @@ setupRedis: docker-compose-redis.yml
 setupELK: docker-compose-kz-elk.yml
 	docker-compose -f docker-compose-kz-elk.yml up -d
 
+removeELKData: 
+	rm -rf elk-data
+resetELK: downELK removeELKData setupELK
+
 buildMS:
 	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
 
@@ -47,3 +51,5 @@ upMS: upKafka upMongo
 
 upDev: 
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash -d
+downDev: 
+	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash -v
