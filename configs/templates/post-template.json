@@ -83,7 +83,8 @@
           "type": "text",
           "fields": {
             "completion": {
-              "type": "completion"
+              "type": "completion",
+              "max_input_length": 50
             }
           }
         },

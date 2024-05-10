@@ -80,7 +80,7 @@ export const handleExploreSearch = async (
         });
 
         const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
-        console.dir(autocompleteOptions, { depth: null });
+        // console.dir(result, { depth: null });
 
         results = {
           suggest: result.suggest?.query_typo
@@ -124,10 +124,10 @@ export const handleExploreSearch = async (
             }
           },
           size: SEARCH_RETURN_SIZE,
-          _source: ['id', 'title', 'content']
+          _source: ['id', 'title', 'content', 'file_content', 'group_id', 'parent_post_id', 'tags', 'user_id']
         });
         results = {
-          posts: posts.hits.hits.map((item) => ({ data: item._source, score: item._score }))
+          posts: posts.hits.hits.map((item) => item._source)
         };
       }
     }
