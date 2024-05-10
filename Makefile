@@ -1,3 +1,8 @@
+ES_HOST ?= localhost
+ES_PORT ?= 9200
+LS_PORT ?= 9600
+RETRY_INTERVAL ?= 3
+
 setupAll: setupDB setupRedis setupELK
 
 downAll: downDB downRedis downELK
@@ -21,7 +26,23 @@ setupELK: docker-compose-kz-elk.yml
 
 removeELKData: 
 	rm -rf elk-data
-resetELK: downELK removeELKData setupELK
+checkE:
+	@echo "Checking Elasticseach health..."
+	@while ! curl -s -f http://${ES_HOST}:${ES_PORT}/_cluster/health >/dev/null; do \
+		echo "Elasticsearch is not healthy. Retry in ${RETRY_INTERVAL} seconds..."; \
+		sleep ${RETRY_INTERVAL}; \
+	done
+	@echo "Elasticsearch is healthy."
+checkL:
+	@echo "Checking Logstash health..."
+	@while ! curl -s -f http://${ES_HOST}:${ES_PORT} >/dev/null; do \
+		echo "Logstash is not healthy. Retry in ${RETRY_INTERVAL} seconds..."; \
+		sleep ${RETRY_INTERVAL}; \
+	done
+	@echo "Logstash is healthy."
+loadE:
+	npm run sync-db
+resetELK: downELK removeELKData setupELK checkE checkL
 
 buildMS:
 	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
@@ -53,3 +74,4 @@ upDev:
 	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash -d
 downDev: 
 	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash -v
+resetDev: downDev removeELKData upDev checkE checkL

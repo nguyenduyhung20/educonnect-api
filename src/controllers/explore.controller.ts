@@ -4,6 +4,7 @@ import { UserModel } from '../models/user.model';
 import { esClient } from '../config/es-client';
 import { ELASTICSEARCH_POST_INDEX_NAME } from '../constants/constants';
 import { SearchTermSuggestOption } from '@elastic/elasticsearch/lib/api/types';
+import { SearchCompletionSuggestOption } from '@elastic/elasticsearch/lib/api/typesWithBodyKey';
 
 export const handleGetExplorePost = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -45,6 +46,8 @@ export const handleExploreSearch = async (
 ) => {
   const SEARCH_RETURN_SIZE = 20;
   const { mode, input } = req.query;
+  console.log(req.query);
+
   try {
     let results = {};
     if (mode && input) {
@@ -60,10 +63,25 @@ export const handleExploreSearch = async (
                 sort: 'score',
                 suggest_mode: 'always'
               }
+            },
+            query_autocomplete: {
+              prefix: input,
+              completion: {
+                field: 'title.completion',
+                skip_duplicates: true,
+                fuzzy: {
+                  fuzziness: '0'
+                }
+              }
             }
           },
-          size: 0
+          size: 0,
+          _source: false
         });
+
+        const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
+        console.dir(autocompleteOptions, { depth: null });
+
         results = {
           suggest: result.suggest?.query_typo
             ?.map((item) => {
@@ -74,7 +92,8 @@ export const handleExploreSearch = async (
                 return item.text;
               }
             })
-            .join(' ')
+            .join(' '),
+          autocomplete: autocompleteOptions.map((item) => item.text)
         };
       }
       if (mode === 'query') {
