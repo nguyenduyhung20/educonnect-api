@@ -39,6 +39,8 @@ type SearchQuery = {
 };
 type SearchMode = 'suggest' | 'query';
 
+const sourceFilter = ['id', 'title', 'content', 'file_content', 'group_id', 'parent_post_id', 'tags', 'user_id'];
+
 export const handleExploreSearch = async (
   req: Request<unknown, unknown, unknown, SearchQuery>,
   res: Response,
@@ -75,12 +77,35 @@ export const handleExploreSearch = async (
               }
             }
           },
-          size: 0,
-          _source: false
+          query: {
+            function_score: {
+              query: {
+                multi_match: {
+                  query: input,
+                  fields: ['title^2', 'content'],
+                  type: 'phrase'
+                }
+              },
+              functions: [
+                {
+                  field_value_factor: {
+                    field: 'view',
+                    modifier: 'log1p',
+                    factor: 1
+                  }
+                }
+              ],
+              boost_mode: 'multiply',
+              score_mode: 'sum'
+            }
+          },
+
+          size: 2,
+          _source: sourceFilter
         });
 
         const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
-        // console.dir(result, { depth: null });
+        console.dir(result, { depth: null });
 
         results = {
           suggest: result.suggest?.query_typo
@@ -93,7 +118,8 @@ export const handleExploreSearch = async (
               }
             })
             .join(' '),
-          autocomplete: autocompleteOptions.map((item) => item.text)
+          autocomplete: autocompleteOptions.map((item) => item.text),
+          most_access: result.hits.hits.map((item) => (item._source as any).title)
         };
       }
       if (mode === 'query') {
@@ -124,7 +150,7 @@ export const handleExploreSearch = async (
             }
           },
           size: SEARCH_RETURN_SIZE,
-          _source: ['id', 'title', 'content', 'file_content', 'group_id', 'parent_post_id', 'tags', 'user_id']
+          _source: sourceFilter
         });
         results = {
           posts: posts.hits.hits.map((item) => item._source)
