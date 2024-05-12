@@ -71,7 +71,7 @@ upMongo:
 upMS: upKafka upMongo
 
 upDev: 
-	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash -d
+	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash kibana -d
 downDev: 
-	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash -v
+	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash kibana -v
 resetDev: downDev removeELKData upDev checkE checkL

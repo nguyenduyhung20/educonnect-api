@@ -2,6 +2,7 @@ import { Prettify } from '../interfaces/type';
 import { mapPost, POST_SELECT, PostModel } from '../models/post.model';
 import { GetPostsByListIdArgs } from '../interfaces/type';
 import { GetPostListConfig } from '../interfaces/type';
+import { increaseESView } from './elasticsearch.service';
 
 export class PostService {
   static async getPost({
@@ -14,6 +15,8 @@ export class PostService {
     type: 'post' | 'comment';
   }) {
     const post = await PostModel.getById(postId, userIdRequesting, type);
+
+    await increaseESView(post.id.toString());
 
     const mappedPost = {
       id: post.id,
@@ -125,7 +128,11 @@ export class PostService {
 
       return mappedResult;
     } else {
+      console.time('querypost');
       const result = await PostModel.getPostWithCommentByUserId(userId, userIdRequesting);
+      console.timeEnd('querypost');
+
+      console.time('map');
       const mappedResult = result.post.map((post) => {
         const mappedPost = {
           id: post.id,
@@ -181,6 +188,8 @@ export class PostService {
         };
         return mappedPost;
       });
+      console.timeEnd('map');
+
       return mappedResult;
     }
   }

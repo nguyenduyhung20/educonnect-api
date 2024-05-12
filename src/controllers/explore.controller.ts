@@ -100,7 +100,7 @@ export const handleExploreSearch = async (
             }
           },
 
-          size: 2,
+          size: 1,
           _source: sourceFilter
         });
 
