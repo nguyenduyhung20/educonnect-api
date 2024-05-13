@@ -80,23 +80,34 @@ export const handleExploreSearch = async (
           query: {
             function_score: {
               query: {
-                multi_match: {
-                  query: input,
-                  fields: ['title^2', 'content'],
-                  type: 'phrase'
+                match_phrase_prefix: {
+                  content: input
                 }
               },
               functions: [
                 {
-                  field_value_factor: {
-                    field: 'view',
-                    modifier: 'log1p',
-                    factor: 1
-                  }
+                  gauss: {
+                    update_at: {
+                      origin: 'now',
+                      scale: '86400000ms',
+                      offset: '3600000ms',
+                      decay: 0.2
+                    }
+                  },
+                  weight: 0.5
+                },
+                {
+                  script_score: {
+                    script: {
+                      source: '_score + 2 * saturation(doc["view"].value, 1)',
+                      lang: 'painless'
+                    }
+                  },
+                  weight: 0.5
                 }
               ],
-              boost_mode: 'multiply',
-              score_mode: 'sum'
+              score_mode: 'sum',
+              boost_mode: 'sum'
             }
           },
 
