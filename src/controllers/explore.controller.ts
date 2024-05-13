@@ -48,7 +48,6 @@ export const handleExploreSearch = async (
 ) => {
   const SEARCH_RETURN_SIZE = 20;
   const { mode, input } = req.query;
-  console.log(req.query);
 
   try {
     let results = {};
@@ -116,7 +115,7 @@ export const handleExploreSearch = async (
         });
 
         const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
-        console.dir(result, { depth: null });
+        // console.dir(result, { depth: null });
 
         results = {
           suggest: result.suggest?.query_typo
