@@ -48,21 +48,6 @@ services:
       timeout: 10s
       retries: 10
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
-    networks:
-      - kafka_elk
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_ZOOKEPPER: zookeeper:2181
-      DYNAMIC_CONFIG_ENABLED: 'true'
-    depends_on:
-      - kafka
-
   elasticsearch:
     container_name: elasticsearch_api
     image: elasticsearch:8.10.2
@@ -97,16 +82,19 @@ services:
   logstash:
     container_name: logstash
     image: logstash:8.10.2
+    depends_on:
+      elasticsearch: 
+        condition: service_healthy
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - ./configs/logstash-kafka.conf:/usr/share/logstash/pipeline/logstash-kafka.conf
+      - ./configs/templates/post-template.json:/usr/share/logstash/config/post-template.json
     ports:
       - 5044:5044
-    depends_on:
-      - elasticsearch
+      - 9600:9600
     stdin_open: true
     tty: true
     restart: unless-stopped

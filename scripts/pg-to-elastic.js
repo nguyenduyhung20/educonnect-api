@@ -44,7 +44,7 @@ async function fetchData(offset) {
     });
     if (rows.length === 0) {
       console.log('All rows fetched');
-      return;
+      process.exit(0);
     }
 
     processRows(rows)
@@ -56,6 +56,7 @@ async function fetchData(offset) {
       });
   } catch (err) {
     console.error('Error executing PostgreSQL query:', err);
+    process.exit(1);
   }
 }
 
@@ -85,6 +86,7 @@ async function processRows(rows) {
         }
       ];
       producer('post-topic', messages);
+      console.log(`Indexing ${id}`);
     } else {
       console.log(`Row with id ${id} already exists in Elasticsearch`);
     }

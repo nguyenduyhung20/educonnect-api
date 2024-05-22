@@ -21,3 +21,5 @@ export const MONGODB = {
 export const REDIS = {
   URI: process.env.REDIS_URL || 'redis://localhost:6379'
 };
+
+export const ELASTICSEARCH_POST_INDEX_NAME = 'post-index';
