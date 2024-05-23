@@ -8,21 +8,21 @@ setupAll: setupDB setupRedis setupELK
 downAll: downDB downRedis downELK
 
 downDB:
-	docker-compose down -v
+	docker compose down -v
 downRedis:
-	docker-compose -f docker-compose-redis.yml down -v
+	docker compose -f docker-compose-redis.yml down -v
 downELK:
-	docker-compose -f docker-compose-kz-elk.yml down -v
+	docker compose -f docker-compose-kz-elk.yml down -v
 
 
 setupDB: docker-compose.yml
-	docker-compose up -d 
+	docker compose up -d 
 
 setupRedis: docker-compose-redis.yml
-	docker-compose -f docker-compose-redis.yml up -d
+	docker compose -f docker-compose-redis.yml up -d
 
 setupELK: docker-compose-kz-elk.yml
-	docker-compose -f docker-compose-kz-elk.yml up -d
+	docker compose -f docker-compose-kz-elk.yml up -d
 
 removeELKData: 
 	rm -rf elk-data
@@ -45,33 +45,36 @@ loadE:
 resetELK: downELK removeELKData setupELK checkE checkL
 
 buildMS:
-	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
+	docker compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
 
 upNoti:
-	docker-compose -f docker-compose-kz-elk.yml up notification-service -d
+	docker compose -f docker-compose-kz-elk.yml up notification-service -d
 buildNoti:
-	docker-compose -f docker-compose-kz-elk.yml up notification-service --build -d && docker image prune -f
+	docker compose -f docker-compose-kz-elk.yml up notification-service --build -d && docker image prune -f
 
 buildApi:
-	docker-compose -f docker-compose-api.yml up --build -d && docker image prune -f 
+	docker compose -f docker-compose-api.yml up --build -d && docker image prune -f 
 downApi:
-	docker-compose -f docker-compose-api.yml down -v
+	docker compose -f docker-compose-api.yml down -v
 
 # Kafka commands
 upKafka: 
-	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
+	docker compose -f docker-compose-kz-elk.yml up zookeeper kafka -d
 buildKafka:
-	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka --build -d && docker image prune -f
+	docker compose -f docker-compose-kz-elk.yml up zookeeper kafka --build -d && docker image prune -f
 downKafka:
-	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
+	docker compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
 resetKafka: downKafka buildKafka
 
 upMongo:
-	docker-compose -f docker-compose-kz-elk.yml up mongodb mongodb-service -d
+	docker compose -f docker-compose-kz-elk.yml up mongodb mongodb-service -d
 upMS: upKafka upMongo
 
 upDev: 
-	docker-compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash kibana -d
+	docker compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash kibana -d
 downDev: 
-	docker-compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash kibana -v
+	docker compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash kibana -v
 resetDev: downDev removeELKData upDev checkE checkL
+
+buildProd:
+	scp -r dist/ package.json package-lock.json prisma/ debian@143.198.220.8:/home/debian/educonnect-api/
