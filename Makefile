@@ -77,4 +77,4 @@ downDev:
 resetDev: downDev removeELKData upDev checkE checkL
 
 buildProd:
-	scp -r dist/ package.json package-lock.json prisma/ debian@143.198.220.8:/home/debian/educonnect-api/
+	scp -r dist/ package.json package-lock.json prisma/ debian@<ip>:/home/debian/educonnect-api/
