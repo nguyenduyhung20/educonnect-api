@@ -1,0 +1,103 @@
+version: '3.8'
+services:
+  whalewall:
+    cap_add: 
+      - NET_ADMIN
+    image: ghcr.io/capnspacehook/whalewall
+    network_mode: host
+    volumes:
+      - whalewall_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  elasticsearch:
+    container_name: elasticsearch_api
+    image: elasticsearch:8.10.2
+    environment:
+      - cluster.name=kafka-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.security.enabled=false
+    volumes:
+      - elk_data:/usr/share/elasticsearch/data:rw
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    #   - 9300:9300
+    labels:
+      whalewall.enabled: true
+      whalewall.rules: |
+        mapped_ports:
+          localhost:
+            allow: true
+          external:
+            allow: true
+            ips: [143.198.220.8]
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - kafka_elk
+    healthcheck:
+      test: curl -u elastic:elastic -s -f elasticsearch:9200/_cat/health >/dev/null || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    container_name: logstash
+    image: logstash:8.10.2
+    depends_on:
+      elasticsearch: 
+        condition: service_healthy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./configs/logstash-kafka.conf:/usr/share/logstash/pipeline/logstash-kafka.conf
+      - ./configs/templates/post-template.json:/usr/share/logstash/config/post-template.json
+    ports:
+      - 5044:5044
+      - 9600:9600
+    labels:
+      whalewall.enabled: true
+      whalewall.rules: |
+        mapped_ports:
+          localhost:
+            allow: true
+          external:
+            allow: true
+            ips: [143.198.220.8]
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - kafka_elk
+    healthcheck:
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://logstash:9600']
+      interval: 30s
+      timeout: 15s
+      retries: 3
+
+
+networks:
+  kafka_elk:
+    name: kafka_elk
+    driver: bridge
+
+  educonnect:
+    name: educonnect
+
+volumes:
+  elk_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./elk-data
+
+  whalewall_data:

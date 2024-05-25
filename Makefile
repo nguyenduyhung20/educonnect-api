@@ -44,9 +44,6 @@ loadE:
 	npm run sync-db
 resetELK: downELK removeELKData setupELK checkE checkL
 
-buildMS:
-	docker compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
-
 upNoti:
 	docker compose -f docker-compose-kz-elk.yml up notification-service -d
 buildNoti:
@@ -66,15 +63,26 @@ downKafka:
 	docker compose -f docker-compose-kz-elk.yml down zookeeper kafka -v
 resetKafka: downKafka buildKafka
 
+buildMS:
+	docker compose -f docker-compose-kz-elk.yml up mongodb mongodb-ui zookeeper kafka kafka-ui mongodb-service --build -d && docker image prune -f
 upMongo:
 	docker compose -f docker-compose-kz-elk.yml up mongodb mongodb-service -d
 upMS: upKafka upMongo
 
+# Dev
 upDev: 
 	docker compose -f docker-compose-kz-elk.yml up zookeeper kafka elasticsearch logstash kibana -d
 downDev: 
 	docker compose -f docker-compose-kz-elk.yml down zookeeper kafka elasticsearch logstash kibana -v
 resetDev: downDev removeELKData upDev checkE checkL
 
+
+# Deploy
 buildProd:
 	scp -r dist/ package.json package-lock.json prisma/ debian@<ip>:/home/debian/educonnect-api/
+
+downES: 
+	docker compose -f docker-compose-es.yml down -v && rm -rf elk-data && mkdir elk-data
+deployES:
+	docker compose -f docker-compose-es.yml up -d
+setupES: deployES checkE checkL loadE
