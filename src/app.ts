@@ -6,8 +6,6 @@ import router from './routes/index.route';
 import { handleError } from './middleware/error.middleware';
 import { AppError } from './config/AppError';
 import { morganMiddleware } from './middleware/morgan.middleware';
-import verifyJWT from './middleware/verifyJWT';
-import verifyFilePublic from './middleware/verifyFilePublic';
 
 // express app
 const app = express();
