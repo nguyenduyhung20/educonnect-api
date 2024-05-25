@@ -1,14 +1,4 @@
-version: '3.8'
 services:
-  whalewall:
-    cap_add: 
-      - NET_ADMIN
-    image: ghcr.io/capnspacehook/whalewall
-    network_mode: host
-    volumes:
-      - whalewall_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
   zookeeper:
     container_name: zookeeper
     image: confluentinc/cp-zookeeper:7.5.1
@@ -33,7 +23,6 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_ADVERTISED_HOST_NAME: localhost
-
     networks:
       - kafka_elk
       - educonnect
@@ -58,18 +47,11 @@ services:
       memlock:
         soft: -1
         hard: -1
+    depends_on:
+      - kafka
     ports:
       - 9200:9200
-    #   - 9300:9300
-    labels:
-      whalewall.enabled: true
-      whalewall.rules: |
-        mapped_ports:
-          localhost:
-            allow: true
-          external:
-            allow: true
-            ips: [143.198.220.8]
+      - 9300:9300
     stdin_open: true
     tty: true
     restart: unless-stopped
@@ -97,15 +79,6 @@ services:
     ports:
       - 5044:5044
       - 9600:9600
-    labels:
-      whalewall.enabled: true
-      whalewall.rules: |
-        mapped_ports:
-          localhost:
-            allow: true
-          external:
-            allow: true
-            ips: [143.198.220.8]
     stdin_open: true
     tty: true
     restart: unless-stopped
@@ -133,5 +106,3 @@ volumes:
       o: bind
       type: none
       device: ./elk-data
-
-  whalewall_data:
