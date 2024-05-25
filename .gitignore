@@ -1,8 +1,11 @@
 node_modules
 dist
 coverage
-.env
+.env*
+!env.example
 pg-data
 mg-data
 elk-data
 redis-data
+
+whodid.json

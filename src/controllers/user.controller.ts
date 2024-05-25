@@ -3,6 +3,14 @@ import { UserModel } from '../models/user.model';
 import { SUCCESS_RESPONSE } from '../constants/success';
 import { AppError } from '../config/AppError';
 import { PostService } from '../services/post.service';
+import { redisClient } from '../config/redis-client';
+import { PostModel } from '../models/post.model';
+import { GroupModel } from '../models/group.model';
+import { UploadedFile } from 'express-fileupload';
+import { uploadFile } from '../utils/uploadFile';
+import { NotificationModel } from '../models/notification.model';
+import { getRecommendPosts } from '../services/recommend.service';
+import prisma from '../databases/client';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -13,10 +21,102 @@ export const handleGetUsers = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const handleUpdateAvatar = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const users = await UserModel.changeAvatar(requestUser.id, listFile[0]);
+    res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateBackGround = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
+  const listFile = [];
+  try {
+    if (uploadedFiles) {
+      if (Array.isArray(uploadedFiles)) {
+        for (const file of uploadedFiles) {
+          const result = await uploadFile(file);
+          listFile.push(result);
+        }
+      } else {
+        const result = await uploadFile(uploadedFiles);
+        listFile.push(result);
+      }
+    }
+    const users = await UserModel.changeBackground(requestUser.id, listFile[0]);
+    res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserHost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'admin');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserByRole = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserRole(requestUser.id, 'user');
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetGroupUserJoin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { requestUser } = req;
+    const group = await GroupModel.getGroupsByUserJoin(requestUser.id);
+    res.status(200).json({ data: group });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const handleGetUserById = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser: user } = req;
   try {
     res.status(200).json({ data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleCreateUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { body: userFields } = req;
+  try {
+    const user = await UserModel.create(userFields);
+    const accountData = {
+      id: user.id,
+      username: (user.name?.replace(/\s/g, '') || '') + user.id,
+      password: '123123'
+    };
+    const account = await UserModel.createAccount(accountData);
+    res.status(200).json({ data: { ...user, ...account } });
   } catch (error) {
     next(error);
   }
@@ -83,7 +183,7 @@ export const handleGetUserNotification = async (req: Request, res: Response, nex
   const { requestUser } = req;
 
   try {
-    const notifications = await UserModel.getNotifications(requestUser.id);
+    const notifications = await NotificationModel.getNotifications(requestUser.id);
 
     res.status(200).json({ data: notifications });
   } catch (error) {
@@ -95,9 +195,41 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
   const { requestUser } = req;
 
   try {
-    const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+    // Take 10 top post saved in redis sorted set with key is user id
+    const listIdPosts = await redisClient.zRange(`${requestUser.id}`, 0, 9);
+    // Delete them after read
+    await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
 
-    res.status(200).json({ data: posts });
+    if (listIdPosts.length) {
+      const postIdNumberList = listIdPosts.map(Number);
+      const posts = await PostService.getPostsList({
+        postIdList: postIdNumberList,
+        userIdRequesting: requestUser.id,
+        isComment: false,
+        isSummarize: false
+      });
+      res.status(200).json({ data: posts });
+    } else {
+      const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
+      const selfPosts = await PostService.getUserPosts({
+        userId: requestUser.id,
+        userIdRequesting: requestUser.id,
+        detail: false
+      });
+
+      const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
+
+      const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
+
+      const results = [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])];
+      results.forEach(async (item) => {
+        const key = `${requestUser.id}` || '';
+        const value = `${item.id}` || '';
+        await redisClient.zAdd(key, { score: 1, value: value });
+      });
+
+      res.status(200).json({ data: results });
+    }
   } catch (error) {
     next(error);
   }
@@ -127,7 +259,7 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
     const newsfeed = await PostService.getUserPosts({
       userId: user.id,
       userIdRequesting: requestUser.id,
-      detail: true
+      detail: false
     });
 
     const data = {
@@ -138,6 +270,55 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
     };
 
     return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleReadNotification = async (req: Request, res: Response, next: NextFunction) => {
+  const { notificationId } = req.params;
+  try {
+    const data = await NotificationModel.updateIsRead(parseInt(notificationId as string, 10));
+
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleOverviewActivity = async (req: Request, res: Response, next: NextFunction) => {
+  const { requestUser } = req;
+  try {
+    const recentActivity = await prisma.user.findFirst({
+      where: {
+        id: requestUser.id
+      },
+      select: {
+        _count: {
+          select: {
+            post: {
+              where: {
+                parent_post_id: {
+                  not: null
+                }
+              }
+            },
+            interact: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const data = {
+      interactNumber: recentActivity?._count.interact,
+      commentNumber: recentActivity?._count.post
+    };
+
+    return res.status(200).json({ data });
   } catch (error) {
     next(error);
   }

@@ -228,3 +228,14 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+mongodb-service/
+notification-service/
+elk-data/
+mg-data/
+dist/
+collection/
+db-init/
+pg-data/
+redis-data/
+tests/

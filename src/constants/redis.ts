@@ -1,0 +1,2 @@
+export const CACHE_SUMMARIZATION_POST = 0;
+export const CACHE_NEWSFEED_POST = 1;
