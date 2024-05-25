@@ -8,9 +8,14 @@ const brokers = [process.env.KAFKA_BROKER_URI_1 ?? 'localhost:29092'];
 
 const kafka = new Kafka({
   clientId: 'web-server-client',
-  brokers
+  brokers,
+  ssl: true,
+  sasl: {
+    mechanism: 'scram-sha-512',
+    username: process.env.KAFKA_USERNAME ?? '',
+    password: process.env.KAFKA_PASSWORD ?? ''
+  }
 });
-
 const producerInstance = kafka.producer({
   createPartitioner: Partitioners.LegacyPartitioner
 });
