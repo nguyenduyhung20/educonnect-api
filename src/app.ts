@@ -39,7 +39,7 @@ app.get('/error', async (req, res, next) => {
   }
 });
 
-app.use('/public', verifyJWT, verifyFilePublic, express.static('public'));
+app.use('/public', verifyJWT, express.static('public'));
 
 // routes
 app.use('/api', router);
