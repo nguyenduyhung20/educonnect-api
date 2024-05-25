@@ -2,9 +2,9 @@ const { Client: ESClient } = require('@elastic/elasticsearch');
 const { PrismaClient } = require('@prisma/client');
 const { Kafka, Partitioners } = require('kafkajs');
 
-const esClient = new ESClient({ node: 'http://localhost:9200' });
+const esClient = new ESClient({ node: process.env.ES_URL ?? 'http://localhost:9200' });
 const prisma = new PrismaClient();
-const brokers = ['localhost:29092'];
+const brokers = [process.env.KAFKA_BROKER_URI_1 ?? 'localhost:29092'];
 
 const kafka = new Kafka({
   clientId: 'web-server-client',
