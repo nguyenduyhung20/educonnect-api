@@ -79,7 +79,8 @@ resetDev: downDev removeELKData upDev checkE checkL
 
 # Deploy
 buildProd:
-	scp -r dist/ package.json package-lock.json prisma/ debian@<ip>:/home/debian/educonnect-api/
+	scp -r dist/ package.json package-lock.json prisma/ debian@143.198.220.8:/home/debian/educonnect-api/
+
 
 downES: 
 	docker compose -f docker-compose-es.yml down -v && rm -rf elk-data && mkdir elk-data
