@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { InteractModel } from '../models/interact.model';
-import { producer } from '../services/kafka-client';
+import { producer } from '../config/kafka-client';
 import { NotificationModel } from '../models/notification.model';
 import { interact_type } from '@prisma/client';
 import dayjs from 'dayjs';

@@ -1,5 +1,5 @@
 import { Message } from 'kafkajs';
-import { producer } from './kafka-client';
+import { producer } from '../config/kafka-client';
 import { KAFKA_TOPIC, MONGODB, RECOMMEND_SERVER } from '../constants/constants';
 import { z } from 'zod';
 import { logger } from '../utils/logger';

@@ -23,3 +23,9 @@ export const REDIS = {
 };
 
 export const ELASTICSEARCH_POST_INDEX_NAME = 'post-index';
+
+export const KAFKA = {
+  KAFKA_BROKER_URI_1: process.env.KAFKA_BROKER_URI_1 ?? 'localhost:29092',
+  KAFKA_USERNAME: process.env.KAFKA_USERNAME ?? '',
+  KAFKA_PASSWORD: process.env.KAFKA_PASSWORD ?? ''
+};

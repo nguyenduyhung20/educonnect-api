@@ -1,10 +1,17 @@
 import { Kafka, Partitioners, EachMessagePayload } from 'kafkajs';
+import { KAFKA } from '../constants/constants';
 
-const brokers = ['localhost:29092'];
+const brokers = [KAFKA.KAFKA_BROKER_URI_1];
 
 const kafka = new Kafka({
   clientId: 'web-server-client',
-  brokers
+  brokers,
+  ssl: true,
+  sasl: {
+    mechanism: 'plain',
+    username: KAFKA.KAFKA_USERNAME,
+    password: KAFKA.KAFKA_PASSWORD
+  }
 });
 
 const consumerInstance = kafka.consumer({ groupId: 'web-server-consumer-client' });

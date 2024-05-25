@@ -5,7 +5,7 @@ import prisma from '../databases/client';
 import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
-import { producer } from '../services/kafka-client';
+import { producer } from '../config/kafka-client';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import { produceUserEventMessage } from '../services/recommend.service';
