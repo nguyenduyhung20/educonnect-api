@@ -39,7 +39,22 @@ type SearchQuery = {
 };
 type SearchMode = 'suggest' | 'query';
 
-const sourceFilter = ['id', 'title', 'content', 'file_content', 'group_id', 'parent_post_id', 'tags', 'user_id'];
+const sourceFilter = [
+  'id',
+  'title',
+  'content',
+  'file_content',
+  'group_id',
+  'parent_post_id',
+  'tags',
+  'user_id',
+  'create_at',
+  'update_at',
+  'content_summarization',
+  'view',
+  'interact_count',
+  'comment_count'
+];
 
 export const handleExploreSearch = async (
   req: Request<unknown, unknown, unknown, SearchQuery>,
@@ -115,7 +130,7 @@ export const handleExploreSearch = async (
         });
 
         const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
-        // console.dir(result, { depth: null });
+        console.dir(result, { depth: null });
 
         results = {
           suggest: result.suggest?.query_typo
@@ -165,6 +180,7 @@ export const handleExploreSearch = async (
         results = {
           posts: posts.hits.hits.map((item) => item._source)
         };
+        console.log(results);
       }
     }
 
