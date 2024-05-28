@@ -96,6 +96,12 @@
         },
         "view": {
           "type": "long"
+        },
+        "interact_count": {
+          "type": "long"
+        },
+        "comment_count": {
+          "type": "long"
         }
       }
     }

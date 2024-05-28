@@ -86,6 +86,6 @@ downES:
 	docker compose -f docker-compose-es.yml down -v && rm -rf elk-data && mkdir elk-data
 deployES:
 	docker compose -f docker-compose-es.yml up -d
-downKafka:
+downESKafka:
 	docker compose -f docker-compose-es.yml down zookeeper kafka -v
 setupES: deployES checkE checkL loadE

@@ -36,6 +36,20 @@ async function fetchData(offset) {
           select: {
             content_summarization: true
           }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
         }
       },
       take: limit,
@@ -78,6 +92,8 @@ async function processRows(rows) {
             parent_post_id: row.parent_post_id,
             group_id: row.group_id,
             view: 0,
+            interact_count: row._count.interact,
+            comment_count: row._count.other_post,
             create_at: row.create_at,
             update_at: row.update_at,
             deleted: row.deleted
