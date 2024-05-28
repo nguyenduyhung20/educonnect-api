@@ -130,7 +130,7 @@ export const handleExploreSearch = async (
         });
 
         const autocompleteOptions = result.suggest?.query_autocomplete[0].options as SearchCompletionSuggestOption[];
-        console.dir(result, { depth: null });
+        // console.dir(result, { depth: null });
 
         results = {
           suggest: result.suggest?.query_typo
@@ -180,7 +180,6 @@ export const handleExploreSearch = async (
         results = {
           posts: posts.hits.hits.map((item) => item._source)
         };
-        console.log(results);
       }
     }
 
