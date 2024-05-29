@@ -96,8 +96,14 @@ export class ElearningModel {
         classroom: {
           select: {
             id: true,
-            name: true
+            name: true,
+            create_at: true
           }
+        }
+      },
+      orderBy: {
+        classroom: {
+          create_at: 'desc'
         }
       }
     });
