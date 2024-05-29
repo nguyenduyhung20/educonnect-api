@@ -82,7 +82,7 @@ export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
     user: userId,
     topic_id: topicIdList
   };
-  let postIdList = [1, 2, 15];
+  let postIdList: number[] = [];
   try {
     const response = await axios.post<{ result: IRecommendedPost[] }>(
       `http://${RECOMMEND_SERVER.URL}/queries`,
