@@ -47,36 +47,35 @@ export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
   };
   const findResult = await userEvents.find(query).toArray();
 
+  let topicIdList: number[] | undefined = undefined;
   if (findResult.length === 0) {
     console.log('No documents found!');
   } else {
-    console.log('Documents found:', findResult);
+    // Find top 3 topic id, will find a better way in future, for now just working
+    const allTopicId: number[] = findResult
+      .filter((item) => !isNaN(Number(item.postId)))
+      .map((item) => parseInt(item.postId, 10));
+
+    const countMap: Record<number, number> = {};
+    allTopicId.forEach((num) => {
+      countMap[num] = (countMap[num] || 0) + 1;
+    });
+    const counts = Object.values(countMap);
+    const minCount = Math.min(...counts);
+    const maxCount = Math.max(...counts);
+
+    // Normalized count from 0 to 1 to adjust the bias rate in the future
+    const normalizedCountMap: Record<number, number> = {};
+    Object.entries(countMap).forEach(([num, count]) => {
+      const normalizedCount = (count - minCount) / (maxCount - minCount);
+      normalizedCountMap[Number(num)] = normalizedCount;
+    });
+    const countPairs = Object.entries(normalizedCountMap).map(([num, count]) => [Number(num), count]);
+    countPairs.sort((a, b) => b[1] - a[1]);
+
+    // Get top 3 for now, in the future will bias all the topics
+    topicIdList = countPairs.slice(0, 3).map((pair) => pair[0]);
   }
-
-  // Find top 3 topic id, will find a better way in future, for now just working
-  const allTopicId: number[] = findResult
-    .filter((item) => !isNaN(Number(item.postId)))
-    .map((item) => parseInt(item.postId, 10));
-
-  const countMap: Record<number, number> = {};
-  allTopicId.forEach((num) => {
-    countMap[num] = (countMap[num] || 0) + 1;
-  });
-  const counts = Object.values(countMap);
-  const minCount = Math.min(...counts);
-  const maxCount = Math.max(...counts);
-
-  // Normalized count from 0 to 1 to adjust the bias rate in the future
-  const normalizedCountMap: Record<number, number> = {};
-  Object.entries(countMap).forEach(([num, count]) => {
-    const normalizedCount = (count - minCount) / (maxCount - minCount);
-    normalizedCountMap[Number(num)] = normalizedCount;
-  });
-  const countPairs = Object.entries(normalizedCountMap).map(([num, count]) => [Number(num), count]);
-  countPairs.sort((a, b) => b[1] - a[1]);
-
-  // Get top 3 for now, in the future will bias all the topics
-  const topicIdList = countPairs.slice(0, 3).map((pair) => pair[0]);
 
   const payload = {
     user: userId,
@@ -84,10 +83,7 @@ export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
   };
   let postIdList: number[] = [];
   try {
-    const response = await axios.post<{ result: IRecommendedPost[] }>(
-      `http://${RECOMMEND_SERVER.URL}/queries`,
-      payload
-    );
+    const response = await axios.post<{ result: IRecommendedPost[] }>(`${RECOMMEND_SERVER.URL}/queries`, payload);
     postIdList = response.data.result.map((item) => parseInt(item.item, 10));
   } catch (error) {
     logger.error('Cannot connect to recommend service');

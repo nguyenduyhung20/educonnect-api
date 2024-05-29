@@ -694,7 +694,8 @@ export class PostModel {
             title: true
           }
         }
-      }
+      },
+      take: 20
     });
     if (!queryResult) {
       throw new AppError(404, 'NOT_FOUND');
