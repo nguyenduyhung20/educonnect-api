@@ -1,4 +1,4 @@
-import type { user_role, user_sex } from '../databases/enums';
+import { user_role, user_sex } from './enum';
 
 export type RegisterType = {
   id?: number;
