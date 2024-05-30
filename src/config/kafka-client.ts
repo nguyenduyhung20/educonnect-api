@@ -1,12 +1,21 @@
 import { Kafka, Partitioners, EachMessagePayload } from 'kafkajs';
 import { KAFKA } from '../constants/constants';
+import path from 'path';
+import { readFileSync } from 'fs';
+
+const rootDir = path.resolve(__dirname, '..', '..');
+const caCertPath = path.resolve(rootDir, 'ca.pem');
+const caCert = readFileSync(caCertPath, 'utf-8');
 
 const brokers = [KAFKA.KAFKA_BROKER_URI_1];
 
 const kafka = new Kafka({
   clientId: 'web-server-client',
   brokers,
-  ssl: true,
+  ssl: {
+    rejectUnauthorized: false,
+    ca: [caCert]
+  },
   sasl: {
     mechanism: 'scram-sha-512',
     username: KAFKA.KAFKA_USERNAME,

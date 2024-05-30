@@ -9,3 +9,5 @@ elk-data
 redis-data
 
 whodid.json
+
+ca.pem
