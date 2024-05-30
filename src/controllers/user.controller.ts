@@ -11,6 +11,7 @@ import { uploadFile } from '../utils/uploadFile';
 import { NotificationModel } from '../models/notification.model';
 import { getRecommendPosts } from '../services/recommend.service';
 import prisma from '../databases/client';
+import { getUniqueObjects, shuffleArray } from '../utils/array';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -200,7 +201,7 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
     // Delete them after read
     await redisClient.zRemRangeByRank(`${requestUser.id}`, 0, 9);
 
-    if (listIdPosts.length) {
+    if (listIdPosts.length > 0) {
       const postIdNumberList = listIdPosts.map(Number);
       const posts = await PostService.getPostsList({
         postIdList: postIdNumberList,
@@ -208,7 +209,7 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
         isComment: false,
         isSummarize: false
       });
-      res.status(200).json({ data: posts });
+      return res.status(200).json({ data: posts });
     } else {
       const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
       const selfPosts = await PostService.getUserPosts({
@@ -217,18 +218,41 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
         detail: false
       });
 
-      const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
-
       const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
+      console.log(
+        'recommend post',
+        recommendPosts.map((item) => item.id)
+      );
 
-      const results = [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])];
-      results.forEach(async (item) => {
+      // About 10 post
+      const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
+      console.log(
+        'hot post',
+        hotPosts.map((item) => item.id)
+      );
+
+      const uniqueResults = getUniqueObjects(
+        [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])],
+        'id'
+      );
+      const results = shuffleArray(uniqueResults);
+      console.log(
+        'result',
+        results.map((item) => item.id)
+      );
+      console.log('result length', results.length);
+
+      // User will read the first 10 post, so we cache the next 10 posts
+      const cacheResults = results.slice(10);
+      console.log('cache length', cacheResults.length);
+
+      cacheResults.forEach(async (item) => {
         const key = `${requestUser.id}` || '';
         const value = `${item.id}` || '';
         await redisClient.zAdd(key, { score: 1, value: value });
       });
 
-      res.status(200).json({ data: results });
+      return res.status(200).json({ data: results.slice(0, 9) });
     }
   } catch (error) {
     next(error);

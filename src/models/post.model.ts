@@ -663,7 +663,7 @@ export class PostModel {
 
   static async getHotPostByUserID(userId: number) {
     const queryResult = await prisma.post.findMany({
-      orderBy: { create_at: 'desc' },
+      orderBy: [{ create_at: 'desc' }, { interact: { _count: 'desc' } }, { other_post: { _count: 'desc' } }],
       where: {
         parent_post_id: null,
         deleted: false
@@ -695,7 +695,7 @@ export class PostModel {
           }
         }
       },
-      take: 20
+      take: 100
     });
     if (!queryResult) {
       throw new AppError(404, 'NOT_FOUND');
