@@ -44,7 +44,7 @@ export default function () {
 
   const token = authResponse.json('token');
 
-  const response = http.get(`https://educonnect.life/api/v1/post/${Math.random() * 22000 + 100} `, {
+  const response = http.get(`https://educonnect.life/api/v1/post/${Math.floor(Math.random() * 22000 + 100)}`, {
     headers: {
       Authorization: `Bearer ${token} `
     }

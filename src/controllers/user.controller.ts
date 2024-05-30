@@ -219,32 +219,18 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
       });
 
       const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
-      console.log(
-        'recommend post',
-        recommendPosts.map((item) => item.id)
-      );
 
       // About 10 post
       const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
-      console.log(
-        'hot post',
-        hotPosts.map((item) => item.id)
-      );
 
       const uniqueResults = getUniqueObjects(
         [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])],
         'id'
       );
       const results = shuffleArray(uniqueResults);
-      console.log(
-        'result',
-        results.map((item) => item.id)
-      );
-      console.log('result length', results.length);
 
       // User will read the first 10 post, so we cache the next 10 posts
       const cacheResults = results.slice(10);
-      console.log('cache length', cacheResults.length);
 
       cacheResults.forEach(async (item) => {
         const key = `${requestUser.id}` || '';
