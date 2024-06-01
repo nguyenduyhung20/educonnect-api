@@ -3,6 +3,8 @@ import { mapPost, POST_SELECT, PostModel } from '../models/post.model';
 import { GetPostsByListIdArgs } from '../interfaces/type';
 import { GetPostListConfig } from '../interfaces/type';
 import { increaseESView } from './elasticsearch.service';
+import { getTopicFromGemini } from '../config/gemini-client';
+import prisma from '../databases/client';
 
 export class PostService {
   static async getPost({
@@ -423,5 +425,20 @@ export class PostService {
       };
     });
     return mappedResult;
+  }
+
+  static async updatePostTopic(postId: number, postContent: string) {
+    try {
+      const { topicId } = await getTopicFromGemini(postContent);
+      await prisma.post_topic.create({
+        data: {
+          post_id: postId,
+          topic_id: topicId
+        }
+      });
+    } catch (error) {
+      console.error("Error in update post's topic");
+      return;
+    }
   }
 }

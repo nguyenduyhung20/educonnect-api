@@ -148,18 +148,22 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
     const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
 
     // Also create post topic record
-    const postTopic = postFields.postTopic as string[] | undefined;
-    if (postTopic) {
-      await prisma.post_topic.createMany({
-        data: postTopic.map((topic) => {
-          return {
-            post_id: post.id,
-            topic_id: typeof topic === 'string' ? parseInt(topic, 10) : topic
-          };
-        }),
-        skipDuplicates: true
-      });
-    }
+    // const postTopic = postFields.postTopic as string[] | undefined;
+    // if (postTopic) {
+    //   await prisma.post_topic.createMany({
+    //     data: postTopic.map((topic) => {
+    //       return {
+    //         post_id: post.id,
+    //         topic_id: typeof topic === 'string' ? parseInt(topic, 10) : topic
+    //       };
+    //     }),
+    //     skipDuplicates: true
+    //   });
+    // }
+
+    // Fire and forget
+    const postContent = `${post.title}\n${post.content}`;
+    PostService.updatePostTopic(post.id, postContent);
 
     // Send Kafka message to show notification
     const messages = [
