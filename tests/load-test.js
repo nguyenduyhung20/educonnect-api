@@ -5,11 +5,11 @@ export const options = {
   stages: [
     {
       duration: '10s',
-      target: 100
+      target: 1000
     },
     {
       duration: '30s',
-      target: 100
+      target: 1000
     },
     {
       duration: '10s',
@@ -44,14 +44,27 @@ export default function () {
 
   const token = authResponse.json('token');
 
-  const response = http.get('https://educonnect.life/api/v1/post/1004', {
+  // const randomPostId = Math.floor(Math.random() * 22000 + 100)
+  // const response = http.get(`https://educonnect.life/api/v1/post/${1000}`, {
+  //   headers: {
+  //     Authorization: `Bearer ${token} `
+  //   }
+  // });
+
+  // check(response, {
+  //   'API request success': (res) => res.status === 200
+  // });
+
+  // sleep(1);
+
+  const newsfeedResponse = http.get('https://educonnect.life/api/v1/user/newsfeed', {
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token} `
     }
   });
 
-  check(response, {
-    'API request success': (res) => res.status === 200
+  check(newsfeedResponse, {
+    'Newsfeed request success': (res) => res.status === 200
   });
 
   sleep(1);

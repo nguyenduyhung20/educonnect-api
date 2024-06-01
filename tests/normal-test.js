@@ -4,11 +4,28 @@ import { sleep, check } from 'k6';
 export const options = {
   stages: [
     {
-      duration: '30s',
-      target: 5000
+      duration: '10s',
+      target: 100
     },
     {
-      duration: '30s',
+      duration: '10s',
+      target: 200
+    },
+    {
+      duration: '10s',
+      target: 300
+    },
+    {
+      duration: '10s',
+      target: 400
+    },
+    {
+      duration: '10s',
+      target: 500
+    },
+
+    {
+      duration: '10s',
       target: 0
     }
   ],
@@ -19,7 +36,7 @@ export const options = {
     projectID: 3699134,
     // The name of the test in the k6 Cloud UI.
     // Test runs with the same name will be grouped.
-    name: 'spike-test.js'
+    name: 'normal-test.js'
   }
 };
 
@@ -41,17 +58,17 @@ export default function () {
   const token = authResponse.json('token');
 
   // const randomPostId = Math.floor(Math.random() * 22000 + 100)
-  const response = http.get(`https://educonnect.life/api/v1/post/${1000}`, {
-    headers: {
-      Authorization: `Bearer ${token} `
-    }
-  });
+  // const response = http.get(`https://educonnect.life/api/v1/post/${1000}`, {
+  //   headers: {
+  //     Authorization: `Bearer ${token} `
+  //   }
+  // });
 
-  check(response, {
-    'API request success': (res) => res.status === 200
-  });
+  // check(response, {
+  //   'API request success': (res) => res.status === 200
+  // });
 
-  sleep(1);
+  // sleep(1);
 
   const newsfeedResponse = http.get('https://educonnect.life/api/v1/user/newsfeed', {
     headers: {
