@@ -264,12 +264,12 @@ model user {
   email                                       String?         @db.VarChar
   ssn                                         String?         @unique @db.VarChar
   sex                                         user_sex?
-  point                                       Int?
   user_uuid                                   String          @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   is_famous                                   Boolean         @default(false)
   create_at                                   DateTime        @default(now()) @db.Timestamp(6)
   update_at                                   DateTime        @default(now()) @db.Timestamp(6)
   deleted                                     Boolean         @default(false)
+  point                                       Int?            @default(0)
   account                                     account?
   admin                                       admin?
   calendar                                    calendar[]
