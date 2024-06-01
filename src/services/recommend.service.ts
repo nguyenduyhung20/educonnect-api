@@ -50,9 +50,7 @@ export const getRecommendPosts = async ({ userId }: GetRecommendPostInput) => {
     };
     const findResult = await userEvents.find(query).toArray();
 
-    if (findResult.length === 0) {
-      console.log('No documents found!');
-    } else {
+    if (findResult.length !== 0) {
       // Find top 3 topic id, will find a better way in future, for now just working
       const allTopicId: number[] = findResult
         .filter((item) => !isNaN(Number(item.postId)))
