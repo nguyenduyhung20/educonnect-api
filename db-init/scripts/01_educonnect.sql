@@ -20,6 +20,7 @@ CREATE TABLE "user" (
     "email" varchar,
     "ssn" varchar UNIQUE,
     "sex" "user_sex",
+    "point" int,
     "user_uuid" uuid DEFAULT uuid_generate_v4 () NOT NULL,
     "is_famous" boolean DEFAULT false NOT NULL,
     "create_at" TIMESTAMP DEFAULT (now ()) NOT NULL,

@@ -12,6 +12,7 @@ import { NotificationModel } from '../models/notification.model';
 import { getRecommendPosts } from '../services/recommend.service';
 import prisma from '../databases/client';
 import { getUniqueObjects, shuffleArray } from '../utils/array';
+import { SummarizePostModel } from '../models/summarizePost.model';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -272,10 +273,23 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
       detail: false
     });
 
+    const mostInteractPost = await PostModel.getMostInteractPostByUserId(user.id, 10);
+
+    const summarizePosts = await SummarizePostModel.getSummarizePostByListPost(mostInteractPost);
+
     const data = {
       data: {
         user: user,
-        newsfeed: newsfeed
+        newsfeed: newsfeed,
+        listSumPost: mostInteractPost.map((item) => {
+          const summarizePost = summarizePosts.find((subItem) => {
+            subItem.id == item.id;
+          });
+          return {
+            ...item,
+            contentSummarize: summarizePost?.content_summarization ?? ''
+          };
+        })
       }
     };
 

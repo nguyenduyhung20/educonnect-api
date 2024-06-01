@@ -10,6 +10,7 @@ import cheerio from 'cheerio';
 import axios from 'axios';
 import { produceUserEventMessage } from '../services/recommend.service';
 import dayjs from 'dayjs';
+import { SummarizePostModel } from '../models/summarizePost.model';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -50,7 +51,17 @@ export const handleGetGroupPosts = async (req: Request, res: Response, next: Nex
   try {
     const result = await PostService.getGroupPosts({ groupId: requestGroup.id, userIdRequesting: requestUser.id });
 
-    return res.status(200).json({ data: result });
+    const postMostInteract = await PostModel.getMostInteractPostGroupByUserId(requestGroup.id, 20);
+
+    const sumPosts = await SummarizePostModel.getSummarizePostByListPost(postMostInteract);
+
+    return res.status(200).json({
+      data: result,
+      sumPosts: postMostInteract.map((item) => {
+        const sumPost = sumPosts.find((subItem) => subItem.id == item.id);
+        return { ...item, contentSummarize: sumPost?.content_summarization ?? '' };
+      })
+    });
   } catch (error) {
     next(error);
   }

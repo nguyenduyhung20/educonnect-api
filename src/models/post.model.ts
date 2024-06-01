@@ -238,6 +238,54 @@ export class PostModel {
     return result;
   }
 
+  static async getMostInteractPostByUserId(userId: number, limit: number) {
+    return prisma.post.findMany({
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            name: true
+          }
+        }
+      },
+      where: {
+        user_id: userId,
+        deleted: false
+      },
+      orderBy: {
+        interact: { _count: 'desc' }
+      }
+    });
+  }
+
+  static async getMostInteractPostGroupByUserId(groupId: number, limit: number) {
+    return prisma.post.findMany({
+      take: limit,
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            name: true
+          }
+        },
+        title: true
+      },
+      where: {
+        group_id: groupId,
+        deleted: false
+      },
+      orderBy: {
+        interact: { _count: 'desc' }
+      }
+    });
+  }
+
   static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
     const postTypeWhereCondition =
       type == 'post'

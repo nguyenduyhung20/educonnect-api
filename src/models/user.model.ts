@@ -37,6 +37,26 @@ export class UserModel {
     });
   }
 
+  static async updatePointById(userId: number, point: number) {
+    const currentPoint = await prisma.user.findFirst({
+      select: {
+        point: true
+      },
+      where: {
+        id: userId
+      }
+    });
+    const newPoint = currentPoint?.point ?? 0 + point;
+    return prisma.user.update({
+      data: {
+        point: newPoint
+      },
+      where: {
+        id: userId
+      }
+    });
+  }
+
   static async getById(id: number) {
     const results = await prisma.user.findFirst({
       where: {

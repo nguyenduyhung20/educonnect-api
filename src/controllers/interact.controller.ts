@@ -6,6 +6,7 @@ import { interact_type } from '@prisma/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { produceUserEventMessage } from '../services/recommend.service';
+import { UserModel } from '../models/user.model';
 dayjs.extend(utc);
 
 export const handleGetPostInteract = async (req: Request, res: Response, next: NextFunction) => {
@@ -38,6 +39,16 @@ export const handleCreatePostInteract = async (req: Request, res: Response, next
   const inputFields: CreateInteractFields = req.body;
   try {
     const interaction = await InteractModel.create(inputFields, requestUser.id, requestPost.id);
+
+    const interactionCount = (await InteractModel.getByPostId(requestPost.id)).length;
+
+    if (interactionCount == 50) {
+      await UserModel.updatePointById(requestUser.id, 50);
+    }
+
+    if (interactionCount == 100) {
+      await UserModel.updatePointById(requestUser.id, 50);
+    }
 
     const action = inputFields.action;
     if (action) {

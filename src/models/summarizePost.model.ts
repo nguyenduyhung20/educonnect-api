@@ -20,4 +20,28 @@ export class SummarizePostModel {
       skipDuplicates: true
     });
   }
+
+  static async getSummarizePostByListPost(
+    listPost: {
+      user: {
+        id: number;
+        name: string | null;
+        avatar: string | null;
+      };
+      title: string;
+      id: number;
+    }[]
+  ) {
+    return prisma.post_summarization.findMany({
+      select: {
+        id: true,
+        content_summarization: true
+      },
+      where: {
+        id: {
+          in: listPost.map((item) => item.id)
+        }
+      }
+    });
+  }
 }
