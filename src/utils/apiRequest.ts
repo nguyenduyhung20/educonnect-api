@@ -86,3 +86,24 @@ export const apiGet = async (query: string, body?: any) => {
     headers
   });
 };
+
+export async function retryOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number,
+  retryDelay: number
+): Promise<T> {
+  let retries = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await operation();
+    } catch (error) {
+      retries++;
+      if (retries > maxRetries) {
+        throw error;
+      }
+      console.warn(`Retrying operation after ${retryDelay}ms due to:`, error);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+}

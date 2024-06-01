@@ -13,6 +13,7 @@ import { getRecommendPosts } from '../services/recommend.service';
 import prisma from '../databases/client';
 import { getUniqueObjects, shuffleArray } from '../utils/array';
 import { SummarizePostModel } from '../models/summarizePost.model';
+import { retryOperation } from '../utils/apiRequest';
 
 export const handleGetUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -212,17 +213,21 @@ export const handleGetNewsfeed = async (req: Request, res: Response, next: NextF
       });
       return res.status(200).json({ data: posts });
     } else {
-      const posts = await UserModel.getFiendsLatestPosts(requestUser.id);
-      const selfPosts = await PostService.getUserPosts({
-        userId: requestUser.id,
-        userIdRequesting: requestUser.id,
-        detail: false
-      });
-
-      const recommendPosts = await getRecommendPosts({ userId: requestUser.id });
-
-      // About 10 post
-      const hotPosts = await PostModel.getHotPostByUserID(requestUser.id);
+      const [posts, selfPosts, recommendPosts, hotPosts] = await Promise.all([
+        retryOperation(() => UserModel.getFiendsLatestPosts(requestUser.id), 3, 1000),
+        retryOperation(
+          () =>
+            PostService.getUserPosts({
+              userId: requestUser.id,
+              userIdRequesting: requestUser.id,
+              detail: false
+            }),
+          3,
+          1000
+        ),
+        retryOperation(() => getRecommendPosts({ userId: requestUser.id }), 3, 1000),
+        retryOperation(() => PostModel.getHotPostByUserID(requestUser.id), 3, 1000)
+      ]);
 
       const uniqueResults = getUniqueObjects(
         [...(posts || []), ...(selfPosts || []), ...(hotPosts || []), ...(recommendPosts || [])],
