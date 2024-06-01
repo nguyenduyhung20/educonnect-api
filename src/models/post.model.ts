@@ -239,7 +239,7 @@ export class PostModel {
   }
 
   static async getMostInteractPostByUserId(userId: number, limit: number) {
-    return prisma.post.findMany({
+    const result = await prisma.post.findMany({
       take: limit,
       select: {
         id: true,
@@ -249,6 +249,20 @@ export class PostModel {
             id: true,
             avatar: true,
             name: true
+          }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
           }
         }
       },
@@ -260,10 +274,20 @@ export class PostModel {
         interact: { _count: 'desc' }
       }
     });
+
+    return result.map((item) => {
+      return {
+        id: item.id,
+        user: item.user,
+        title: item.title,
+        interactCount: item._count.interact,
+        commentCount: item._count.other_post
+      };
+    });
   }
 
   static async getMostInteractPostGroupByUserId(groupId: number, limit: number) {
-    return prisma.post.findMany({
+    const result = await prisma.post.findMany({
       take: limit,
       select: {
         id: true,
@@ -274,7 +298,21 @@ export class PostModel {
             name: true
           }
         },
-        title: true
+        title: true,
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
       },
       where: {
         group_id: groupId,
@@ -283,6 +321,16 @@ export class PostModel {
       orderBy: {
         interact: { _count: 'desc' }
       }
+    });
+
+    return result.map((item) => {
+      return {
+        user: item.user,
+        id: item.id,
+        interactCount: item._count.interact,
+        commentCount: item._count.other_post,
+        title: item.title
+      };
     });
   }
 

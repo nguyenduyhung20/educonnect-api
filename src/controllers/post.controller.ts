@@ -57,10 +57,17 @@ export const handleGetGroupPosts = async (req: Request, res: Response, next: Nex
 
     return res.status(200).json({
       data: result,
-      sumPosts: postMostInteract.map((item) => {
-        const sumPost = sumPosts.find((subItem) => subItem.id == item.id);
-        return { ...item, contentSummarize: sumPost?.content_summarization ?? '' };
-      })
+      sumPosts: postMostInteract
+        .map((item) => {
+          const sumPost = sumPosts.find((subItem) => subItem.id == item.id);
+          return { ...item, contentSummarization: sumPost?.content_summarization ?? '' };
+        })
+        .sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
+
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        })
     });
   } catch (error) {
     next(error);
