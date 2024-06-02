@@ -2,6 +2,7 @@ import { redisClient } from '../config/redis-client';
 import { handleSummarizeMostInteractPost } from '../controllers/summarizePost.controller';
 import { logger } from '../utils/logger';
 import { PostModel } from './post.model';
+import { SummarizePostModel } from './summarizePost.model';
 import { UserModel } from './user.model';
 
 export class ExploreModel {
@@ -18,13 +19,26 @@ export class ExploreModel {
           return totalInteractCountB - totalInteractCountA; // Sort in descending order
         });
       } else {
-        const posts = await handleSummarizeMostInteractPost();
-        return posts.sort((a, b) => {
-          const totalInteractCountA = a.interactCount + a.commentCount;
-          const totalInteractCountB = b.interactCount + b.commentCount;
+        // const posts = await handleSummarizeMostInteractPost();
+        const posts = await PostModel.getMostInteractPost();
+        const summarizePosts = await SummarizePostModel.getSummarizePostByListPost(posts);
 
-          return totalInteractCountB - totalInteractCountA; // Sort in descending order
-        });
+        return posts
+          .map((item) => {
+            const summarizePost = summarizePosts.find((subItem) => {
+              subItem.id == item.id;
+            });
+            return {
+              ...item,
+              contentSummarization: summarizePost?.content_summarization ?? ''
+            };
+          })
+          .sort((a, b) => {
+            const totalInteractCountA = a.interactCount + a.commentCount;
+            const totalInteractCountB = b.interactCount + b.commentCount;
+
+            return totalInteractCountB - totalInteractCountA; // Sort in descending order
+          });
       }
     } catch (error) {
       logger.error('Error in handleSummarizeMostInteractPost:', error);

@@ -22,15 +22,17 @@ export class SummarizePostModel {
   }
 
   static async getSummarizePostByListPost(
-    listPost: {
-      user: {
-        id: number;
-        name: string | null;
-        avatar: string | null;
-      };
-      title: string;
-      id: number;
-    }[]
+    listPost:
+      | {
+          user: {
+            id: number;
+            name: string | null;
+            avatar: string | null;
+          };
+          title: string;
+          id: number;
+        }[]
+      | any
   ) {
     return prisma.post_summarization.findMany({
       select: {
@@ -39,7 +41,7 @@ export class SummarizePostModel {
       },
       where: {
         id: {
-          in: listPost.map((item) => item.id)
+          in: listPost.map((item: any) => item.id)
         }
       }
     });
