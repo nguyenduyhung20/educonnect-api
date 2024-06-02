@@ -268,7 +268,8 @@ export class PostModel {
       },
       where: {
         user_id: userId,
-        deleted: false
+        deleted: false,
+        parent_post_id: null
       },
       orderBy: {
         interact: { _count: 'desc' }
@@ -316,7 +317,8 @@ export class PostModel {
       },
       where: {
         group_id: groupId,
-        deleted: false
+        deleted: false,
+        parent_post_id: null
       },
       orderBy: {
         interact: { _count: 'desc' }
