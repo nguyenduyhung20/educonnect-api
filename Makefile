@@ -78,16 +78,17 @@ resetDev: downDev removeELKData upDev checkE checkL
 
 
 # Deploy
-buildServer:
+buildProd:
 	NODE_ENV=production npm run build
 sendProd:
-	scp -r dist/ package.json package-lock.json prisma/ ca.pem Makefile public/ duyhung8a2@34.87.132.8:/home/duyhung8a2/educonnect-api/
+	scp -r dist/ package.json package-lock.json prisma/ ca.pem Makefile duyhung8a2@34.87.132.8:/home/duyhung8a2/educonnect-api/
 	scp .env.production duyhung8a2@34.87.132.8:/home/duyhung8a2/educonnect-api/.env 
 deployProd:
 	npm pkg delete scripts.prepare && npm ci --omit=dev && npm run prisma:gen
 startProd:
 	pm2 start
 
+# Elasticsearch
 downES: 
 	docker compose -f docker-compose-es.yml down -v && rm -rf elk-data && mkdir elk-data
 deployES:

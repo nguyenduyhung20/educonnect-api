@@ -97,6 +97,9 @@ model interact {
   user      user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([user_id, post_id])
+  @@index([deleted], map: "idx_interact_delete")
+  @@index([post_id], map: "idx_interact_post")
+  @@index([type], map: "idx_interact_type")
 }
 
 model learn {
@@ -185,6 +188,14 @@ model post {
   post_summarization post_summarization?
   post_tag           post_tag[]
   post_topic         post_topic[]
+
+  @@index([deleted], map: "idx_post_delete")
+  @@index([group_id], map: "idx_post_group")
+  @@index([id, deleted], map: "idx_post_id_deleted")
+  @@index([id, parent_post_id, deleted], map: "idx_post_id_parent_id_deleted")
+  @@index([parent_post_id], map: "idx_post_parent_post")
+  @@index([user_id], map: "idx_post_user")
+  @@index([user_id, deleted], map: "idx_post_user_id_deleted")
 }
 
 model school {
@@ -284,6 +295,10 @@ model user {
   post_reported                               post_reported[]
   student                                     student?
   teacher                                     teacher?
+
+  @@index([deleted], map: "idx_user_deleted")
+  @@index([email], map: "idx_user_email")
+  @@index([id, deleted], map: "idx_user_id_deleted")
 }
 
 model post_tag {
