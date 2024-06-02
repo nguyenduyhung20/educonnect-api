@@ -857,7 +857,7 @@ export class PostModel {
         interactCount: post._count.interact,
         createdAt: post.create_at instanceof Date ? post.create_at.toISOString() : post.create_at,
         group: post.group ?? undefined,
-        content_summarization: post.post_summarization?.content_summarization ?? undefined
+        contentSummarization: post.post_summarization?.content_summarization ?? undefined
       };
     });
 

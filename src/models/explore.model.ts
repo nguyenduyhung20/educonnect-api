@@ -21,24 +21,14 @@ export class ExploreModel {
       } else {
         // const posts = await handleSummarizeMostInteractPost();
         const posts = await PostModel.getMostInteractPost();
-        const summarizePosts = await SummarizePostModel.getSummarizePostByListPost(posts);
+        // const summarizePosts = await SummarizePostModel.getSummarizePostByListPost(posts);
 
-        return posts
-          .map((item) => {
-            const summarizePost = summarizePosts.find((subItem) => {
-              subItem.id == item.id;
-            });
-            return {
-              ...item,
-              contentSummarization: summarizePost?.content_summarization ?? ''
-            };
-          })
-          .sort((a, b) => {
-            const totalInteractCountA = a.interactCount + a.commentCount;
-            const totalInteractCountB = b.interactCount + b.commentCount;
+        return posts.sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
 
-            return totalInteractCountB - totalInteractCountA; // Sort in descending order
-          });
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        });
       }
     } catch (error) {
       logger.error('Error in handleSummarizeMostInteractPost:', error);
