@@ -8,7 +8,7 @@ export const handleSummarizeMostInteractPost = async () => {
   const posts = await PostModel.getMostInteractPost();
   const results = await SummarizePostModel.postSummarizePost(
     posts
-      .filter((item) => typeof item.content_summarization === 'undefined')
+      .filter((item) => typeof item.contentSummarization === 'undefined')
       .map((item) => {
         return { id: item.id, content_summarization: item.content };
       })
@@ -19,9 +19,9 @@ export const handleSummarizeMostInteractPost = async () => {
   posts.forEach((item) => {
     const findItem = results.summaries.find((subItem) => subItem.id === item.id);
     if (!findItem) {
-      results.summaries.push({ id: item.id, content_summarization: item.content_summarization });
+      results.summaries.push({ id: item.id, content_summarization: item.contentSummarization });
     } else {
-      item.content_summarization = findItem.content_summarization ?? undefined;
+      item.contentSummarization = findItem.content_summarization ?? undefined;
     }
   });
 
