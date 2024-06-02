@@ -1,10 +1,22 @@
+import 'dotenv/config';
 import { Server } from 'socket.io';
 import { addNewUser, getUser, removeUser } from './onlineUser';
 import { connectToKafka, startKafkaConsumer } from './kafka';
+import { createServer } from 'http';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5001;
 
-const io = new Server({
+const httpServer = createServer((req, res) => {
+  if (req.url === '/healthcheck') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK');
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
+  }
+});
+
+const io = new Server(httpServer, {
   cors: {
     origin: '*'
   }
@@ -41,8 +53,9 @@ const startServer = async () => {
   try {
     await connectToKafka();
     await startKafkaConsumer(io);
-    io.listen(PORT);
-    console.log(`Server is running on port ${PORT}`);
+    httpServer.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   } catch (error) {
     console.error('Failed to start the server:', error);
   }

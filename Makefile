@@ -96,3 +96,7 @@ deployES:
 downESKafka:
 	docker compose -f docker-compose-es.yml down zookeeper kafka -v
 setupES: deployES checkE checkL loadE
+
+# Notify
+sendNotify:
+	scp -r notification-service/src/ notification-service/package.json notification-service/package-lock.json notification-service/tsconfig.json notification-service/.env notification-service/ca.pem duyhung8a2@35.240.222.116:/home/duyhung8a2/notification-service
