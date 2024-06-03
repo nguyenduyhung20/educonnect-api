@@ -280,28 +280,16 @@ export const handleGetUserProfilePage = async (req: Request, res: Response, next
 
     const mostInteractPost = await PostModel.getMostInteractPostByUserId(user.id, 10);
 
-    const summarizePosts = await SummarizePostModel.getSummarizePostByListPost(mostInteractPost);
-
     const data = {
       data: {
         user: user,
         newsfeed: newsfeed,
-        listSumPost: mostInteractPost
-          .map((item) => {
-            const summarizePost = summarizePosts.find((subItem) => {
-              subItem.id == item.id;
-            });
-            return {
-              ...item,
-              contentSummarization: summarizePost?.content_summarization ?? ''
-            };
-          })
-          .sort((a, b) => {
-            const totalInteractCountA = a.interactCount + a.commentCount;
-            const totalInteractCountB = b.interactCount + b.commentCount;
+        listSumPost: mostInteractPost.sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
 
-            return totalInteractCountB - totalInteractCountA; // Sort in descending order
-          })
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        })
       }
     };
 

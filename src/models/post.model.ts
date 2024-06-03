@@ -264,6 +264,11 @@ export class PostModel {
               }
             }
           }
+        },
+        post_summarization: {
+          select: {
+            content_summarization: true
+          }
         }
       },
       where: {
@@ -276,13 +281,16 @@ export class PostModel {
       }
     });
 
+    console.log('this is', result);
+
     return result.map((item) => {
       return {
         id: item.id,
         user: item.user,
         title: item.title,
         interactCount: item._count.interact,
-        commentCount: item._count.other_post
+        commentCount: item._count.other_post,
+        contentSummarization: item.post_summarization?.content_summarization ?? undefined
       };
     });
   }

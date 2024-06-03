@@ -2,7 +2,6 @@ import { redisClient } from '../config/redis-client';
 import { handleSummarizeMostInteractPost } from '../controllers/summarizePost.controller';
 import { logger } from '../utils/logger';
 import { PostModel } from './post.model';
-import { SummarizePostModel } from './summarizePost.model';
 import { UserModel } from './user.model';
 
 export class ExploreModel {
