@@ -124,10 +124,11 @@ export class ElearningModel {
             classroom: {
               select: {
                 id: true,
-                name: true
+                name: true,
+                create_at: true
               },
               orderBy: {
-                id: 'asc'
+                create_at: 'desc'
               }
             }
           }
