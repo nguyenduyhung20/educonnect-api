@@ -19,5 +19,10 @@ export const logger = winston.createLogger({
     }),
     customPrintf
   ),
-  transports: [new winston.transports.Console()]
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({
+      filename: 'logs/application-logs.log'
+    })
+  ]
 });

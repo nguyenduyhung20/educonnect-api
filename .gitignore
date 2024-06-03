@@ -11,3 +11,6 @@ redis-data
 whodid.json
 
 ca.pem
+
+logs/*
+!logs/.gitkeep
