@@ -6,12 +6,20 @@ import router from './routes/index.route';
 import { handleError } from './middleware/error.middleware';
 import { AppError } from './config/AppError';
 import { morganMiddleware } from './middleware/morgan.middleware';
+import compression from 'compression';
 
 // express app
 const app = express();
 
 // cors
 app.use(cors());
+
+// compression
+app.use(
+  compression({
+    level: 6
+  })
+);
 
 // file upload
 app.use(fileUpload({ limits: { fileSize: 50 * 1024 * 1024 } })); // 50 MB

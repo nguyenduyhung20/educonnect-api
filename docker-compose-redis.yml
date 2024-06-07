@@ -3,13 +3,16 @@ version: '3'
 services:
   redis:
     container_name: redis
-    image: redis/redis-stack:latest
+    image: redis/redis-stack:7.2.0-v10
+
     restart: unless-stopped
     ports:
       - 6379:6379
       - 8002:8001
     volumes:
       - redisdata:/data
+    networks:
+      - educonnect
 
 volumes:
   redisdata:
@@ -19,3 +22,6 @@ volumes:
       type: none
       device: ./redis-data
 
+networks:
+  educonnect:
+    name: educonnect

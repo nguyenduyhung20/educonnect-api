@@ -5,9 +5,13 @@ import { userRouter } from './user.route';
 import { groupRouter } from './group.route';
 import { postRouter } from './post.route';
 import { publicRouter } from './public.route';
+import { elearningRouter } from './elearning.route';
 import verifyJWT from '../middleware/verifyJWT';
 import { searchRouter } from './search.route';
 import { verifyUser } from '../middleware/user.middleware';
+import { exploreRouter } from './explore.route';
+import { eventRouter } from './event.route';
+import { reportRoute } from './report.route';
 
 const router = express.Router();
 
@@ -18,5 +22,9 @@ router.use('/v1/public', publicRouter);
 router.use('/v1/user', [verifyJWT, userRouter]);
 router.use('/v1/group', [verifyJWT, verifyUser, groupRouter]);
 router.use('/v1/post', [verifyJWT, verifyUser, postRouter]);
+router.use('/v1/explore', [verifyJWT, verifyUser, exploreRouter]);
+router.use('/v1/elearning', [verifyJWT, elearningRouter]);
+router.use('/v1/event', [verifyJWT, verifyUser, eventRouter]);
+router.use('/v1/report', reportRoute);
 
 export default router;

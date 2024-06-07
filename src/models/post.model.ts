@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../databases/client';
 import { AppError } from '../config/AppError';
+import { GetPostsByListIdInput } from '../interfaces/type';
 
 const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   _count: {
@@ -19,7 +20,7 @@ const InteractCountInclude: Pick<Prisma.postSelect, '_count'> = {
   }
 };
 
-const COMMENT_SELECT = {
+export const POST_SELECT = {
   id: true,
   title: true,
   content: true,
@@ -30,7 +31,8 @@ const COMMENT_SELECT = {
     select: {
       id: true,
       name: true,
-      avatar: true
+      avatar: true,
+      is_famous: true
     }
   },
   post: {
@@ -55,20 +57,25 @@ const COMMENT_SELECT = {
       }
     }
   }
-};
+} as const;
 
 type RawComment = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 type RawPost = Prisma.postGetPayload<{
-  select: typeof COMMENT_SELECT;
+  select: typeof POST_SELECT;
 }>;
 
 const mapComment = (post: RawComment) => {
   const result = {
     id: post.id,
-    user: post.user,
+    user: {
+      ...post.user,
+      avatar: post.user.avatar?.startsWith('http')
+        ? post.user.avatar
+        : process.env.NEXT_PUBLIC_API_HOST + (post.user.avatar ?? '')
+    },
     title: post.title,
     content: post.content,
     parentPostId: post.post?.id ?? undefined,
@@ -80,7 +87,7 @@ const mapComment = (post: RawComment) => {
   return result;
 };
 
-const mapPost = (post: RawPost) => {
+export const mapPost = (post: RawPost) => {
   const result = {
     ...mapComment(post)
   };
@@ -88,55 +95,286 @@ const mapPost = (post: RawPost) => {
 };
 
 export class PostModel {
-  static async getAll(postLimit = 10, commentLimit = 10) {
-    return prisma.post.findMany({
+  static async getByListIdNotHaveCommentNotHaveFileContent(postIdNumberList: number[], postLimit = 100) {
+    const posts = await prisma.post.findMany({
       take: postLimit,
       where: {
-        parent_post_id: null,
-        deleted: false
+        deleted: false,
+        id: {
+          in: postIdNumberList
+        }
       },
       select: {
-        ...COMMENT_SELECT,
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
+        id: true,
+        title: true,
+        create_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true
+          }
+        },
+        post_summarization: {
+          select: {
+            content_summarization: true
+          }
+        },
         other_post: {
-          take: commentLimit,
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: {
+            ...POST_SELECT,
+            other_post: {
+              where: {
+                deleted: false
+              },
+              select: {
+                ...POST_SELECT,
+                interact: {
+                  where: {
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
+            interact: {
+              where: {
+                deleted: false
+              },
+              select: {
+                type: true
+              }
+            }
+          },
           orderBy: {
-            create_at: 'desc'
+            create_at: 'asc'
+          }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      }
+    });
+    const mapPosts = posts.map((item) => {
+      const mappedPost = {
+        id: item.id,
+        title: item.title,
+        user: {
+          ...item.user,
+          avatar: item.user.avatar?.startsWith('http')
+            ? item.user.avatar
+            : process.env.NEXT_PUBLIC_API_HOST + (item.user.avatar ?? '')
+        },
+        contentSummarization: item.post_summarization?.content_summarization,
+        createAt: item.create_at,
+        commentCount: item._count.other_post,
+        interactCount: item._count.interact,
+        group: item.group ?? null,
+        comment: item.other_post.map((comment) => ({
+          id: comment.id,
+          user: {
+            ...comment.user,
+            avatar: comment.user.avatar?.startsWith('http')
+              ? comment.user.avatar
+              : process.env.NEXT_PUBLIC_API_HOST + (comment.user.avatar ?? '')
+          },
+          title: comment.title,
+          content: comment.content,
+          parentPostId: comment.post?.id ?? undefined,
+          commentCount: comment._count.other_post,
+          interactCount: comment._count.interact,
+          userInteract: comment.interact[0]?.type ?? null,
+          createdAt: comment.create_at
+        }))
+      };
+      let sumCommentCount = mappedPost.commentCount;
+
+      mappedPost.comment.forEach((item) => {
+        sumCommentCount += item.commentCount;
+      });
+      return { ...mappedPost, commentCount: sumCommentCount };
+    });
+    return mapPosts;
+  }
+
+  static async getPostsByListId<T extends Prisma.postSelect>({ args, select }: GetPostsByListIdInput<T>) {
+    const { postIdList } = args;
+
+    const result = await prisma.post.findMany({
+      where: {
+        deleted: false,
+        id: {
+          in: postIdList
+        }
+      },
+      select
+    });
+    if (!result) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    return result;
+  }
+
+  static async getMostInteractPostByUserId(userId: number, limit: number) {
+    const result = await prisma.post.findMany({
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            name: true
+          }
+        },
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        },
+        post_summarization: {
+          select: {
+            content_summarization: true
           }
         }
       },
+      where: {
+        user_id: userId,
+        deleted: false,
+        parent_post_id: null
+      },
       orderBy: {
-        create_at: 'desc'
+        interact: { _count: 'desc' }
       }
+    });
+
+    console.log('this is', result);
+
+    return result.map((item) => {
+      return {
+        id: item.id,
+        user: item.user,
+        title: item.title,
+        interactCount: item._count.interact,
+        commentCount: item._count.other_post,
+        contentSummarization: item.post_summarization?.content_summarization ?? undefined
+      };
     });
   }
 
-  static async getById(id: number, userIdRequesting: number, commentLimit = 10) {
-    const result = await prisma.post.findFirst({
-      where: {
-        id: id,
-        parent_post_id: null,
-        deleted: false
-      },
+  static async getMostInteractPostGroupByUserId(groupId: number, limit: number) {
+    const result = await prisma.post.findMany({
+      take: limit,
       select: {
-        ...COMMENT_SELECT,
+        id: true,
+        user: {
+          select: {
+            id: true,
+            avatar: true,
+            name: true
+          }
+        },
+        title: true,
+        _count: {
+          select: {
+            interact: {
+              where: {
+                deleted: false
+              }
+            },
+            other_post: {
+              where: {
+                deleted: false
+              }
+            }
+          }
+        }
+      },
+      where: {
+        group_id: groupId,
+        deleted: false,
+        parent_post_id: null
+      },
+      orderBy: {
+        interact: { _count: 'desc' }
+      }
+    });
+
+    return result.map((item) => {
+      return {
+        user: item.user,
+        id: item.id,
+        interactCount: item._count.interact,
+        commentCount: item._count.other_post,
+        title: item.title
+      };
+    });
+  }
+
+  static async getById(id: number, userIdRequesting: number, type: 'post' | 'comment', commentLimit = 100) {
+    const postTypeWhereCondition =
+      type == 'post'
+        ? {
+            id: id,
+            parent_post_id: null,
+            deleted: false
+          }
+        : {
+            id: id,
+            deleted: false
+          };
+
+    const result = await prisma.post.findFirst({
+      where: postTypeWhereCondition,
+      select: {
+        ...POST_SELECT,
         other_post: {
           take: commentLimit,
           where: {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 interact: {
                   where: {
                     user_id: userIdRequesting,
@@ -159,7 +397,7 @@ export class PostModel {
             }
           },
           orderBy: {
-            create_at: 'desc'
+            create_at: 'asc'
           }
         },
         interact: {
@@ -170,31 +408,56 @@ export class PostModel {
           select: {
             type: true
           }
+        },
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
+        post_topic: {
+          select: {
+            topic_id: true
+          }
         }
       }
     });
     if (!result) {
       throw new AppError(404, 'NOT_FOUND');
     }
-
     return result;
   }
 
-  static async getPostsByUserId(userId: number, userIdRequesting: number, postLimit = 10) {
+  static async getPostsByUserId(userId: number, userIdRequesting: number) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
       },
       select: {
         post: {
-          take: postLimit,
           where: {
             parent_post_id: null,
-            group_id: null,
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
+            other_post: {
+              where: {
+                deleted: false
+              },
+              select: {
+                ...POST_SELECT,
+                interact: {
+                  where: {
+                    user_id: userIdRequesting,
+                    deleted: false
+                  },
+                  select: {
+                    type: true
+                  }
+                }
+              }
+            },
             interact: {
               where: {
                 user_id: userIdRequesting,
@@ -202,6 +465,12 @@ export class PostModel {
               },
               select: {
                 type: true
+              }
+            },
+            group: {
+              select: {
+                id: true,
+                title: true
               }
             }
           }
@@ -215,7 +484,7 @@ export class PostModel {
     return result;
   }
 
-  static async getPostWithCommentByUserId(userId: number, userIdRequesting: number, postLimit = 10, commentLimit = 10) {
+  static async getPostWithCommentByUserId(userId: number, userIdRequesting: number, postLimit = 30, commentLimit = 10) {
     const result = await prisma.user.findUnique({
       where: {
         id: userId
@@ -225,25 +494,24 @@ export class PostModel {
           take: postLimit,
           where: {
             parent_post_id: null,
-            group_id: null,
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -280,6 +548,12 @@ export class PostModel {
                 type: true
               }
             },
+            group: {
+              select: {
+                id: true,
+                title: true
+              }
+            },
             ...InteractCountInclude
           }
         }
@@ -309,21 +583,27 @@ export class PostModel {
             deleted: false
           },
           select: {
-            ...COMMENT_SELECT,
+            ...POST_SELECT,
+            group: {
+              select: {
+                id: true,
+                title: true
+              }
+            },
             other_post: {
               take: commentLimit,
               where: {
                 deleted: false
               },
               select: {
-                ...COMMENT_SELECT,
+                ...POST_SELECT,
                 other_post: {
                   take: commentLimit,
                   where: {
                     deleted: false
                   },
                   select: {
-                    ...COMMENT_SELECT,
+                    ...POST_SELECT,
                     interact: {
                       where: {
                         user_id: userIdRequesting,
@@ -372,28 +652,19 @@ export class PostModel {
     return queryResult;
   }
 
-  static async getHotPosts(postLimit = 20, commentLimit = 5) {
+  static async getHotPostsForPublic(postLimit = 20) {
     const queryResult = await prisma.post.findMany({
       take: postLimit,
       orderBy: {
-        create_at: 'desc'
+        interact: { _count: 'desc' }
       },
       where: {
         parent_post_id: null,
+        group_id: null,
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
-        other_post: {
-          take: commentLimit,
-          where: {
-            deleted: false
-          },
-          select: COMMENT_SELECT,
-          orderBy: {
-            create_at: 'desc'
-          }
-        }
+        ...POST_SELECT
       }
     });
     if (!queryResult) {
@@ -412,13 +683,14 @@ export class PostModel {
     return mappedResult;
   }
 
-  static async create(userId: number, input: Prisma.postCreateInput, uploadedFiles: string[]) {
+  static async create(userId: number, input: Prisma.postCreateInput, uploadedFiles: string[], groupId: string | null) {
     return prisma.post.create({
       data: {
         title: input.title,
         content: input.content,
         user_id: userId,
-        file_content: uploadedFiles
+        file_content: uploadedFiles,
+        group_id: groupId ? parseInt(groupId, 10) : null
       }
     });
   }
@@ -438,13 +710,33 @@ export class PostModel {
   }
 
   static async createComment(userId: number, parentPostId: number, input: Prisma.postCreateInput) {
-    return prisma.post.create({
+    const result = await prisma.post.create({
       data: {
         content: input.content,
         user_id: userId,
         parent_post_id: parentPostId
       }
     });
+    const user = await prisma.user.findFirst({
+      where: {
+        id: result.user_id
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true
+      }
+    });
+    return {
+      commentCount: 0,
+      content: result.content,
+      createdAt: result.create_at,
+      id: result.id,
+      interactCount: 0,
+      title: result.title,
+      user: user ?? null,
+      userInteract: null
+    };
   }
 
   static async searchPost(text: string, take = 10) {
@@ -459,7 +751,7 @@ export class PostModel {
         parent_post_id: null,
         deleted: false
       },
-      select: COMMENT_SELECT,
+      select: POST_SELECT,
       orderBy: {
         _relevance: {
           fields: ['title', 'content'],
@@ -475,22 +767,20 @@ export class PostModel {
     return mapPosts;
   }
 
-  static async getHotPostByUserID(userId: number, postLimit: number = 20, commentLimit: number = 5) {
+  static async getHotPostByUserID(userId: number) {
     const queryResult = await prisma.post.findMany({
-      take: postLimit,
-      orderBy: { create_at: 'desc' },
+      orderBy: [{ create_at: 'desc' }, { interact: { _count: 'desc' } }, { other_post: { _count: 'desc' } }],
       where: {
         parent_post_id: null,
         deleted: false
       },
       select: {
-        ...COMMENT_SELECT,
+        ...POST_SELECT,
         other_post: {
-          take: commentLimit,
           where: {
             deleted: false
           },
-          select: COMMENT_SELECT,
+          select: POST_SELECT,
           orderBy: {
             create_at: 'desc'
           }
@@ -503,8 +793,15 @@ export class PostModel {
           select: {
             type: true
           }
+        },
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
         }
-      }
+      },
+      take: 100
     });
     if (!queryResult) {
       throw new AppError(404, 'NOT_FOUND');
@@ -516,7 +813,59 @@ export class PostModel {
         userInteract: post.interact[0]?.type ?? null,
         fileContent: post.file_content.map((item) => {
           return item.startsWith('http') ? item : process.env.NEXT_PUBLIC_API_HOST + item;
-        })
+        }),
+        group: post.group ?? null
+      };
+    });
+
+    return mappedResult;
+  }
+
+  static async getMostInteractPost(postLimit: number = 30) {
+    const queryResult = await prisma.post.findMany({
+      take: postLimit,
+      where: {
+        parent_post_id: null,
+        deleted: false
+      },
+      select: {
+        ...POST_SELECT,
+        group: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
+        post_summarization: {
+          where: {
+            deleted: false
+          },
+          select: {
+            content_summarization: true
+          }
+        }
+      },
+      orderBy: {
+        interact: { _count: 'desc' }
+      }
+    });
+
+    if (!queryResult) {
+      throw new AppError(404, 'NOT_FOUND');
+    }
+
+    const mappedResult = queryResult.map((post) => {
+      return {
+        id: post.id,
+        user: post.user,
+        title: post.title,
+        content: post.content,
+        parentPostId: post.post?.id ?? undefined,
+        commentCount: post._count.other_post,
+        interactCount: post._count.interact,
+        createdAt: post.create_at instanceof Date ? post.create_at.toISOString() : post.create_at,
+        group: post.group ?? undefined,
+        contentSummarization: post.post_summarization?.content_summarization ?? undefined
       };
     });
 

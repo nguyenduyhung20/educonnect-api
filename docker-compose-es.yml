@@ -1,0 +1,108 @@
+services:
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.5.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka_elk
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.5.1
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+    networks:
+      - kafka_elk
+      - educonnect
+    healthcheck:
+      test: nc -vz kafka 9092 || exit -1
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  elasticsearch:
+    container_name: elasticsearch_api
+    image: elasticsearch:8.10.2
+    environment:
+      - cluster.name=kafka-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.security.enabled=false
+    volumes:
+      - elk_data:/usr/share/elasticsearch/data:rw
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    depends_on:
+      - kafka
+    ports:
+      - 9200:9200
+      - 9300:9300
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - kafka_elk
+    healthcheck:
+      test: curl -u elastic:elastic -s -f elasticsearch:9200/_cat/health >/dev/null || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    container_name: logstash
+    image: logstash:8.10.2
+    depends_on:
+      elasticsearch: 
+        condition: service_healthy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./configs/logstash-kafka.conf:/usr/share/logstash/pipeline/logstash-kafka.conf
+      - ./configs/templates/post-template.json:/usr/share/logstash/config/post-template.json
+    ports:
+      - 5044:5044
+      - 9600:9600
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - kafka_elk
+    healthcheck:
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://logstash:9600']
+      interval: 30s
+      timeout: 15s
+      retries: 3
+
+
+networks:
+  kafka_elk:
+    name: kafka_elk
+    driver: bridge
+
+  educonnect:
+    name: educonnect
+
+volumes:
+  elk_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./elk-data

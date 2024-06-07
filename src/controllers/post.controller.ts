@@ -5,6 +5,12 @@ import prisma from '../databases/client';
 import { PostService } from '../services/post.service';
 import { UploadedFile } from 'express-fileupload';
 import { uploadFile } from '../utils/uploadFile';
+import { producer } from '../config/kafka-client';
+import cheerio from 'cheerio';
+import axios from 'axios';
+import { produceUserEventMessage } from '../services/recommend.service';
+import dayjs from 'dayjs';
+import { SummarizePostModel } from '../models/summarizePost.model';
 
 export const handleGetHotPostByUserID = async (req: Request, res: Response, next: NextFunction) => {
   const { requestUser } = req;
@@ -45,15 +51,32 @@ export const handleGetGroupPosts = async (req: Request, res: Response, next: Nex
   try {
     const result = await PostService.getGroupPosts({ groupId: requestGroup.id, userIdRequesting: requestUser.id });
 
-    return res.status(200).json({ data: result });
+    const postMostInteract = await PostModel.getMostInteractPostGroupByUserId(requestGroup.id, 20);
+
+    const sumPosts = await SummarizePostModel.getSummarizePostByListPost(postMostInteract);
+
+    return res.status(200).json({
+      data: result,
+      sumPosts: postMostInteract
+        .map((item) => {
+          const sumPost = sumPosts.find((subItem) => subItem.id == item.id);
+          return { ...item, contentSummarization: sumPost?.content_summarization ?? '' };
+        })
+        .sort((a, b) => {
+          const totalInteractCountA = a.interactCount + a.commentCount;
+          const totalInteractCountB = b.interactCount + b.commentCount;
+
+          return totalInteractCountB - totalInteractCountA; // Sort in descending order
+        })
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const handleGetHotPost = async (req: Request, res: Response, next: NextFunction) => {
+export const handleGetHotPostForPublic = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await PostModel.getHotPosts();
+    const result = await PostModel.getHotPostsForPublic();
 
     return res.status(200).json({ data: result });
   } catch (error) {
@@ -81,7 +104,8 @@ export const handleGetPost = async (req: Request, res: Response, next: NextFunct
 };
 
 export const handleCreatePost = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser, body: postFields } = req;
+  const { requestUser } = req;
+  const postFields = req.body;
   const uploadedFiles = req.files?.uploadedFiles as UploadedFile | UploadedFile[];
   const listFile = [];
   try {
@@ -97,7 +121,79 @@ export const handleCreatePost = async (req: Request, res: Response, next: NextFu
       }
     }
 
-    const post = await PostModel.create(requestUser.id, postFields, listFile);
+    const groupId = postFields?.groupId;
+
+    const type: 'post' | 'link' = postFields.type;
+
+    if (type == 'link') {
+      const fetchPreviewData = async () => {
+        try {
+          const link = postFields.content;
+          const response = await axios.get(link);
+          const html = await response.data;
+          const $ = cheerio.load(html);
+
+          const title = $('title').text();
+          const description = $('meta[name="description"]').attr('content') || '';
+          const imageUrl = $('meta[property="og:image"]').attr('content');
+
+          postFields.content = `${title}\n${description}\nChi tiết: ${link}`;
+          listFile.push(imageUrl);
+        } catch (error) {
+          console.error('Error fetching preview data:', error);
+          throw new Error('Error fetching preview data');
+        }
+      };
+      try {
+        await fetchPreviewData();
+      } catch (error) {
+        return res.status(500).json({ message: 'Error Internal Server' });
+      }
+    }
+
+    // Create post record
+    const post = await PostModel.create(requestUser.id, postFields, listFile, groupId);
+
+    // Also create post topic record
+    // const postTopic = postFields.postTopic as string[] | undefined;
+    // if (postTopic) {
+    //   await prisma.post_topic.createMany({
+    //     data: postTopic.map((topic) => {
+    //       return {
+    //         post_id: post.id,
+    //         topic_id: typeof topic === 'string' ? parseInt(topic, 10) : topic
+    //       };
+    //     }),
+    //     skipDuplicates: true
+    //   });
+    // }
+
+    // Fire and forget
+    const postContent = `${post.title}\n${post.content}`;
+    PostService.updatePostTopic(post.id, postContent);
+
+    // Send Kafka message to show notification
+    const messages = [
+      {
+        key: 'post',
+        value: JSON.stringify({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+          content_summarization: null,
+          file_content: post.file_content,
+          post_uuid: post.post_uuid,
+          user_id: post.user_id,
+          parent_post_id: post.parent_post_id,
+          group_id: post.group_id,
+          view: 0,
+          create_at: post.create_at,
+          update_at: post.update_at,
+          deleted: post.deleted
+        })
+      }
+    ];
+    producer('post-topic', messages);
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);
@@ -134,6 +230,14 @@ export const handleCreateComment = async (req: Request, res: Response, next: Nex
   const { requestUser, requestPost, body: postFields } = req;
   try {
     const post = await PostModel.createComment(requestUser.id, requestPost.id, postFields);
+    // Produce comment event
+    await produceUserEventMessage({
+      userId: requestUser.id,
+      postId: requestPost.id,
+      postTopic: requestPost.topicList.map((item) => item),
+      interactionType: 'comment',
+      timestamp: dayjs().utc().format()
+    });
     return res.status(200).json({ data: post });
   } catch (error) {
     next(error);
@@ -144,6 +248,15 @@ export const handleSearchPost = async (req: Request, res: Response, next: NextFu
   const { text } = req.query;
   try {
     const posts = await PostModel.searchPost(text as string);
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleGetMostInteractPost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const posts = await PostModel.getMostInteractPost();
     return res.status(200).json({ data: posts });
   } catch (error) {
     next(error);

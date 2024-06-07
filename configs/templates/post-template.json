@@ -1,0 +1,109 @@
+{
+  "index_patterns": ["post-index", "post-index*"],
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "@version": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "content": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "create_at": {
+          "type": "date"
+        },
+        "deleted": {
+          "type": "boolean"
+        },
+        "event": {
+          "properties": {
+            "original": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        },
+        "file_content": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "group_id": {
+          "type": "long"
+        },
+        "id": {
+          "type": "long"
+        },
+        "parent_post_id": {
+          "type": "long"
+        },
+        "post_uuid": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "tags": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "title": {
+          "type": "text",
+          "fields": {
+            "completion": {
+              "type": "completion",
+              "max_input_length": 50
+            }
+          }
+        },
+        "update_at": {
+          "type": "date"
+        },
+        "user_id": {
+          "type": "long"
+        },
+        "view": {
+          "type": "long"
+        },
+        "interact_count": {
+          "type": "long"
+        },
+        "comment_count": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}

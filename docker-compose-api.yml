@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  educonnect-api:
+    container_name: educonnect-api
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/app/src
+    ports:
+      - 4001:4001
+    env_file:
+      - .env
+      - .env.production
+    networks:
+      - educonnect
+
+networks:
+  educonnect:
+    name: educonnect

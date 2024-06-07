@@ -6,7 +6,7 @@ dotenv.config();
 
 const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
   const auth: string | string[] | undefined =
-    req.headers.authorization || req.headers.Authorization || req.cookies.token;
+    req.headers.authorization || req.headers.Authorization || req.cookies.Token;
 
   if (!auth || auth === '' || (!Array.isArray(auth) && !auth.startsWith('Bearer'))) {
     res.status(401).json({

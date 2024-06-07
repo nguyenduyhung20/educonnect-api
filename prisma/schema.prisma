@@ -3,13 +3,6 @@ generator client {
   previewFeatures = ["fullTextSearch"]
 }
 
-generator kysely {
-  provider     = "prisma-kysely"
-  output       = "../src/databases"
-  enumFileName = "enums.ts"
-  fileName     = "types.ts"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -36,29 +29,33 @@ model admin {
 }
 
 model classroom {
-  id        Int      @id @default(autoincrement())
-  name      String?  @db.VarChar
-  create_at DateTime @default(now()) @db.Timestamp(6)
-  update_at DateTime @default(now()) @db.Timestamp(6)
-  deleted   Boolean  @default(false)
+  id        Int        @id @default(autoincrement())
+  name      String?    @db.VarChar
   school_id Int?
-  school    school?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  create_at DateTime   @default(now()) @db.Timestamp(6)
+  update_at DateTime   @default(now()) @db.Timestamp(6)
+  deleted   Boolean    @default(false)
+  school    school?    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  document  document[]
   learn     learn[]
   of        of[]
 }
 
 model document {
-  id            Int      @id @default(autoincrement())
-  title         String?  @db.VarChar
-  url           String?  @db.VarChar
+  id            Int        @id @default(autoincrement())
+  title         String?    @db.VarChar
+  url           String?    @db.VarChar
   subject_id    Int?
+  class_id      Int?
   teacher_id    Int?
-  document_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  create_at     DateTime @default(now()) @db.Timestamp(6)
-  update_at     DateTime @default(now()) @db.Timestamp(6)
-  deleted       Boolean  @default(false)
-  subject       subject? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher       teacher? @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  document_uuid String     @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  public        Boolean    @default(false)
+  create_at     DateTime   @default(now()) @db.Timestamp(6)
+  update_at     DateTime   @default(now()) @db.Timestamp(6)
+  deleted       Boolean    @default(false)
+  classroom     classroom? @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject       subject?   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher       teacher?   @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model follow {
@@ -75,17 +72,18 @@ model follow {
 }
 
 model group {
-  id         Int      @id @default(autoincrement())
-  avatar     String?  @db.VarChar
-  background String?  @db.VarChar
-  title      String?  @db.VarChar
-  meta_title String?  @db.VarChar
-  create_at  DateTime @default(now()) @db.Timestamp(6)
-  update_at  DateTime @default(now()) @db.Timestamp(6)
-  deleted    Boolean  @default(false)
-  group_uuid String   @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  member     member[]
-  post       post[]
+  id            Int             @id @default(autoincrement())
+  avatar        String?         @db.VarChar
+  background    String?         @db.VarChar
+  title         String?         @db.VarChar
+  meta_title    String?         @db.VarChar
+  create_at     DateTime        @default(now()) @db.Timestamp(6)
+  update_at     DateTime        @default(now()) @db.Timestamp(6)
+  deleted       Boolean         @default(false)
+  group_uuid    String          @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  member        member[]
+  post          post[]
+  post_reported post_reported[]
 }
 
 model interact {
@@ -99,25 +97,30 @@ model interact {
   user      user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([user_id, post_id])
+  @@index([deleted], map: "idx_interact_delete")
+  @@index([post_id], map: "idx_interact_post")
+  @@index([type], map: "idx_interact_type")
 }
 
 model learn {
   class_id   Int
   subject_id Int
+  teacher_id Int
   create_at  DateTime  @default(now()) @db.Timestamp(6)
   update_at  DateTime  @default(now()) @db.Timestamp(6)
   deleted    Boolean   @default(false)
   classroom  classroom @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subject    subject   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher    teacher   @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([class_id, subject_id])
+  @@id([class_id, subject_id, teacher_id])
 }
 
 model member {
   user_id   Int
   group_id  Int
   role      member_role?
-  status    member_status?
+  status    member_status? @default(pending)
   create_at DateTime       @default(now()) @db.Timestamp(6)
   update_at DateTime       @default(now()) @db.Timestamp(6)
   deleted   Boolean        @default(false)
@@ -128,14 +131,18 @@ model member {
 }
 
 model notification {
-  id        Int      @id @default(autoincrement())
-  user_id   Int
-  message   String?  @db.VarChar
-  is_read   Boolean  @default(false)
-  create_at DateTime @default(now()) @db.Timestamp(6)
-  update_at DateTime @default(now()) @db.Timestamp(6)
-  deleted   Boolean  @default(false)
-  user      user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                                  Int      @id @default(autoincrement())
+  item_id                             Int
+  sender_id                           Int
+  receiver_id                         Int
+  message                             String?  @db.VarChar
+  is_read                             Boolean  @default(false)
+  create_at                           DateTime @default(now()) @db.Timestamp(6)
+  update_at                           DateTime @default(now()) @db.Timestamp(6)
+  deleted                             Boolean  @default(false)
+  post                                post     @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_notification_receiver_idTouser user     @relation("notification_receiver_idTouser", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_notification_sender_idTouser   user     @relation("notification_sender_idTouser", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model of {
@@ -160,22 +167,35 @@ model parent {
 }
 
 model post {
-  id             Int        @id @default(autoincrement())
-  title          String     @default("") @db.VarChar
-  content        String?    @db.VarChar
-  file_content   String[]
-  post_uuid      String     @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  user_id        Int
-  parent_post_id Int?
-  group_id       Int?
-  create_at      DateTime   @default(now()) @db.Timestamp(6)
-  update_at      DateTime   @default(now()) @db.Timestamp(6)
-  deleted        Boolean    @default(false)
-  interact       interact[]
-  group          group?     @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  post           post?      @relation("postTopost", fields: [parent_post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_post     post[]     @relation("postTopost")
-  user           user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                 Int                 @id @default(autoincrement())
+  title              String              @default("") @db.VarChar
+  content            String?             @db.VarChar
+  file_content       String[]
+  post_uuid          String              @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id            Int
+  parent_post_id     Int?
+  group_id           Int?
+  create_at          DateTime            @default(now()) @db.Timestamp(6)
+  update_at          DateTime            @default(now()) @db.Timestamp(6)
+  deleted            Boolean             @default(false)
+  interact           interact[]
+  notification       notification[]
+  group              group?              @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post               post?               @relation("postTopost", fields: [parent_post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_post         post[]              @relation("postTopost")
+  user               user                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post_reported      post_reported[]
+  post_summarization post_summarization?
+  post_tag           post_tag[]
+  post_topic         post_topic[]
+
+  @@index([deleted], map: "idx_post_delete")
+  @@index([group_id], map: "idx_post_group")
+  @@index([id, deleted], map: "idx_post_id_deleted")
+  @@index([id, parent_post_id, deleted], map: "idx_post_id_parent_id_deleted")
+  @@index([parent_post_id], map: "idx_post_parent_post")
+  @@index([user_id], map: "idx_post_user")
+  @@index([user_id, deleted], map: "idx_post_user_id_deleted")
 }
 
 model school {
@@ -187,17 +207,21 @@ model school {
   deleted   Boolean     @default(false)
   admin     admin[]
   classroom classroom[]
+  student   student[]
+  teacher   teacher[]
 }
 
 model student {
   id         Int          @id
   parent_id  Int?
+  school_id  Int?
   create_at  DateTime     @default(now()) @db.Timestamp(6)
   update_at  DateTime     @default(now()) @db.Timestamp(6)
   deleted    Boolean      @default(false)
   of         of[]
   user       user         @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   parent     parent?      @relation(fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school     school?      @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   transcript transcript[]
 }
 
@@ -209,30 +233,19 @@ model subject {
   deleted    Boolean      @default(false)
   document   document[]
   learn      learn[]
-  teaching   teaching[]
   transcript transcript[]
 }
 
 model teacher {
   id        Int        @id
+  school_id Int?
   create_at DateTime   @default(now()) @db.Timestamp(6)
   update_at DateTime   @default(now()) @db.Timestamp(6)
   deleted   Boolean    @default(false)
   document  document[]
+  learn     learn[]
   user      user       @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teaching  teaching[]
-}
-
-model teaching {
-  subject_id Int
-  teacher_id Int
-  create_at  DateTime @default(now()) @db.Timestamp(6)
-  update_at  DateTime @default(now()) @db.Timestamp(6)
-  deleted    Boolean  @default(false)
-  subject    subject  @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher    teacher  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([subject_id, teacher_id])
+  school    school?    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model transcript {
@@ -242,6 +255,7 @@ model transcript {
   final_score           Float?
   student_id            Int?
   subject_id            Int?
+  semester              String   @db.VarChar
   create_at             DateTime @default(now()) @db.Timestamp(6)
   update_at             DateTime @default(now()) @db.Timestamp(6)
   deleted               Boolean  @default(false)
@@ -250,32 +264,110 @@ model transcript {
 }
 
 model user {
-  id                              Int            @id @default(autoincrement())
-  address                         String?        @db.VarChar
-  name                            String?        @db.VarChar
-  avatar                          String?        @db.VarChar
-  background                      String?        @db.VarChar
-  role                            user_role
-  phone                           String?        @db.VarChar
-  birthday                        DateTime?      @db.Timestamp(6)
-  email                           String?        @db.VarChar
-  ssn                             String?        @unique @db.VarChar
-  sex                             user_sex?
-  user_uuid                       String         @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  create_at                       DateTime       @default(now()) @db.Timestamp(6)
-  update_at                       DateTime       @default(now()) @db.Timestamp(6)
-  deleted                         Boolean        @default(false)
-  account                         account?
-  admin                           admin?
-  follow_follow_followed_idTouser follow[]       @relation("follow_followed_idTouser")
-  follow_follow_follower_idTouser follow[]       @relation("follow_follower_idTouser")
-  interact                        interact[]
-  member                          member[]
-  notification                    notification[]
-  parent                          parent?
-  post                            post[]
-  student                         student?
-  teacher                         teacher?
+  id                                          Int             @id @default(autoincrement())
+  address                                     String?         @db.VarChar
+  name                                        String?         @db.VarChar
+  avatar                                      String?         @db.VarChar
+  background                                  String?         @db.VarChar
+  role                                        user_role
+  phone                                       String?         @db.VarChar
+  birthday                                    DateTime?       @db.Timestamp(6)
+  email                                       String?         @db.VarChar
+  ssn                                         String?         @unique @db.VarChar
+  sex                                         user_sex?
+  user_uuid                                   String          @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  is_famous                                   Boolean         @default(false)
+  create_at                                   DateTime        @default(now()) @db.Timestamp(6)
+  update_at                                   DateTime        @default(now()) @db.Timestamp(6)
+  deleted                                     Boolean         @default(false)
+  point                                       Int?            @default(0)
+  account                                     account?
+  admin                                       admin?
+  calendar                                    calendar[]
+  follow_follow_followed_idTouser             follow[]        @relation("follow_followed_idTouser")
+  follow_follow_follower_idTouser             follow[]        @relation("follow_follower_idTouser")
+  interact                                    interact[]
+  member                                      member[]
+  notification_notification_receiver_idTouser notification[]  @relation("notification_receiver_idTouser")
+  notification_notification_sender_idTouser   notification[]  @relation("notification_sender_idTouser")
+  parent                                      parent?
+  post                                        post[]
+  post_reported                               post_reported[]
+  student                                     student?
+  teacher                                     teacher?
+
+  @@index([deleted], map: "idx_user_deleted")
+  @@index([email], map: "idx_user_email")
+  @@index([id, deleted], map: "idx_user_id_deleted")
+}
+
+model post_tag {
+  id        Int      @id @default(autoincrement())
+  post_id   Int?
+  tag       String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  post      post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_summarization {
+  id                    Int      @id
+  content_summarization String?  @db.VarChar
+  create_at             DateTime @default(now()) @db.Timestamp(6)
+  update_at             DateTime @default(now()) @db.Timestamp(6)
+  deleted               Boolean  @default(false)
+  post                  post     @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model calendar {
+  id         Int      @id @default(autoincrement())
+  calendarId String   @db.VarChar
+  title      String   @db.VarChar
+  category   String   @db.VarChar
+  location   String?  @db.VarChar
+  state      String?  @db.VarChar
+  start      String   @db.VarChar
+  end        String   @db.VarChar
+  user_id    Int
+  create_at  DateTime @default(now()) @db.Timestamp(6)
+  update_at  DateTime @default(now()) @db.Timestamp(6)
+  deleted    Boolean  @default(false)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model post_topic {
+  post_id   Int
+  topic_id  Int
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  post      post     @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  topic     topic    @relation(fields: [topic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([post_id, topic_id])
+}
+
+model topic {
+  id         Int          @id @default(autoincrement())
+  name       String?      @db.VarChar(255)
+  create_at  DateTime     @default(now()) @db.Timestamp(6)
+  deleted    Boolean      @default(false)
+  post_topic post_topic[]
+}
+
+model post_reported {
+  post_id   Int
+  group_id  Int?
+  user_id   Int
+  reason    String?  @db.VarChar
+  create_at DateTime @default(now()) @db.Timestamp(6)
+  deleted   Boolean  @default(false)
+  update_at DateTime @default(now()) @db.Timestamp(6)
+  group     group?   @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post      post     @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([post_id, user_id])
 }
 
 enum interact_type {

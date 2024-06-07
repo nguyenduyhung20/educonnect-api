@@ -1,5 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import { InteractModel } from '../models/interact.model';
+import { producer } from '../config/kafka-client';
+import { NotificationModel } from '../models/notification.model';
+import { interact_type } from '@prisma/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { produceUserEventMessage } from '../services/recommend.service';
+import { UserModel } from '../models/user.model';
+dayjs.extend(utc);
 
 export const handleGetPostInteract = async (req: Request, res: Response, next: NextFunction) => {
   const { requestPost } = req;
@@ -11,11 +19,82 @@ export const handleGetPostInteract = async (req: Request, res: Response, next: N
   }
 };
 
+interface CreateInteractFields {
+  type: interact_type;
+  action: string;
+  info: Info;
+}
+
+interface Info {
+  senderAvatar: string;
+  senderId: number;
+  senderName: number;
+  receiverID: number;
+  itemType: 'post' | 'comment';
+  itemId: number;
+}
+
 export const handleCreatePostInteract = async (req: Request, res: Response, next: NextFunction) => {
-  const { requestUser, requestPost, body: postFields } = req;
+  const { requestUser, requestPost } = req;
+  const inputFields: CreateInteractFields = req.body;
   try {
-    const users = await InteractModel.create(postFields, requestUser.id, requestPost.id);
-    res.status(200).json({ data: users });
+    const interaction = await InteractModel.create(inputFields, requestUser.id, requestPost.id);
+
+    const interactionCount = (await InteractModel.getByPostId(requestPost.id)).length;
+
+    if (interactionCount == 50) {
+      await UserModel.updatePointById(requestUser.id, 50);
+    }
+
+    if (interactionCount == 100) {
+      await UserModel.updatePointById(requestUser.id, 50);
+    }
+
+    const action = inputFields.action;
+    if (action) {
+      if (action != 'dislike') {
+        const content = `đã ${inputFields.type} ${
+          inputFields.info.itemType == 'post' ? 'bài viết' : 'bình luận'
+        } của bạn.`;
+
+        await NotificationModel.create({
+          receiverId: inputFields.info.receiverID,
+          message: content,
+          senderId: inputFields.info.senderId,
+          item_id: inputFields.info.itemId
+        });
+
+        // Produce notification
+        producer('notification-topic', [
+          {
+            key: 'notification',
+            value: JSON.stringify({
+              senderInfo: {
+                id: requestUser.id,
+                avatar: inputFields.info.senderAvatar,
+                name: inputFields.info.senderName
+              },
+              receiverID: inputFields.info.receiverID,
+              content: content,
+              itemId: inputFields.info.itemId
+            })
+          }
+        ]);
+      }
+    }
+
+    if (inputFields.type === 'like' && interaction.deleted === false && !requestPost.parentPostId) {
+      // Produce like event on post, not comment
+      await produceUserEventMessage({
+        userId: requestUser.id,
+        postId: requestPost.id,
+        postTopic: requestPost.topicList.map((item) => item),
+        interactionType: inputFields.type,
+        timestamp: dayjs().utc().format()
+      });
+    }
+
+    return res.status(200).json({ data: interaction });
   } catch (error) {
     next(error);
   }

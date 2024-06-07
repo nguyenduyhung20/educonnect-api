@@ -7,12 +7,12 @@
 # create topic
 # docker exec -it kafka bash /bin/kafka-topics --create --topic post-topic --bootstrap-server localhost:9092
 # conn consumer
-# docker exec -it kafka bash /bin/kafka-console-consumer --topic post-topic --from-beginning --bootstrap-server localhost:9092
+# docker exec -it kafka bash /bin/kafka-console-consumer --topic interact-topic --from-beginning --bootstrap-server localhost:9092
 # conn producer
 # docker exec -it kafka bash /bin/kafka-console-producer --topic post-topic --bootstrap-server localhost:9092
 # ---------------------------------------
 
-version: '3'
+version: '3.8'
 services:
   zookeeper:
     container_name: zookeeper
@@ -38,8 +38,10 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_ADVERTISED_HOST_NAME: localhost
+
     networks:
       - kafka_elk
+      - educonnect
     healthcheck:
       test: nc -vz kafka 9092 || exit -1
       interval: 5s
@@ -47,13 +49,13 @@ services:
       retries: 10
 
   elasticsearch:
-    container_name: elasticsearch
+    container_name: elasticsearch_api
     image: elasticsearch:8.10.2
     environment:
       - cluster.name=kafka-cluster
       - bootstrap.memory_lock=true
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
       - xpack.security.enabled=false
     volumes:
       - elk_data:/usr/share/elasticsearch/data:rw
@@ -80,30 +82,26 @@ services:
   logstash:
     container_name: logstash
     image: logstash:8.10.2
+    depends_on:
+      elasticsearch: 
+        condition: service_healthy
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - ./configs/logstash-kafka.conf:/usr/share/logstash/pipeline/logstash-kafka.conf
+      - ./configs/templates/post-template.json:/usr/share/logstash/config/post-template.json
     ports:
       - 5044:5044
-    depends_on:
-      - elasticsearch
+      - 9600:9600
     stdin_open: true
     tty: true
     restart: unless-stopped
     networks:
       - kafka_elk
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "--silent",
-          "--fail",
-          "http://logstash:9600"
-        ]
+      test: ['CMD', 'curl', '--silent', '--fail', 'http://logstash:9600']
       interval: 30s
       timeout: 15s
       retries: 3
@@ -124,16 +122,67 @@ services:
     restart: unless-stopped
     networks:
       - kafka_elk
-    links: [ 'elasticsearch' ]
+    links: ['elasticsearch']
     healthcheck:
       test: curl --fail http://kibana:5601 || exit 1
       interval: 30s
       retries: 3
       timeout: 10s
 
+  mongodb:
+    container_name: mongodb
+    image: mongo:7.0.8-jammy
+    restart: unless-stopped
+    volumes:
+      - mgdata:/data/db
+    ports:
+      - '27018:27017'
+    networks:
+      - kafka_elk
+      - educonnect
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dev
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: educonnect
+
+  mongodb-service:
+    container_name: mongodb-service
+    restart: unless-stopped
+    build:
+      context: ./mongodb-service
+    environment:
+      - MONGO_DOMAIN=mongodb
+      - MONGO_DATABASE=educonnect
+      - MONGO_PORT=27017
+      - KAFKA_DOMAIN=kafka
+      - KAFKA_PORT=9092
+    networks:
+      - kafka_elk
+      - educonnect
+    depends_on:
+      - mongodb
+      - kafka
+
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification-service
+    ports:
+      - 5001:5001
+    environment:
+      - PORT=5001
+      - KAFKA_BROKER_URI_1=kafka:9092
+    networks:
+      - kafka_elk
+      - educonnect
+
 networks:
   kafka_elk:
+    name: kafka_elk
     driver: bridge
+
+  educonnect:
+    name: educonnect
 
 volumes:
   elk_data:
@@ -142,3 +191,27 @@ volumes:
       o: bind
       type: none
       device: ./elk-data
+
+  mgdata:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./mg-data
+
+  # mongodb-ui:
+  #   container_name: mongodb-ui
+  #   image: mongo-express:1.0.2-20-alpine3.19
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     ME_CONFIG_BASICAUTH_USERNAME: 'admin'
+  #     ME_CONFIG_BASICAUTH_PASSWORD: 'admin'
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: dev
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
+  #     ME_CONFIG_MONGODB_URL: mongodb://dev:password@mongodb:27017/
+  #   networks:
+  #     - kafka_elk
+  #   depends_on:
+  #     - mongodb
